@@ -1,0 +1,10 @@
+A D based minimal emulator for Notch's DCPU-16 v1.1, written for the fun of it.
+
+See: http://0x10c.com/doc/dcpu-16.txt
+
+Why: Why not ?
+
+This emulator run at steps. Each time that you press "enter" key, the emulator run a instruction.
+In branch instructions, the emulator will load the next instruction but will no execute it the condition fails.
+
+The hex file was made with swetland dcpu-16 assembler
