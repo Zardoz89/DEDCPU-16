@@ -1,4 +1,4 @@
-import std.stdio, std.array, std.string, std.conv, std.getopt;
+import std.stdio, std.array, std.string, std.conv, std.getopt, std.format;
 import std.c.stdlib, std.c.stdio;
 alias std.stdio.stdin dstdin;
 
@@ -265,6 +265,36 @@ struct DCpu16 {
       }
     }
   }
+
+  /**
+   * Generate a string representation of a range of RAM
+   * Params:
+   *  begin = Where the dump begin
+   *  end = Where the dump ends
+   * Returns: A string representation of a valid range of RAM
+   */
+  string dumpram(ushort begin, ushort end)
+  in {
+    assert(begin <= end, "Invalid RAM range");
+  } body {
+    string r;
+    for (int i; i <= (end - begin); i++) {
+      if (i % 4 == 0) {
+        if (i != 0)
+          r ~= "\n";
+          
+        auto writer = appender!string();
+        formattedWrite(writer, "%04X:", i + begin);
+        r ~= writer.data ~ " ";
+      }
+
+      auto writer = appender!string();
+      formattedWrite(writer, "%04X ", ram[i + begin]);
+      r ~= writer.data;
+    }
+
+    return r;
+  }
 };
 
 termios  ostate; // Old state of stdin
@@ -360,6 +390,20 @@ int main (string[] args) {
         step = false;
         tcsetattr(fileno(stdin), TCSADRAIN, &nstate);
         continue;
+          case 'm':
+          case 'M': {
+          tcsetattr(fileno(stdin), TCSADRAIN, &ostate); // original mode
+          auto input = strip(readln());
+          ushort begin = parse!ushort(input, 16);
+          munch(input,"- "); // skip - or whitespaces
+          ushort end = parse!ushort(input, 16);
+          tcsetattr(fileno(stdin), TCSADRAIN, &nstate);
+
+          if (begin > end)
+            continue;
+          writeln(cpu.dumpram(begin, end));          
+          continue;
+        }
           case 's':
           case 'S':
           case '\n':
