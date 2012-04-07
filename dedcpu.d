@@ -369,7 +369,7 @@ int main (string[] args) {
   scope(exit){ tcsetattr(fileno(stdin), TCSADRAIN, &ostate);} // return to original mode
   
   // Run
-  writeln("Cycles PC   SP   O    A    B    C    X    Y    Z    I    J    Instruction");
+  writeln("Cycles  PC   SP   O    A    B    C    X    Y    Z    I    J   Instruction");
   writeln("------ ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -----------");
 
   bool step = true;
@@ -381,6 +381,11 @@ int main (string[] args) {
           case 'q':
           case 'Q': // Quit
         return(0);
+          case 'v':
+          case 'V': // Print info head
+        writeln("Cycles  PC   SP   O    A    B    C    X    Y    Z    I    J   Instruction");
+        writeln("------ ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -----------");
+        continue;
           case 'r':
           case 'R':
         tcsetattr(fileno(stdin), TCSADRAIN, &ostate); // original mode

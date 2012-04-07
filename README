@@ -18,6 +18,7 @@ Commands:
   s or S or Enter key -> Step one instruction
   r or R number       -> Runs number instructions without stop
   m or M begin-end    -> Dumps from begin to end address of RAM (address in hex)
+  v or V              -> Show header
 
 In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.
 
