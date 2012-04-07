@@ -94,15 +94,17 @@ void run_instruction() {
   ubyte paramb = (first_word >> 10) & 0x3F;
   writef(" (%04X) ", first_word);
 
-  if (cpu.skip_next_instruction) {
-    cpu.skip_next_instruction = false;
-    cpu.cicles += use_cicles;
-    return ;
-  }
   if (opcode == 0x0) {
     // Non basic instruction - Decode parameter
     ushort param_literal = void;
     ushort* param_value = decode_parameter(paramb, &param_literal, &use_cicles);
+
+    if (cpu.skip_next_instruction) {
+      cpu.skip_next_instruction = false;
+      cpu.cicles += use_cicles;
+      return ;
+    }
+    
     // Decode operation
     switch (parama) {
         case 0x01: // JSR
@@ -124,6 +126,12 @@ void run_instruction() {
     ushort* parama_value = decode_parameter(parama, &parama_literal, &use_cicles);
     ushort* paramb_value = decode_parameter(paramb, &paramb_literal, &use_cicles);
 
+    if (cpu.skip_next_instruction) {
+      cpu.skip_next_instruction = false;
+      cpu.cicles += use_cicles;
+      return ;
+    }
+    
     // Decode operation
     switch (opcode) {
         case 0x1: // SET
