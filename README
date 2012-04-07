@@ -13,9 +13,10 @@ Parameters:
   -i --i --input : Input file with the machine code
   -b : Use binary little-endian format of interfect dcpu-emu. By default the emulator read textual files in big-endian made by swetland dcpu-16 assembler
 
-Each time that the user press any key, the emulator executes a instruction.
-Except for:
-  q or Q -> End emualtion
+Commands:
+  q or Q              -> End emulation
+  s or S or Enter key -> Step one instruction
+  r or R number       -> Runs number instructions without stop
 
 In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.
 

@@ -1,5 +1,6 @@
 import std.stdio, std.array, std.string, std.conv, std.getopt;
 import std.c.stdlib, std.c.stdio;
+alias std.stdio.stdin dstdin;
 
 import core.sys.posix.termios;
 import core.sys.posix.unistd;
@@ -335,31 +336,51 @@ int main (string[] args) {
   tcsetattr(fileno(stdin), TCSADRAIN, &nstate); // Set Mode
 
   // Restore old state
-  scope(exit){ tcsetattr(fileno(stdin), TCSADRAIN, &ostate);}       // return to original mode
+  scope(exit){ tcsetattr(fileno(stdin), TCSADRAIN, &ostate);} // return to original mode
   
   // Run
   writeln("Cycles PC   SP   O    A    B    C    X    Y    Z    I    J    Instruction");
   writeln("------ ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -----------");
-  for (;;) {
-    auto c = fgetc(stdin);
 
-    switch (c) {
-        case 'q':
-        case 'Q': // Quit
-      return(0);
-        case 's':
-        case 'S':
-        case '\n':
+  bool step = true;
+  ulong count, stop = ulong.max;
+  while(1) {
+    if (step) {
+    auto c = fgetc(stdin);
+      switch (c) {
+          case 'q':
+          case 'Q': // Quit
+        return(0);
+          case 'r':
+          case 'R':
+        tcsetattr(fileno(stdin), TCSADRAIN, &ostate); // original mode
+        count = 0;
+        auto input = strip(readln());
+        stop = parse!ushort(input, 10); // How many cycles
+        step = false;
+        tcsetattr(fileno(stdin), TCSADRAIN, &nstate);
+        continue;
+          case 's':
+          case 'S':
+          case '\n':
+        writef("%06u ", cpu.cycles);
+        writef("%04X %04X %04X %04X %04X %04X %04X %04X %04X %04X %04X", cpu.pc,
+                cpu.sp, cpu.o, cpu.a, cpu.b, cpu.c, cpu.x, cpu.y, cpu.z, cpu.i, cpu.j);
+        cpu.run_instruction();
+        writeln();
+        break;
+          default:
+      }
+    } else if (count < stop) {
       writef("%06u ", cpu.cycles);
       writef("%04X %04X %04X %04X %04X %04X %04X %04X %04X %04X %04X", cpu.pc,
               cpu.sp, cpu.o, cpu.a, cpu.b, cpu.c, cpu.x, cpu.y, cpu.z, cpu.i, cpu.j);
       cpu.run_instruction();
       writeln();
-      break;
-        default:
+    } else {
+      step = true;
     }
-
-    
+    count++;
   }
   return 0;
 }
