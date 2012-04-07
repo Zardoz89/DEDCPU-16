@@ -328,7 +328,7 @@ int main (string[] args) {
   f.close();
   writeln();
   // Run
-  writeln("Cicles PC   SP   O    A    B    C    X    Y    Z    I    J    Instruction");
+  writeln("Cycles PC   SP   O    A    B    C    X    Y    Z    I    J    Instruction");
   writeln("------ ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -----------");
   for (;;) {
     stdin.readln();
