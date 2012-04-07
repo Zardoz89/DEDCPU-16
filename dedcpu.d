@@ -10,6 +10,7 @@ struct DCpu16 {
   ushort sp = 0xFFFF;
   ushort o;
   bool skip_next_instruction;
+  ulong cicles;
 };
 
 DCpu16 cpu;
@@ -74,25 +75,25 @@ void run_instruction() {
   ubyte parama = (first_word >> 4) & 0x3F;
   ubyte paramb = (first_word >> 10) & 0x3F;
   writef(" (%04X) ", first_word);
-  
+
+  if (cpu.skip_next_instruction) {
+    cpu.skip_next_instruction = false;
+    return ;
+  }
   if (opcode == 0x0) {
     // Non basic instruction - Decode parameter
     ushort param_literal = void;
     ushort* param_value = decode_parameter(paramb, &param_literal);
     // Decode operation
-    if (!cpu.skip_next_instruction) {
-      switch (parama) {
-          case 0x01: // JSR
-        writeln("JSR");
-        cpu.sp--;
-        cpu.ram[cpu.sp] = cpu.pc;
-        cpu.pc = *param_value;
-        break;
-          default: // Nothing
-          throw new Exception("Unknow Instruction");
-      }
-    } else {
-      cpu.skip_next_instruction = false;
+    switch (parama) {
+        case 0x01: // JSR
+      writeln("JSR");
+      cpu.sp--;
+      cpu.ram[cpu.sp] = cpu.pc;
+      cpu.pc = *param_value;
+      break;
+        default: // Nothing
+        throw new Exception("Unknow Instruction");
     }
   } else { // Decode parameters
     // These are here just incase the parameter is a short literal
@@ -103,96 +104,92 @@ void run_instruction() {
     ushort* paramb_value = decode_parameter(paramb, &paramb_literal);
 
     // Decode operation
-    if (!cpu.skip_next_instruction) {
-      switch (opcode) {
-          case 0x1: // SET
-        writeln("SET");
-        *parama_value = *paramb_value;
-        break;
-        writeln("ADD");
-          case 0x2: // ADD
-        if (*parama_value + *paramb_value > 0xFFFF) {
-          cpu.o = 0x0001;
-        }
-        *parama_value = *parama_value + *paramb_value & 0xFFFF;
-        break;
-          case 0x3: // SUB
-        writeln("SUB");
-        auto val = cast(ushort) (*parama_value - *paramb_value);
-        if (val < 0) {
-          cpu.o = 0xFFFF;
-          *parama_value = -val;
-        } else {
-          *parama_value = val;
-        }
-        break;
-          case 0x4: // MUL
-        writeln("MUL");
-        uint value = *parama_value * *paramb_value;
-        cpu.o = (value >> 16) & 0xFFFF;
-        *parama_value = cast(ushort) value ;
-        break;
-          case 0x5: // DIV
-        writeln("DIV");
-        if (*paramb_value == 0) {
-          cpu.o = 0;
-          *parama_value = 0;
-        } else {
-          auto value = ((*parama_value << 16) / *paramb_value) & 0xFFFF;
-          cpu.o = cast(ushort) value;
-          *parama_value = cast(ushort)(*parama_value / *paramb_value);
-        }
-        break;
-          case 0x6: // MOD
-        writeln("MOD");
-        if (*paramb_value == 0) {
-          *parama_value = 0;
-        } else {
-          *parama_value = *parama_value % *paramb_value;
-        }
-        break;
-          case 0x7: // SHL
-        writeln("SHL");
-        uint val = *parama_value << *paramb_value;
-        cpu.o = cast(ushort)(val >> 16);
-        *parama_value = cast(ushort)val;
-        break;
-          case 0x8: // SHR
-        writeln("SHR");
-        uint val = (*parama_value << 16) >> *paramb_value;
-        cpu.o = val & 0xFFFF;
-        *parama_value = *parama_value >> *paramb_value;
-        break;
-          case 0x9: // AND
-        writeln("AND");
-        *parama_value = *parama_value & *paramb_value;
-        break;
-          case 0xA: // bOR
-        writeln("BOR");
-        *parama_value = *parama_value | *paramb_value;
-        break;
-          case 0xB: // XOR
-        writeln("XOR");
-        *parama_value = *parama_value ^ *paramb_value;
-        break;
-          case 0xC: // IFEqual
-        writeln("IFE");
-        cpu.skip_next_instruction = *parama_value != *paramb_value;
-        break;
-          case 0xD: // IFNot equal
-        writeln("IFN");
-        cpu.skip_next_instruction = *parama_value == *paramb_value;
-        break;
-          case 0xE: // IFGreat
-        writeln("IFG");
-        cpu.skip_next_instruction = *parama_value <= *paramb_value;
-        break;
-          default: // 0xF IFB
-        writeln("IFB");
-        cpu.skip_next_instruction = (*parama_value & *paramb_value) == 0;
+    switch (opcode) {
+        case 0x1: // SET
+      writeln("SET");
+      *parama_value = *paramb_value;
+      break;
+      writeln("ADD");
+        case 0x2: // ADD
+      if (*parama_value + *paramb_value > 0xFFFF) {
+        cpu.o = 0x0001;
       }
-    } else {
-      cpu.skip_next_instruction = 0;
+      *parama_value = *parama_value + *paramb_value & 0xFFFF;
+      break;
+        case 0x3: // SUB
+      writeln("SUB");
+      auto val = cast(ushort) (*parama_value - *paramb_value);
+      if (val < 0) {
+        cpu.o = 0xFFFF;
+        *parama_value = -val;
+      } else {
+        *parama_value = val;
+      }
+      break;
+        case 0x4: // MUL
+      writeln("MUL");
+      uint value = *parama_value * *paramb_value;
+      cpu.o = (value >> 16) & 0xFFFF;
+      *parama_value = cast(ushort) value ;
+      break;
+        case 0x5: // DIV
+      writeln("DIV");
+      if (*paramb_value == 0) {
+        cpu.o = 0;
+        *parama_value = 0;
+      } else {
+        auto value = ((*parama_value << 16) / *paramb_value) & 0xFFFF;
+        cpu.o = cast(ushort) value;
+        *parama_value = cast(ushort)(*parama_value / *paramb_value);
+      }
+      break;
+        case 0x6: // MOD
+      writeln("MOD");
+      if (*paramb_value == 0) {
+        *parama_value = 0;
+      } else {
+        *parama_value = *parama_value % *paramb_value;
+      }
+      break;
+        case 0x7: // SHL
+      writeln("SHL");
+      uint val = *parama_value << *paramb_value;
+      cpu.o = cast(ushort)(val >> 16);
+      *parama_value = cast(ushort)val;
+      break;
+        case 0x8: // SHR
+      writeln("SHR");
+      uint val = (*parama_value << 16) >> *paramb_value;
+      cpu.o = val & 0xFFFF;
+      *parama_value = *parama_value >> *paramb_value;
+      break;
+        case 0x9: // AND
+      writeln("AND");
+      *parama_value = *parama_value & *paramb_value;
+      break;
+        case 0xA: // bOR
+      writeln("BOR");
+      *parama_value = *parama_value | *paramb_value;
+      break;
+        case 0xB: // XOR
+      writeln("XOR");
+      *parama_value = *parama_value ^ *paramb_value;
+      break;
+        case 0xC: // IFEqual
+      writeln("IFE");
+      cpu.skip_next_instruction = *parama_value != *paramb_value;
+      break;
+        case 0xD: // IFNot equal
+      writeln("IFN");
+      cpu.skip_next_instruction = *parama_value == *paramb_value;
+      break;
+        case 0xE: // IFGreat
+      writeln("IFG");
+      cpu.skip_next_instruction = *parama_value <= *paramb_value;
+      break;
+        default: // 0xF IFB
+      writeln("IFB");
+      cpu.skip_next_instruction = (*parama_value & *paramb_value) == 0;
     }
   }
 }
