@@ -298,17 +298,16 @@ int main (string[] args) {
     foreach ( line; f.byLine()) {
       foreach (word; splitter(strip(line))) {
         cpu.ram[i] = parse!ushort(word, 16);
+        writefln("%04X", word);
         i++;
       }
     }
   } else { // Binary file from DCPU-EMU little-endian format    
     for (;i < 0x10000 && !f.eof; i++) {
-      ubyte[1] r = void;
-      ubyte tmp = void;
-      f.rawRead(r);
-      // Swap endianes
-      tmp = (r[0] >> 4) | (r[0] & 0b00001111) << 4;
-      cpu.ram[i] = tmp;
+      ubyte[2] word = void;
+      f.rawRead(word);
+      writefln("%02X%02X", word[1], word[0]);
+      cpu.ram[i] = cast(ushort) (word[0] | word[1] << 8); // Swap endianes
     }
   }
   f.close();
