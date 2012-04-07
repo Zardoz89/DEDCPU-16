@@ -280,7 +280,7 @@ int main (string[] args) {
     writeln("\t-b : Use binary little-endian format of interfect dcpu-emu . By default the emulator read textual files in big-endian made by swetland dcpu-16 assembler");
     writeln();
     writeln("Each time that the user press any key, the emulator executes a instruction.");
-    writeln("In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.")
+    writeln("In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.");
     writeln("To end the emulator do Ctrl+C");
     exit(0);
  }
