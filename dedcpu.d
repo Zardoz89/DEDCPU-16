@@ -40,7 +40,7 @@ struct DCpu16 {
         case 0x05:
         case 0x06:
         case 0x07: // Register x
-      return this.registers[paramvalue];
+      return registers[paramvalue];
         case 0x08:
         case 0x09:
         case 0x0A:
@@ -49,7 +49,7 @@ struct DCpu16 {
         case 0x0D:
         case 0x0E:
         case 0x0F: // Register pointer [x]
-      return this.ram[this.registers[paramvalue-0x08]];
+      return ram[registers[paramvalue-0x08]];
         case 0x10:
         case 0x11:
         case 0x12:
@@ -59,25 +59,25 @@ struct DCpu16 {
         case 0x16:
         case 0x17: // Register pointer with added word
       use_cycles++;
-      return this.ram[this.registers[paramvalue- 0x10] + this.ram[this.pc++]];
+      return ram[registers[paramvalue- 0x10] + ram[pc++]];
         case 0x18: // POP
-      return this.ram[this.sp++];
+      return ram[sp++];
         case 0x19: // PEEK
-      return this.ram[this.sp];
+      return ram[sp];
         case 0x1A: // PUSH
-      return this.ram[--this.sp];
+      return ram[--sp];
         case 0x1B: // SP
-      return this.sp;
+      return sp;
         case 0x1C: // PC
-      return this.pc;
+      return pc;
         case 0x1D: // Overflow register
-      return this.o;
+      return o;
         case 0x1E: // next word pointer
       use_cycles++;
-      return this.ram[this.ram[this.pc++]];
+      return ram[ram[pc++]];
         case 0x1F: // word literal
       use_cycles++;
-      return this.ram[this.pc++];
+      return ram[pc++];
         default: // literal
       literal = paramvalue - 0x20;
       return literal;
@@ -90,7 +90,7 @@ struct DCpu16 {
   void run_instruction() {
     ushort use_cycles = 1;
     // Get first word
-    ushort first_word = this.ram[this.pc++];
+    ushort first_word = ram[pc++];
     // Decode operation
     ubyte opcode = first_word & 0xF;
     ubyte parama = (first_word >> 4) & 0x3F;
@@ -102,9 +102,9 @@ struct DCpu16 {
       ushort param_literal = void;
       ushort* param_value = &decode_parameter(paramb, param_literal, use_cycles);
 
-      if (this.skip_next_instruction) {
-        this.skip_next_instruction = false;
-        this.cycles += use_cycles;
+      if (skip_next_instruction) {
+        skip_next_instruction = false;
+        cycles += use_cycles;
         return ;
       }
 
@@ -113,10 +113,10 @@ struct DCpu16 {
           case 0x01: // JSR
         write("JSR");
         use_cycles++;
-        this.sp--;
-        this.ram[this.sp] = this.pc;
-        this.pc = *param_value;
-        this.cycles += use_cycles;
+        sp--;
+        ram[sp] = pc;
+        pc = *param_value;
+        cycles += use_cycles;
         break;
           default: // Nothing
         throw new Exception("Unknow Instruction");
@@ -129,9 +129,9 @@ struct DCpu16 {
       ushort* parama_value = &decode_parameter(parama, parama_literal, use_cycles);
       ushort* paramb_value = &decode_parameter(paramb, paramb_literal, use_cycles);
 
-      if (this.skip_next_instruction) {
-        this.skip_next_instruction = false;
-        this.cycles += use_cycles;
+      if (skip_next_instruction) {
+        skip_next_instruction = false;
+        cycles += use_cycles;
         return ;
       }
 
@@ -140,17 +140,17 @@ struct DCpu16 {
           case 0x1: // SET
         write("SET");
         *parama_value = *paramb_value;
-        this.cycles += use_cycles;
+        cycles += use_cycles;
         break;
 
           case 0x2: // ADD
         write("ADD");
         use_cycles++;
         if (*parama_value + *paramb_value > 0xFFFF) {
-          this.o = 0x0001;
+          o = 0x0001;
         }
         *parama_value = *parama_value + *paramb_value & 0xFFFF;
-        this.cycles += use_cycles;
+        cycles += use_cycles;
         break;
 
           case 0x3: // SUB
@@ -158,35 +158,35 @@ struct DCpu16 {
         use_cycles++;
         auto val = cast(ushort) (*parama_value - *paramb_value);
         if (val < 0) {
-          this.o = 0xFFFF;
+          o = 0xFFFF;
           *parama_value = -val;
         } else {
           *parama_value = val;
         }
-        this.cycles += use_cycles;
+        cycles += use_cycles;
         break;
 
           case 0x4: // MUL
         write("MUL");
         use_cycles++;
         uint value = *parama_value * *paramb_value;
-        this.o = (value >> 16) & 0xFFFF;
+        o = (value >> 16) & 0xFFFF;
         *parama_value = cast(ushort) value ;
-        this.cycles += use_cycles;
+        cycles += use_cycles;
         break;
 
           case 0x5: // DIV
         write("DIV");
         use_cycles +=2;
         if (*paramb_value == 0) {
-          this.o = 0;
+          o = 0;
           *parama_value = 0;
         } else {
           auto value = ((*parama_value << 16) / *paramb_value) & 0xFFFF;
-          this.o = cast(ushort) value;
+          o = cast(ushort) value;
           *parama_value = cast(ushort)(*parama_value / *paramb_value);
         }
-        this.cycles += use_cycles;
+        cycles += use_cycles;
         break;
 
           case 0x6: // MOD
@@ -197,71 +197,71 @@ struct DCpu16 {
         } else {
           *parama_value = *parama_value % *paramb_value;
         }
-        this.cycles += use_cycles;
+        cycles += use_cycles;
         break;
 
           case 0x7: // SHL
         write("SHL");
         use_cycles++;
         uint val = *parama_value << *paramb_value;
-        this.o = cast(ushort)(val >> 16);
+        o = cast(ushort)(val >> 16);
         *parama_value = cast(ushort)val;
-        this.cycles += use_cycles;
+        cycles += use_cycles;
         break;
 
           case 0x8: // SHR
         write("SHR");
         use_cycles++;
         uint val = (*parama_value << 16) >> *paramb_value;
-        this.o = val & 0xFFFF;
+        o = val & 0xFFFF;
         *parama_value = *parama_value >> *paramb_value;
-        this.cycles += use_cycles;
+        cycles += use_cycles;
         break;
 
           case 0x9: // AND
         write("AND");
         *parama_value = *parama_value & *paramb_value;
-        this.cycles += use_cycles;
+        cycles += use_cycles;
         break;
 
           case 0xA: // bOR
         write("BOR");
         *parama_value = *parama_value | *paramb_value;
-        this.cycles += use_cycles;
+        cycles += use_cycles;
         break;
 
           case 0xB: // XOR
         write("XOR");
         *parama_value = *parama_value ^ *paramb_value;
-        this.cycles += use_cycles;
+        cycles += use_cycles;
         break;
 
           case 0xC: // IFEqual
         write("IFE");
         use_cycles++;
-        this.skip_next_instruction = *parama_value != *paramb_value;
-        this.cycles += use_cycles;
+        skip_next_instruction = *parama_value != *paramb_value;
+        cycles += use_cycles;
         break;
 
           case 0xD: // IFNot equal
         write("IFN");
         use_cycles++;
-        this.skip_next_instruction = *parama_value == *paramb_value;
-        this.cycles += use_cycles;
+        skip_next_instruction = *parama_value == *paramb_value;
+        cycles += use_cycles;
         break;
 
           case 0xE: // IFGreat
         write("IFG");
         use_cycles++;
-        this.skip_next_instruction = *parama_value <= *paramb_value;
-        this.cycles += use_cycles;
+        skip_next_instruction = *parama_value <= *paramb_value;
+        cycles += use_cycles;
         break;
 
           default: // 0xF IFBits set
         write("IFB");
         use_cycles++;
-        this.skip_next_instruction = (*parama_value & *paramb_value) == 0;
-        this.cycles += use_cycles;
+        skip_next_instruction = (*parama_value & *paramb_value) == 0;
+        cycles += use_cycles;
       }
     }
   }
