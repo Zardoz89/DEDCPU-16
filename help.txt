@@ -2,7 +2,7 @@ Usage:
 ./dedcpu -ifilename [-b]
 Parameters:
   -i --i --input : Input file with the machine code
-  -b : Use binary little-endian format of interfect dcpu-emu. By default the emulator read textual files in big-endian made by swetland dcpu-16 assembler
+  -t : Uses text files in big-endian made by swetland dcpu-16 assembler. By default loads raw binary data in little endian.
 
 Commands:
   q or Q              -> End emulation

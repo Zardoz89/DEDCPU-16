@@ -301,7 +301,7 @@ termios  ostate; // Old state of stdin
 
 int main (string[] args) {
   string filename;
-  bool binary_fmt = false; // Use binary or textual format
+  bool ascci_fmt = false; // Use binary or textual format
 
  void showHelp() {
     writeln(import("help.txt"));
@@ -312,7 +312,7 @@ int main (string[] args) {
   getopt(
     args,
     "input|i", &filename,
-    "b", &binary_fmt,
+    "t", &ascci_fmt,
     "h", &showHelp);
     
   if (filename.length == 0) {
@@ -332,7 +332,7 @@ int main (string[] args) {
 
   // Read words into RAM
   ushort i, ln;
-  if (!binary_fmt) { // Textual files from swetland dcpu-16 assembler
+  if (ascci_fmt) { // Textual files from swetland dcpu-16 assembler
     foreach ( line; f.byLine()) {
       foreach (word; splitter(strip(line))) {
         cpu.ram[i] = parse!ushort(word, 16);

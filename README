@@ -4,14 +4,17 @@ See: http://0x10c.com/doc/dcpu-16.txt
 
 Why: Why not ?
 
-The text hex file was made with swetland dcpu-16 assembler
+The test.ascii file was made with swetland dcpu-16 assembler
 https://github.com/swetland/dcpu16
+
+The notch.bin file was made with interfect dcpu-emu assembler
+https://bitbucket.org/interfect/dcpu-emu
 
 Usage:
 ./dedcpu -ifilename [-b]
 Parameters:
   -i --i --input : Input file with the machine code
-  -b : Use binary little-endian format of interfect dcpu-emu. By default the emulator read textual files in big-endian made by swetland dcpu-16 assembler
+  -t : Uses text files in big-endian made by swetland dcpu-16 assembler. By default loads raw binary data in little endian.
 
 Commands:
   q or Q              -> End emulation
