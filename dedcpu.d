@@ -11,7 +11,7 @@ struct DCpu16 {
     ushort[8] registers;
   }
   ushort pc;
-  ushort sp = 0xFFFF;
+  ushort sp = 0;
   ushort o;
   bool skip_next_instruction;
   ulong cicles = 0;
