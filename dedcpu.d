@@ -12,6 +12,8 @@ alias core.stdc.stdio.stdin stdin;
  */
 struct DCpu16 {
   ushort ram[0x10000];
+  
+private :
   union {
     struct {ushort a, b, c, x, y, z, i, j;}
     ushort[8] registers;
@@ -19,8 +21,10 @@ struct DCpu16 {
   ushort pc;
   ushort sp = 0;
   ushort o;
-  bool skip_next_instruction;
+  bool skip_next_instruction; 
   ulong cycles = 0;
+
+  string diassembled_inst; // Instruction in string representation
   
   /**
    * Decode paramaters from a o b parameter
@@ -33,57 +37,119 @@ struct DCpu16 {
   private ref ushort decode_parameter(ubyte paramvalue, ref ushort literal, ref ushort use_cycles) {
     switch (paramvalue) {
         case 0x00:
+      diassembled_inst ~= " A"; return registers[paramvalue];
         case 0x01:
+      diassembled_inst ~= " B"; return registers[paramvalue];
         case 0x02:
+      diassembled_inst ~= " C"; return registers[paramvalue];
         case 0x03:
+      diassembled_inst ~= " X"; return registers[paramvalue];
         case 0x04:
+      diassembled_inst ~= " Y"; return registers[paramvalue];
         case 0x05:
+      diassembled_inst ~= " Z"; return registers[paramvalue];
         case 0x06:
+      diassembled_inst ~= " I"; return registers[paramvalue];
         case 0x07: // Register x
-      return registers[paramvalue];
+      diassembled_inst ~= " J"; return registers[paramvalue];
+      
         case 0x08:
+      diassembled_inst ~= " [A]"; return ram[registers[paramvalue-0x08]];
         case 0x09:
+      diassembled_inst ~= " [B]"; return ram[registers[paramvalue-0x08]];
         case 0x0A:
+      diassembled_inst ~= " [C]"; return ram[registers[paramvalue-0x08]];
         case 0x0B:
+      diassembled_inst ~= " [X]"; return ram[registers[paramvalue-0x08]];
         case 0x0C:
+      diassembled_inst ~= " [Y]"; return ram[registers[paramvalue-0x08]];
         case 0x0D:
+      diassembled_inst ~= " [Z]"; return ram[registers[paramvalue-0x08]];
         case 0x0E:
+      diassembled_inst ~= " [I]"; return ram[registers[paramvalue-0x08]];
         case 0x0F: // Register pointer [x]
-      return ram[registers[paramvalue-0x08]];
+      diassembled_inst ~= " [J]"; return ram[registers[paramvalue-0x08]];
+      
         case 0x10:
+      auto writer = appender!string();
+      formattedWrite(writer, " [A+ %04X]", ram[pc+1]);
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
         case 0x11:
+      auto writer = appender!string();
+      formattedWrite(writer, " [b+ %04X]", ram[pc+1]);
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
         case 0x12:
+      auto writer = appender!string();
+      formattedWrite(writer, " [C+ %04X]", ram[pc+1]);
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
         case 0x13:
+      auto writer = appender!string();
+      formattedWrite(writer, " [X+ %04X]", ram[pc+1]);
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
         case 0x14:
+      auto writer = appender!string();
+      formattedWrite(writer, " [Y+ %04X]", ram[pc+1]);
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
         case 0x15:
+      auto writer = appender!string();
+      formattedWrite(writer, " [Z+ %04X]", ram[pc+1]);
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
         case 0x16:
+      auto writer = appender!string();
+      formattedWrite(writer, " [I+ %04X]", ram[pc+1]);
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
         case 0x17: // Register pointer with added word
-      use_cycles++;
-      return ram[registers[paramvalue- 0x10] + ram[pc++]];
+      auto writer = appender!string();
+      formattedWrite(writer, " [J+ %04X]", ram[pc+1]);
+      diassembled_inst ~= writer.data;
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
+      
         case 0x18: // POP
+      diassembled_inst ~= " POP";
       return ram[sp++];
         case 0x19: // PEEK
+      diassembled_inst ~= " PEEK";
       return ram[sp];
         case 0x1A: // PUSH
+      diassembled_inst ~= " PUSH";
       return ram[--sp];
+      
         case 0x1B: // SP
+      diassembled_inst ~= " SP";
       return sp;
+      
         case 0x1C: // PC
+      diassembled_inst ~= " PC";
       return pc;
+      
         case 0x1D: // Overflow register
+      diassembled_inst ~= " O";
       return o;
+      
         case 0x1E: // next word pointer
+      auto writer = appender!string();
+      formattedWrite(writer, " [%04X]", ram[pc+1]);
+      diassembled_inst ~= writer.data;
       use_cycles++;
       return ram[ram[pc++]];
+      
         case 0x1F: // word literal
+      auto writer = appender!string();
+      formattedWrite(writer, " %04X", ram[pc+1]);
+      diassembled_inst ~= writer.data;
       use_cycles++;
       return ram[pc++];
+      
         default: // literal
       literal = paramvalue - 0x20;
+      auto writer = appender!string();
+      formattedWrite(writer, " [%04X]", literal);
+      diassembled_inst ~= writer.data;
       return literal;
     }
   }
 
+public:
   /**
    * Runs a instruction
    */
@@ -96,21 +162,22 @@ struct DCpu16 {
     ubyte parama = (first_word >> 4) & 0x3F;
     ubyte paramb = (first_word >> 10) & 0x3F;
 
-    if (opcode == 0x0) {
-      // Non basic instruction - Decode parameter
-      ushort param_literal = void;
-      ushort* param_value = &decode_parameter(paramb, param_literal, use_cycles);
-
+    diassembled_inst = "";
+    
+    if (opcode == 0x0) { // Non basic instruction
       if (skip_next_instruction) {
         skip_next_instruction = false;
         cycles += use_cycles;
         return ;
       }
 
+      ushort param_literal = void;
+      ushort* param_value = &decode_parameter(paramb, param_literal, use_cycles);
+      
       // Decode operation
       switch (parama) {
           case 0x01: // JSR
-        write("JSR");
+        diassembled_inst = "JSR"  ~ diassembled_inst;
         use_cycles++;
         sp--;
         ram[sp] = pc;
@@ -121,29 +188,26 @@ struct DCpu16 {
         throw new Exception("Unknow Instruction");
       }
     } else { // Decode parameters
-      // These are here just incase the parameter is a short literal
-      ushort parama_literal, paramb_literal;
-
-      // It will need a different place to store short literals
-      ushort* parama_value = &decode_parameter(parama, parama_literal, use_cycles);
-      ushort* paramb_value = &decode_parameter(paramb, paramb_literal, use_cycles);
-
       if (skip_next_instruction) {
         skip_next_instruction = false;
         cycles += use_cycles;
         return ;
       }
+      
+      ushort parama_literal, paramb_literal;
+      ushort* parama_value = &decode_parameter(parama, parama_literal, use_cycles);
+      ushort* paramb_value = &decode_parameter(paramb, paramb_literal, use_cycles);
 
       // Decode operation
       switch (opcode) {
           case 0x1: // SET
-        write("SET");
+        diassembled_inst = "SET" ~ diassembled_inst;
         *parama_value = *paramb_value;
         cycles += use_cycles;
         break;
 
           case 0x2: // ADD
-        write("ADD");
+        diassembled_inst = "ADD" ~ diassembled_inst;
         use_cycles++;
         if (*parama_value + *paramb_value > 0xFFFF) {
           o = 0x0001;
@@ -153,7 +217,7 @@ struct DCpu16 {
         break;
 
           case 0x3: // SUB
-        write("SUB");
+        diassembled_inst = "SUB" ~ diassembled_inst;
         use_cycles++;
         auto val = cast(ushort) (*parama_value - *paramb_value);
         if (val < 0) {
@@ -166,7 +230,7 @@ struct DCpu16 {
         break;
 
           case 0x4: // MUL
-        write("MUL");
+        diassembled_inst = "MUL" ~ diassembled_inst;
         use_cycles++;
         uint value = *parama_value * *paramb_value;
         o = (value >> 16) & 0xFFFF;
@@ -175,7 +239,7 @@ struct DCpu16 {
         break;
 
           case 0x5: // DIV
-        write("DIV");
+        diassembled_inst = "DIV" ~ diassembled_inst;
         use_cycles +=2;
         if (*paramb_value == 0) {
           o = 0;
@@ -189,7 +253,7 @@ struct DCpu16 {
         break;
 
           case 0x6: // MOD
-        write("MOD");
+        diassembled_inst = "MOD" ~ diassembled_inst;
         use_cycles +=2;
         if (*paramb_value == 0) {
           *parama_value = 0;
@@ -200,7 +264,7 @@ struct DCpu16 {
         break;
 
           case 0x7: // SHL
-        write("SHL");
+        diassembled_inst = "SHL" ~ diassembled_inst;
         use_cycles++;
         uint val = *parama_value << *paramb_value;
         o = cast(ushort)(val >> 16);
@@ -209,7 +273,7 @@ struct DCpu16 {
         break;
 
           case 0x8: // SHR
-        write("SHR");
+        diassembled_inst = "SHR" ~ diassembled_inst;
         use_cycles++;
         uint val = (*parama_value << 16) >> *paramb_value;
         o = val & 0xFFFF;
@@ -218,46 +282,46 @@ struct DCpu16 {
         break;
 
           case 0x9: // AND
-        write("AND");
+        diassembled_inst = "AND" ~ diassembled_inst;
         *parama_value = *parama_value & *paramb_value;
         cycles += use_cycles;
         break;
 
           case 0xA: // bOR
-        write("BOR");
+        diassembled_inst = "BOR" ~ diassembled_inst;
         *parama_value = *parama_value | *paramb_value;
         cycles += use_cycles;
         break;
 
           case 0xB: // XOR
-        write("XOR");
+        diassembled_inst = "XOR" ~ diassembled_inst;
         *parama_value = *parama_value ^ *paramb_value;
         cycles += use_cycles;
         break;
 
           case 0xC: // IFEqual
-        write("IFE");
+        diassembled_inst = "IFE" ~ diassembled_inst;
         use_cycles++;
         skip_next_instruction = *parama_value != *paramb_value;
         cycles += use_cycles;
         break;
 
           case 0xD: // IFNot equal
-        write("IFN");
+        diassembled_inst = "IFN" ~ diassembled_inst;
         use_cycles++;
         skip_next_instruction = *parama_value == *paramb_value;
         cycles += use_cycles;
         break;
 
           case 0xE: // IFGreat
-        write("IFG");
+        diassembled_inst = "IFG" ~ diassembled_inst;
         use_cycles++;
         skip_next_instruction = *parama_value <= *paramb_value;
         cycles += use_cycles;
         break;
 
           default: // 0xF IFBits set
-        write("IFB");
+        diassembled_inst = "IFB" ~ diassembled_inst;
         use_cycles++;
         skip_next_instruction = (*parama_value & *paramb_value) == 0;
         cycles += use_cycles;
@@ -317,6 +381,13 @@ struct DCpu16 {
     formattedWrite(writer,"[%04X]", ram[pc]);
     r ~= writer.data;
     return r;
+  }
+
+  /**
+   * Generate a string of a disassembled instruction
+   */
+  @property string diassembled() {
+    return this.diassembled_inst.idup;
   }
 };
 
@@ -435,16 +506,17 @@ int main (string[] args) {
           case 's':
           case 'S':
           case '\n':
+
         write(cpu.show_state, " ", cpu.actual_instruction, " ");
         cpu.run_instruction();
-        writeln();
+        writeln(cpu.diassembled);
         break;
           default:
       }
     } else if (count < stop) {
       write(cpu.show_state, " ", cpu.actual_instruction, " ");
       cpu.run_instruction();
-      writeln();
+      writeln(cpu.diassembled);
     } else {
       step = true;
     }
