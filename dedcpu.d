@@ -1,6 +1,10 @@
 import std.stdio, std.array, std.string, std.conv, std.getopt;
 import std.c.stdlib, std.c.stdio;
-import std.c.linux.termios;
+
+import core.sys.posix.termios;
+import core.sys.posix.unistd;
+alias core.stdc.stdio.fileno fileno;
+alias core.stdc.stdio.stdin stdin;
 
 /**
  * CPU representation
@@ -19,6 +23,8 @@ struct DCpu16 {
 };
 
 DCpu16 cpu;
+
+termios  ostate; // Old state of stdin
 
 /**
  * Decode paramaters from a o b parameter
@@ -309,9 +315,9 @@ int main (string[] args) {
     foreach ( line; f.byLine()) {
       foreach (word; splitter(strip(line))) {
         cpu.ram[i] = parse!ushort(word, 16);
-        if (ln == 3) writeln();
+        if (ln == 7) writeln();
         writef("%04X ", cpu.ram[i]);
-        ln = i % 4;
+        ln = i % 8;
         i++; 
       }
     }
@@ -320,19 +326,35 @@ int main (string[] args) {
       ubyte[2] word = void;
       f.rawRead(word);
       
-      if (ln == 3) writeln();
+      if (ln == 7) writeln();
       writef("%02X%02X ", word[1], word[0]);
       cpu.ram[i] = cast(ushort) (word[0] | word[1] << 8); // Swap endianes
-      ln = i % 4;
+      ln = i % 8;
     }
   }
   f.close();
   writeln();
+
+  termios  nstate; // New state for stdin
+
+  // Get actual state of stdin and backup
+  tcgetattr(fileno(stdin), &ostate);
+  tcgetattr(fileno(stdin), &nstate);
+  
+  // Set No Echo mode
+  nstate.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN);
+
+  
+  tcsetattr(fileno(stdin), TCSADRAIN, &nstate); // Set Mode
+
+  // Restore old state
+  scope(exit){ tcsetattr(fileno(stdin), TCSADRAIN, &ostate);}       // return to original mode
+  
   // Run
   writeln("Cycles PC   SP   O    A    B    C    X    Y    Z    I    J    Instruction");
   writeln("------ ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -----------");
   for (;;) {
-    getchar();
+    auto c = fgetc(stdin);
     writef("%06u ", cpu.cycles);
     writef("%04X %04X %04X %04X %04X %04X %04X %04X %04X %04X %04X", cpu.pc, cpu.sp, cpu.o, cpu.a, cpu.b, cpu.c, cpu.x, cpu.y, cpu.z, cpu.i, cpu.j);
     run_instruction();
