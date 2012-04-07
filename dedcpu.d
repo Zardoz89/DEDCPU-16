@@ -20,7 +20,6 @@ struct DCpu16 {
   ushort o;
   bool skip_next_instruction;
   ulong cycles = 0;
-
   
   /**
    * Decode paramaters from a o b parameter
@@ -351,6 +350,15 @@ int main (string[] args) {
   writeln("------ ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -----------");
   for (;;) {
     auto c = fgetc(stdin);
+
+    switch (c) {
+        case 'q':
+        case 'Q':
+      return(0);
+        case '\n':
+        default:
+    }
+
     writef("%06u ", cpu.cycles);
     writef("%04X %04X %04X %04X %04X %04X %04X %04X %04X %04X %04X", cpu.pc, cpu.sp, cpu.o, cpu.a, cpu.b, cpu.c, cpu.x, cpu.y, cpu.z, cpu.i, cpu.j);
     cpu.run_instruction();
