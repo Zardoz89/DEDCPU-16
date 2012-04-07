@@ -23,15 +23,11 @@ DCpu16 cpu;
  * Decode paramaters from a o b parameter
  * Params:
  *  paramvalue = 6 bit value of a instruction parameter
- *  *literal = Were to store the literal value
- *  *use_cicles = How many cicles needed to read the paramenter
- * Returns: A pointer to the value (RAM memory, literal, register)
+ *  literal = Were to store the literal value
+ *  use_cicles = How many cicles needed to read the paramenter
+ * Returns: A reference to the value (RAM memory, literal, register)
  */
-ushort* decode_parameter(ubyte paramvalue, ushort* literal, ushort* use_cicles)
-in {
-  assert(literal !is null, "Literal can't be NULL");
-  assert(use_cicles !is null, "use_cicles can't be NULL");
-} body {
+ref ushort decode_parameter(ubyte paramvalue, ref ushort literal, ref ushort use_cicles) {
   switch (paramvalue) {
       case 0x00:
       case 0x01:
@@ -41,7 +37,7 @@ in {
       case 0x05:
       case 0x06:
       case 0x07: // Register x
-    return &cpu.registers[paramvalue];
+    return cpu.registers[paramvalue];
       case 0x08:
       case 0x09:
       case 0x0A:
@@ -50,7 +46,7 @@ in {
       case 0x0D:
       case 0x0E:
       case 0x0F: // Register pointer [x]
-    return &cpu.ram[cpu.registers[paramvalue-0x08]];
+    return cpu.ram[cpu.registers[paramvalue-0x08]];
       case 0x10:
       case 0x11:
       case 0x12:
@@ -59,28 +55,28 @@ in {
       case 0x15:
       case 0x16:
       case 0x17: // Register pointer with added word
-    *use_cicles +=1;
-    return &cpu.ram[cpu.registers[paramvalue- 0x10] + cpu.ram[cpu.pc++]];
+    use_cicles++;
+    return cpu.ram[cpu.registers[paramvalue- 0x10] + cpu.ram[cpu.pc++]];
       case 0x18: // POP
-    return &cpu.ram[cpu.sp++];
+    return cpu.ram[cpu.sp++];
       case 0x19: // PEEK
-    return &cpu.ram[cpu.sp];
+    return cpu.ram[cpu.sp];
       case 0x1A: // PUSH
-    return &cpu.ram[--cpu.sp];
+    return cpu.ram[--cpu.sp];
       case 0x1B: // SP
-    return &cpu.sp;
+    return cpu.sp;
       case 0x1C: // PC
-    return &cpu.pc;
+    return cpu.pc;
       case 0x1D: // Overflow register
-    return &cpu.o;
+    return cpu.o;
       case 0x1E: // next word pointer
-    *use_cicles +=1;
-    return &cpu.ram[cpu.ram[cpu.pc++]];
+    use_cicles++;
+    return cpu.ram[cpu.ram[cpu.pc++]];
       case 0x1F: // word literal
-    *use_cicles +=1;
-    return &cpu.ram[cpu.pc++];
+    use_cicles++;
+    return cpu.ram[cpu.pc++];
       default: // literal
-    *literal = paramvalue - 0x20;
+    literal = paramvalue - 0x20;
     return literal;
   }
 }
@@ -101,7 +97,7 @@ void run_instruction() {
   if (opcode == 0x0) {
     // Non basic instruction - Decode parameter
     ushort param_literal = void;
-    ushort* param_value = decode_parameter(paramb, &param_literal, &use_cicles);
+    ushort* param_value = &decode_parameter(paramb, param_literal, use_cicles);
 
     if (cpu.skip_next_instruction) {
       cpu.skip_next_instruction = false;
@@ -120,15 +116,15 @@ void run_instruction() {
       cpu.cicles += use_cicles;
       break;
         default: // Nothing
-        throw new Exception("Unknow Instruction");
+      throw new Exception("Unknow Instruction");
     }
   } else { // Decode parameters
     // These are here just incase the parameter is a short literal
     ushort parama_literal, paramb_literal;
     
     // It will need a different place to store short literals 
-    ushort* parama_value = decode_parameter(parama, &parama_literal, &use_cicles);
-    ushort* paramb_value = decode_parameter(paramb, &paramb_literal, &use_cicles);
+    ushort* parama_value = &decode_parameter(parama, parama_literal, use_cicles);
+    ushort* paramb_value = &decode_parameter(paramb, paramb_literal, use_cicles);
 
     if (cpu.skip_next_instruction) {
       cpu.skip_next_instruction = false;
