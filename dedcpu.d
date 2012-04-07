@@ -10,13 +10,24 @@ struct DCpu16 {
   ushort sp = 0xFFFF;
   ushort o;
   bool skip_next_instruction;
-  ulong cicles;
+  ulong cicles = 0;
 };
 
 DCpu16 cpu;
 
-ushort* decode_parameter(ubyte paramvalue, ushort* literal) {
-
+/**
+ * Decode paramaters from a o b parameter
+ * Params:
+ *  paramvalue = 6 bit value of a instruction parameter
+ *  *literal = Were to store the literal value
+ *  *use_cicles = How many cicles needed to read the paramenter
+ * Returns: A pointer to the value (RAM memory, literal, register)
+ */
+ushort* decode_parameter(ubyte paramvalue, ushort* literal, ushort* use_cicles)
+in {
+  assert(literal !is null, "Literal can't be NULL");
+  assert(use_cicles !is null, "use_cicles can't be NULL");
+} body {
   switch (paramvalue) {
       case 0x00:
       case 0x01:
@@ -44,6 +55,7 @@ ushort* decode_parameter(ubyte paramvalue, ushort* literal) {
       case 0x15:
       case 0x16:
       case 0x17: // Register pointer with added word
+    *use_cicles +=1;
     return &cpu.ram[cpu.registers[paramvalue- 0x10] + cpu.ram[cpu.pc++]];
       case 0x18: // POP
     return &cpu.ram[cpu.sp++];
@@ -58,8 +70,10 @@ ushort* decode_parameter(ubyte paramvalue, ushort* literal) {
       case 0x1D: // Overflow register
     return &cpu.o;
       case 0x1E: // next word pointer
+    *use_cicles +=1;
     return &cpu.ram[cpu.ram[cpu.pc++]];
       case 0x1F: // word literal
+    *use_cicles +=1;
     return &cpu.ram[cpu.pc++];
       default: // literal
     *literal = paramvalue - 0x20;
@@ -68,6 +82,7 @@ ushort* decode_parameter(ubyte paramvalue, ushort* literal) {
 }
 
 void run_instruction() {
+  ushort use_cicles = 1;
   // Get first word
   ushort first_word = cpu.ram[cpu.pc++];
   // Decode operation
@@ -78,19 +93,22 @@ void run_instruction() {
 
   if (cpu.skip_next_instruction) {
     cpu.skip_next_instruction = false;
+    cpu.cicles += use_cicles;
     return ;
   }
   if (opcode == 0x0) {
     // Non basic instruction - Decode parameter
     ushort param_literal = void;
-    ushort* param_value = decode_parameter(paramb, &param_literal);
+    ushort* param_value = decode_parameter(paramb, &param_literal, &use_cicles);
     // Decode operation
     switch (parama) {
         case 0x01: // JSR
       writeln("JSR");
+      use_cicles++;
       cpu.sp--;
       cpu.ram[cpu.sp] = cpu.pc;
       cpu.pc = *param_value;
+      cpu.cicles += use_cicles;
       break;
         default: // Nothing
         throw new Exception("Unknow Instruction");
@@ -100,24 +118,30 @@ void run_instruction() {
     ushort parama_literal, paramb_literal;
     
     // It will need a different place to store short literals 
-    ushort* parama_value = decode_parameter(parama, &parama_literal);
-    ushort* paramb_value = decode_parameter(paramb, &paramb_literal);
+    ushort* parama_value = decode_parameter(parama, &parama_literal, &use_cicles);
+    ushort* paramb_value = decode_parameter(paramb, &paramb_literal, &use_cicles);
 
     // Decode operation
     switch (opcode) {
         case 0x1: // SET
       writeln("SET");
       *parama_value = *paramb_value;
+      cpu.cicles += use_cicles;
       break;
-      writeln("ADD");
+      
         case 0x2: // ADD
+      writeln("ADD");
+      use_cicles++;
       if (*parama_value + *paramb_value > 0xFFFF) {
         cpu.o = 0x0001;
       }
       *parama_value = *parama_value + *paramb_value & 0xFFFF;
+      cpu.cicles += use_cicles;
       break;
+      
         case 0x3: // SUB
       writeln("SUB");
+      use_cicles++;
       auto val = cast(ushort) (*parama_value - *paramb_value);
       if (val < 0) {
         cpu.o = 0xFFFF;
@@ -125,15 +149,21 @@ void run_instruction() {
       } else {
         *parama_value = val;
       }
+      cpu.cicles += use_cicles;
       break;
+      
         case 0x4: // MUL
       writeln("MUL");
+      use_cicles++;
       uint value = *parama_value * *paramb_value;
       cpu.o = (value >> 16) & 0xFFFF;
       *parama_value = cast(ushort) value ;
+      cpu.cicles += use_cicles;
       break;
+      
         case 0x5: // DIV
       writeln("DIV");
+      use_cicles +=2;
       if (*paramb_value == 0) {
         cpu.o = 0;
         *parama_value = 0;
@@ -142,54 +172,82 @@ void run_instruction() {
         cpu.o = cast(ushort) value;
         *parama_value = cast(ushort)(*parama_value / *paramb_value);
       }
+      cpu.cicles += use_cicles;
       break;
+      
         case 0x6: // MOD
       writeln("MOD");
+      use_cicles +=2;
       if (*paramb_value == 0) {
         *parama_value = 0;
       } else {
         *parama_value = *parama_value % *paramb_value;
       }
+      cpu.cicles += use_cicles;
       break;
+      
         case 0x7: // SHL
       writeln("SHL");
+      use_cicles++;
       uint val = *parama_value << *paramb_value;
       cpu.o = cast(ushort)(val >> 16);
       *parama_value = cast(ushort)val;
+      cpu.cicles += use_cicles;
       break;
+      
         case 0x8: // SHR
       writeln("SHR");
+      use_cicles++;
       uint val = (*parama_value << 16) >> *paramb_value;
       cpu.o = val & 0xFFFF;
       *parama_value = *parama_value >> *paramb_value;
+      cpu.cicles += use_cicles;
       break;
+      
         case 0x9: // AND
       writeln("AND");
       *parama_value = *parama_value & *paramb_value;
+      cpu.cicles += use_cicles;
       break;
+      
         case 0xA: // bOR
       writeln("BOR");
       *parama_value = *parama_value | *paramb_value;
+      cpu.cicles += use_cicles;
       break;
+      
         case 0xB: // XOR
       writeln("XOR");
       *parama_value = *parama_value ^ *paramb_value;
+      cpu.cicles += use_cicles;
       break;
+      
         case 0xC: // IFEqual
       writeln("IFE");
+      use_cicles++;
       cpu.skip_next_instruction = *parama_value != *paramb_value;
+      cpu.cicles += use_cicles;
       break;
+      
         case 0xD: // IFNot equal
       writeln("IFN");
+      use_cicles++;
       cpu.skip_next_instruction = *parama_value == *paramb_value;
+      cpu.cicles += use_cicles;
       break;
+      
         case 0xE: // IFGreat
       writeln("IFG");
+      use_cicles++;
       cpu.skip_next_instruction = *parama_value <= *paramb_value;
+      cpu.cicles += use_cicles;
       break;
-        default: // 0xF IFB
+      
+        default: // 0xF IFBits set
       writeln("IFB");
+      use_cicles++;
       cpu.skip_next_instruction = (*parama_value & *paramb_value) == 0;
+      cpu.cicles += use_cicles;
     }
   }
 }
@@ -222,11 +280,12 @@ int main (string[] args) {
   f.close();
   
   // Run
-  writeln("PC   SP   O    A    B    C    X    Y    Z    I    J    Instruction");
-  writeln("---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -----------");
+  writeln("Cicles PC   SP   O    A    B    C    X    Y    Z    I    J    Instruction");
+  writeln("------ ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -----------");
   for (;;) {
     stdin.readln();
- writef("%04X %04X %04X %04X %04X %04X %04X %04X %04X %04X %04X", cpu.pc, cpu.sp, cpu.o, cpu.a, cpu.b, cpu.c, cpu.x, cpu.y, cpu.z, cpu.i, cpu.j);
+    writef("%06u ", cpu.cicles);
+    writef("%04X %04X %04X %04X %04X %04X %04X %04X %04X %04X %04X", cpu.pc, cpu.sp, cpu.o, cpu.a, cpu.b, cpu.c, cpu.x, cpu.y, cpu.z, cpu.i, cpu.j);
     run_instruction();
   }
   return 0;
