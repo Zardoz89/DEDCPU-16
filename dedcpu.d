@@ -345,16 +345,21 @@ int main (string[] args) {
 
     switch (c) {
         case 'q':
-        case 'Q':
+        case 'Q': // Quit
       return(0);
+        case 's':
+        case 'S':
         case '\n':
+      writef("%06u ", cpu.cycles);
+      writef("%04X %04X %04X %04X %04X %04X %04X %04X %04X %04X %04X", cpu.pc,
+              cpu.sp, cpu.o, cpu.a, cpu.b, cpu.c, cpu.x, cpu.y, cpu.z, cpu.i, cpu.j);
+      cpu.run_instruction();
+      writeln();
+      break;
         default:
     }
 
-    writef("%06u ", cpu.cycles);
-    writef("%04X %04X %04X %04X %04X %04X %04X %04X %04X %04X %04X", cpu.pc, cpu.sp, cpu.o, cpu.a, cpu.b, cpu.c, cpu.x, cpu.y, cpu.z, cpu.i, cpu.j);
-    cpu.run_instruction();
-    writeln();
+    
   }
   return 0;
 }
