@@ -1,5 +1,6 @@
 import std.stdio, std.array, std.string, std.conv, std.getopt;
-import std.c.stdlib;
+import std.c.stdlib, std.c.stdio;
+import std.c.linux.termios;
 
 /**
  * CPU representation
@@ -14,7 +15,7 @@ struct DCpu16 {
   ushort sp = 0;
   ushort o;
   bool skip_next_instruction;
-  ulong cicles = 0;
+  ulong cycles = 0;
 };
 
 DCpu16 cpu;
@@ -24,10 +25,10 @@ DCpu16 cpu;
  * Params:
  *  paramvalue = 6 bit value of a instruction parameter
  *  literal = Were to store the literal value
- *  use_cicles = How many cicles needed to read the paramenter
+ *  use_cycles = How many cycles needed to read the paramenter
  * Returns: A reference to the value (RAM memory, literal, register)
  */
-ref ushort decode_parameter(ubyte paramvalue, ref ushort literal, ref ushort use_cicles) {
+ref ushort decode_parameter(ubyte paramvalue, ref ushort literal, ref ushort use_cycles) {
   switch (paramvalue) {
       case 0x00:
       case 0x01:
@@ -55,7 +56,7 @@ ref ushort decode_parameter(ubyte paramvalue, ref ushort literal, ref ushort use
       case 0x15:
       case 0x16:
       case 0x17: // Register pointer with added word
-    use_cicles++;
+    use_cycles++;
     return cpu.ram[cpu.registers[paramvalue- 0x10] + cpu.ram[cpu.pc++]];
       case 0x18: // POP
     return cpu.ram[cpu.sp++];
@@ -70,10 +71,10 @@ ref ushort decode_parameter(ubyte paramvalue, ref ushort literal, ref ushort use
       case 0x1D: // Overflow register
     return cpu.o;
       case 0x1E: // next word pointer
-    use_cicles++;
+    use_cycles++;
     return cpu.ram[cpu.ram[cpu.pc++]];
       case 0x1F: // word literal
-    use_cicles++;
+    use_cycles++;
     return cpu.ram[cpu.pc++];
       default: // literal
     literal = paramvalue - 0x20;
@@ -85,7 +86,7 @@ ref ushort decode_parameter(ubyte paramvalue, ref ushort literal, ref ushort use
  * Runs a instruction
  */
 void run_instruction() {
-  ushort use_cicles = 1;
+  ushort use_cycles = 1;
   // Get first word
   ushort first_word = cpu.ram[cpu.pc++];
   // Decode operation
@@ -97,23 +98,23 @@ void run_instruction() {
   if (opcode == 0x0) {
     // Non basic instruction - Decode parameter
     ushort param_literal = void;
-    ushort* param_value = &decode_parameter(paramb, param_literal, use_cicles);
+    ushort* param_value = &decode_parameter(paramb, param_literal, use_cycles);
 
     if (cpu.skip_next_instruction) {
       cpu.skip_next_instruction = false;
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       return ;
     }
     
     // Decode operation
     switch (parama) {
         case 0x01: // JSR
-      writeln("JSR");
-      use_cicles++;
+      write("JSR");
+      use_cycles++;
       cpu.sp--;
       cpu.ram[cpu.sp] = cpu.pc;
       cpu.pc = *param_value;
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       break;
         default: // Nothing
       throw new Exception("Unknow Instruction");
@@ -123,36 +124,36 @@ void run_instruction() {
     ushort parama_literal, paramb_literal;
     
     // It will need a different place to store short literals 
-    ushort* parama_value = &decode_parameter(parama, parama_literal, use_cicles);
-    ushort* paramb_value = &decode_parameter(paramb, paramb_literal, use_cicles);
+    ushort* parama_value = &decode_parameter(parama, parama_literal, use_cycles);
+    ushort* paramb_value = &decode_parameter(paramb, paramb_literal, use_cycles);
 
     if (cpu.skip_next_instruction) {
       cpu.skip_next_instruction = false;
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       return ;
     }
     
     // Decode operation
     switch (opcode) {
         case 0x1: // SET
-      writeln("SET");
+      write("SET");
       *parama_value = *paramb_value;
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       break;
       
         case 0x2: // ADD
-      writeln("ADD");
-      use_cicles++;
+      write("ADD");
+      use_cycles++;
       if (*parama_value + *paramb_value > 0xFFFF) {
         cpu.o = 0x0001;
       }
       *parama_value = *parama_value + *paramb_value & 0xFFFF;
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       break;
       
         case 0x3: // SUB
-      writeln("SUB");
-      use_cicles++;
+      write("SUB");
+      use_cycles++;
       auto val = cast(ushort) (*parama_value - *paramb_value);
       if (val < 0) {
         cpu.o = 0xFFFF;
@@ -160,21 +161,21 @@ void run_instruction() {
       } else {
         *parama_value = val;
       }
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       break;
       
         case 0x4: // MUL
-      writeln("MUL");
-      use_cicles++;
+      write("MUL");
+      use_cycles++;
       uint value = *parama_value * *paramb_value;
       cpu.o = (value >> 16) & 0xFFFF;
       *parama_value = cast(ushort) value ;
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       break;
       
         case 0x5: // DIV
-      writeln("DIV");
-      use_cicles +=2;
+      write("DIV");
+      use_cycles +=2;
       if (*paramb_value == 0) {
         cpu.o = 0;
         *parama_value = 0;
@@ -183,82 +184,82 @@ void run_instruction() {
         cpu.o = cast(ushort) value;
         *parama_value = cast(ushort)(*parama_value / *paramb_value);
       }
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       break;
       
         case 0x6: // MOD
-      writeln("MOD");
-      use_cicles +=2;
+      write("MOD");
+      use_cycles +=2;
       if (*paramb_value == 0) {
         *parama_value = 0;
       } else {
         *parama_value = *parama_value % *paramb_value;
       }
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       break;
       
         case 0x7: // SHL
-      writeln("SHL");
-      use_cicles++;
+      write("SHL");
+      use_cycles++;
       uint val = *parama_value << *paramb_value;
       cpu.o = cast(ushort)(val >> 16);
       *parama_value = cast(ushort)val;
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       break;
       
         case 0x8: // SHR
-      writeln("SHR");
-      use_cicles++;
+      write("SHR");
+      use_cycles++;
       uint val = (*parama_value << 16) >> *paramb_value;
       cpu.o = val & 0xFFFF;
       *parama_value = *parama_value >> *paramb_value;
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       break;
       
         case 0x9: // AND
-      writeln("AND");
+      write("AND");
       *parama_value = *parama_value & *paramb_value;
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       break;
       
         case 0xA: // bOR
-      writeln("BOR");
+      write("BOR");
       *parama_value = *parama_value | *paramb_value;
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       break;
       
         case 0xB: // XOR
-      writeln("XOR");
+      write("XOR");
       *parama_value = *parama_value ^ *paramb_value;
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       break;
       
         case 0xC: // IFEqual
-      writeln("IFE");
-      use_cicles++;
+      write("IFE");
+      use_cycles++;
       cpu.skip_next_instruction = *parama_value != *paramb_value;
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       break;
       
         case 0xD: // IFNot equal
-      writeln("IFN");
-      use_cicles++;
+      write("IFN");
+      use_cycles++;
       cpu.skip_next_instruction = *parama_value == *paramb_value;
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       break;
       
         case 0xE: // IFGreat
-      writeln("IFG");
-      use_cicles++;
+      write("IFG");
+      use_cycles++;
       cpu.skip_next_instruction = *parama_value <= *paramb_value;
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
       break;
       
         default: // 0xF IFBits set
-      writeln("IFB");
-      use_cicles++;
+      write("IFB");
+      use_cycles++;
       cpu.skip_next_instruction = (*parama_value & *paramb_value) == 0;
-      cpu.cicles += use_cicles;
+      cpu.cycles += use_cycles;
     }
   }
 }
@@ -331,10 +332,11 @@ int main (string[] args) {
   writeln("Cycles PC   SP   O    A    B    C    X    Y    Z    I    J    Instruction");
   writeln("------ ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -----------");
   for (;;) {
-    stdin.readln();
-    writef("%06u ", cpu.cicles);
+    getchar();
+    writef("%06u ", cpu.cycles);
     writef("%04X %04X %04X %04X %04X %04X %04X %04X %04X %04X %04X", cpu.pc, cpu.sp, cpu.o, cpu.a, cpu.b, cpu.c, cpu.x, cpu.y, cpu.z, cpu.i, cpu.j);
     run_instruction();
+    writeln();
   }
   return 0;
 }
