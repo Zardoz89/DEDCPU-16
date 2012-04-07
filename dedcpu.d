@@ -95,7 +95,6 @@ struct DCpu16 {
     ubyte opcode = first_word & 0xF;
     ubyte parama = (first_word >> 4) & 0x3F;
     ubyte paramb = (first_word >> 10) & 0x3F;
-    writef(" (%04X) ", first_word);
 
     if (opcode == 0x0) {
       // Non basic instruction - Decode parameter
@@ -273,7 +272,7 @@ struct DCpu16 {
    *  end = Where the dump ends
    * Returns: A string representation of a valid range of RAM
    */
-  string dumpram(ushort begin, ushort end)
+  string dump_ram(ushort begin, ushort end)
   in {
     assert(begin <= end, "Invalid RAM range");
   } body {
@@ -293,6 +292,30 @@ struct DCpu16 {
       r ~= writer.data;
     }
 
+    return r;
+  }
+
+  /**
+   * Generate a string representation registers status and number of cpu cycles
+   * Returns: String representation registers status and number of cpu cycles
+   */
+  @property string show_state() {
+    string r;
+    auto writer = appender!string();
+    formattedWrite(writer, "%06u %04X %04X %04X %04X %04X %04X %04X %04X %04X %04X %04X",
+     cycles, pc, sp, o, a, b, c, x, y, z, i, j);
+    r ~= writer.data;
+    return r;
+  }
+
+  /**
+   * Generate a string Hex representation of the actual instruction that PC points
+   */
+  @property string actual_instruction() {
+    string r;
+    auto writer = appender!string();
+    formattedWrite(writer,"[%04X]", ram[pc]);
+    r ~= writer.data;
     return r;
   }
 };
@@ -406,24 +429,20 @@ int main (string[] args) {
 
           if (begin > end)
             continue;
-          writeln(cpu.dumpram(begin, end));          
+          writeln(cpu.dump_ram(begin, end));
           continue;
         }
           case 's':
           case 'S':
           case '\n':
-        writef("%06u ", cpu.cycles);
-        writef("%04X %04X %04X %04X %04X %04X %04X %04X %04X %04X %04X", cpu.pc,
-                cpu.sp, cpu.o, cpu.a, cpu.b, cpu.c, cpu.x, cpu.y, cpu.z, cpu.i, cpu.j);
+        write(cpu.show_state, " ", cpu.actual_instruction, " ");
         cpu.run_instruction();
         writeln();
         break;
           default:
       }
     } else if (count < stop) {
-      writef("%06u ", cpu.cycles);
-      writef("%04X %04X %04X %04X %04X %04X %04X %04X %04X %04X %04X", cpu.pc,
-              cpu.sp, cpu.o, cpu.a, cpu.b, cpu.c, cpu.x, cpu.y, cpu.z, cpu.i, cpu.j);
+      write(cpu.show_state, " ", cpu.actual_instruction, " ");
       cpu.run_instruction();
       writeln();
     } else {
