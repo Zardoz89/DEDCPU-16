@@ -10,12 +10,14 @@ https://github.com/swetland/dcpu16
 Usage:
 ./dedcpu -ifilename [-b]
 Parameters:
-        -i --i --input : Input file with the machine code
-        -b : Use binary little-endian format of interfect dcpu-emu. By default the emulator read textual files in big-endian made by swetland dcpu-16 assembler
+  -i --i --input : Input file with the machine code
+  -b : Use binary little-endian format of interfect dcpu-emu. By default the emulator read textual files in big-endian made by swetland dcpu-16 assembler
 
-Each time that the user press Enter key, the emulator executes a instruction.
+Each time that the user press any key, the emulator executes a instruction.
+Except for:
+  q or Q -> End emualtion
+
 In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.
-To end the emulator do Ctrl+C
 
 Based over DCPU-16 C Emulator of Karl Hobley <turbodog10(at)yahoo.co.uk>
 

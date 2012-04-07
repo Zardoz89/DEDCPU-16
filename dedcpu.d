@@ -273,15 +273,7 @@ int main (string[] args) {
   bool binary_fmt = false; // Use binary or textual format
 
  void showHelp() {
-    writeln("Usage:");
-    writeln("./dedcpu -ifilename [-b]");
-    writeln("Parameters:");
-    writeln("\t-i --i --input : Input file with the machine code");
-    writeln("\t-b : Use binary little-endian format of interfect dcpu-emu . By default the emulator read textual files in big-endian made by swetland dcpu-16 assembler");
-    writeln();
-    writeln("Each time that the user press Enter key, the emulator executes a instruction.");
-    writeln("In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.");
-    writeln("To end the emulator do Ctrl+C");
+    writeln(import("help.txt"));
     exit(0);
  }
   
