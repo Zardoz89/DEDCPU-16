@@ -274,12 +274,12 @@ int main (string[] args) {
 
  void showHelp() {
     writeln("Usage:");
-    writeln("dedcpu -ifilename [-b]");
+    writeln("./dedcpu -ifilename [-b]");
     writeln("Parameters:");
     writeln("\t-i --i --input : Input file with the machine code");
     writeln("\t-b : Use binary little-endian format of interfect dcpu-emu . By default the emulator read textual files in big-endian made by swetland dcpu-16 assembler");
     writeln();
-    writeln("Each time that the user press any key, the emulator executes a instruction.");
+    writeln("Each time that the user press Enter key, the emulator executes a instruction.");
     writeln("In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.");
     writeln("To end the emulator do Ctrl+C");
     exit(0);
@@ -307,25 +307,30 @@ int main (string[] args) {
   }
 
   // Read words into RAM
-  ushort i;
+  ushort i, ln;
   if (!binary_fmt) { // Textual files from swetland dcpu-16 assembler
     foreach ( line; f.byLine()) {
       foreach (word; splitter(strip(line))) {
         cpu.ram[i] = parse!ushort(word, 16);
-        writefln("%04X", word);
-        i++;
+        if (ln == 3) writeln();
+        writef("%04X ", cpu.ram[i]);
+        ln = i % 4;
+        i++; 
       }
     }
   } else { // Binary file from DCPU-EMU little-endian format    
     for (;i < 0x10000 && !f.eof; i++) {
       ubyte[2] word = void;
       f.rawRead(word);
-      writefln("%02X%02X", word[1], word[0]);
+      
+      if (ln == 3) writeln();
+      writef("%02X%02X ", word[1], word[0]);
       cpu.ram[i] = cast(ushort) (word[0] | word[1] << 8); // Swap endianes
+      ln = i % 4;
     }
   }
   f.close();
-  
+  writeln();
   // Run
   writeln("Cicles PC   SP   O    A    B    C    X    Y    Z    I    J    Instruction");
   writeln("------ ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- -----------");
