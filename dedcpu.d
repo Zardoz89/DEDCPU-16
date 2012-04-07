@@ -1,4 +1,5 @@
 import std.stdio, std.array, std.string, std.conv, std.getopt;
+import std.c.stdlib;
 
 /**
  * CPU representation
@@ -84,6 +85,9 @@ in {
   }
 }
 
+/**
+ * Runs a instruction
+ */
 void run_instruction() {
   ushort use_cicles = 1;
   // Get first word
@@ -273,10 +277,12 @@ int main (string[] args) {
     writeln("dedcpu -ifilename [-b]");
     writeln("Parameters:");
     writeln("\t-i --i --input : Input file with the machine code");
-    writeln("\t-b : Use binary little-endian format. By default the emulator read textual files in big-endian amde by swetland dcpu-16 assembler");
+    writeln("\t-b : Use binary little-endian format of interfect dcpu-emu . By default the emulator read textual files in big-endian made by swetland dcpu-16 assembler");
     writeln();
-    writeln("Each time that the user press any key, the emulator executes a instruction");
-    writeln("To end the emulator do Ctrl+C");    
+    writeln("Each time that the user press any key, the emulator executes a instruction.");
+    writeln("In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.")
+    writeln("To end the emulator do Ctrl+C");
+    exit(0);
  }
   
   // Process arguements
