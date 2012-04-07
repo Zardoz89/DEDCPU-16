@@ -1,5 +1,8 @@
-import std.stdio, std.array, std.string, std.conv;
+import std.stdio, std.array, std.string, std.conv, std.getopt;
 
+/**
+ * CPU representation
+ */
 struct DCpu16 {
   ushort ram[0x10000];
   union {
@@ -254,27 +257,58 @@ void run_instruction() {
 
 
 int main (string[] args) {
+  string filename;
+  bool binary_fmt = false; // Use binary or textual format
+
+ void showHelp() {
+    writeln("Usage:");
+    writeln("dedcpu -ifilename [-b]");
+    writeln("Parameters:");
+    writeln("\t-i --i --input : Input file with the machine code");
+    writeln("\t-b : Use binary little-endian format. By default the emulator read textual files in big-endian amde by swetland dcpu-16 assembler");
+    writeln();
+    writeln("Each time that the user press any key, the emulator executes a instruction");
+    writeln("To end the emulator do Ctrl+C");    
+ }
+  
   // Process arguements
-  if (args.length > 2 || args.length < 2) {
-    writefln("useage: %s input", args[0]);
+  getopt(
+    args,
+    "input|i", &filename,
+    "b", &binary_fmt,
+    "h", &showHelp);
+    
+  if (filename.length == 0) {
+    writeln("Missing input file\n Use dedcpu -ifilename");
     return 0;
   }
 
   // Open input file
   File f;
   try {
-    f = File(args[1], "r");
+    f = File(filename, "r");
   } catch (Exception e) {
-    writeln("failed to open input file");
+    writeln("Failed to open input file ", filename);
     return 0;
   }
 
   // Read words into RAM
   ushort i;
-  foreach ( line; f.byLine()) {
-    foreach (word; splitter(strip(line))) {
-      cpu.ram[i] = parse!ushort(word, 16);
-      i++;
+  if (!binary_fmt) { // Textual files from swetland dcpu-16 assembler
+    foreach ( line; f.byLine()) {
+      foreach (word; splitter(strip(line))) {
+        cpu.ram[i] = parse!ushort(word, 16);
+        i++;
+      }
+    }
+  } else { // Binary file from DCPU-EMU little-endian format    
+    for (;i < 0x10000 && !f.eof; i++) {
+      ubyte[1] r = void;
+      ubyte tmp = void;
+      f.rawRead(r);
+      // Swap endianes
+      tmp = (r[0] >> 4) | (r[0] & 0b00001111) << 4;
+      cpu.ram[i] = tmp;
     }
   }
   f.close();
