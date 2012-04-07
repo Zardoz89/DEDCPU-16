@@ -4,15 +4,24 @@ See: http://0x10c.com/doc/dcpu-16.txt
 
 Why: Why not ?
 
-This emulator run at steps. Each time that you press "enter" key, the emulator run a instruction.
-In branch instructions, the emulator will read the next instruction but will no execute it the condition fails.
-
-The hex file was made with swetland dcpu-16 assembler
+The text hex file was made with swetland dcpu-16 assembler
 https://github.com/swetland/dcpu16
+
+Usage:
+dedcpu -ifilename [-b]
+Parameters:
+        -i --i --input : Input file with the machine code
+        -b : Use binary little-endian format of interfect dcpu-emu. By default the emulator read textual files in big-endian made by swetland dcpu-16 assembler
+
+Each time that the user press any key, the emulator executes a instruction.
+In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.
+To end the emulator do Ctrl+C
+
+Based over DCPU-16 C Emulator of Karl Hobley <turbodog10(at)yahoo.co.uk>
 
 This project is licensed under the BSD license.
 
-Copyright (c) 2012, luis.panadero(at)gmail.com
+Copyright (c) 2012, Luis Panadero Guardeño
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -22,10 +31,7 @@ modification, are permitted provided that the following conditions are met:
 2. Redistributions in binary form must reproduce the above copyright
    notice, this list of conditions and the following disclaimer in the
    documentation and/or other materials provided with the distribution.
-3. All advertising materials mentioning features or use of this software
-   must display the following acknowledgement:
-   This product includes software developed by luis.panadero(at)gmail.com.
-4. The names of its contributors may not be used to endorse or promote 
+3. The names of its contributors may not be used to endorse or promote
    products derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY <COPYRIGHT HOLDER> ''AS IS'' AND ANY
