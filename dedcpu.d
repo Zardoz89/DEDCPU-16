@@ -72,35 +72,35 @@ private :
       
         case 0x10:
       auto writer = appender!string();
-      formattedWrite(writer, " [A+ %04X]", ram[pc+1]);
+      formattedWrite(writer, " [A+ %04X]", ram[pc]);
       use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
         case 0x11:
       auto writer = appender!string();
-      formattedWrite(writer, " [b+ %04X]", ram[pc+1]);
+      formattedWrite(writer, " [b+ %04X]", ram[pc]);
       use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
         case 0x12:
       auto writer = appender!string();
-      formattedWrite(writer, " [C+ %04X]", ram[pc+1]);
+      formattedWrite(writer, " [C+ %04X]", ram[pc]);
       use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
         case 0x13:
       auto writer = appender!string();
-      formattedWrite(writer, " [X+ %04X]", ram[pc+1]);
+      formattedWrite(writer, " [X+ %04X]", ram[pc]);
       use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
         case 0x14:
       auto writer = appender!string();
-      formattedWrite(writer, " [Y+ %04X]", ram[pc+1]);
+      formattedWrite(writer, " [Y+ %04X]", ram[pc]);
       use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
         case 0x15:
       auto writer = appender!string();
-      formattedWrite(writer, " [Z+ %04X]", ram[pc+1]);
+      formattedWrite(writer, " [Z+ %04X]", ram[pc]);
       use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
         case 0x16:
       auto writer = appender!string();
-      formattedWrite(writer, " [I+ %04X]", ram[pc+1]);
+      formattedWrite(writer, " [I+ %04X]", ram[pc]);
       use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
         case 0x17: // Register pointer with added word
       auto writer = appender!string();
-      formattedWrite(writer, " [J+ %04X]", ram[pc+1]);
+      formattedWrite(writer, " [J+ %04X]", ram[pc]);
       diassembled_inst ~= writer.data;
       use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
       
@@ -128,14 +128,14 @@ private :
       
         case 0x1E: // next word pointer
       auto writer = appender!string();
-      formattedWrite(writer, " [%04X]", ram[pc+1]);
+      formattedWrite(writer, " [%04X]", ram[pc]);
       diassembled_inst ~= writer.data;
       use_cycles++;
       return ram[ram[pc++]];
       
         case 0x1F: // word literal
-      auto writer = appender!string();
-      formattedWrite(writer, " %04X", ram[pc+1]);
+      auto writer = appender!string();      
+      formattedWrite(writer, " %04X", ram[pc]);
       diassembled_inst ~= writer.data;
       use_cycles++;
       return ram[pc++];
@@ -143,7 +143,7 @@ private :
         default: // literal
       literal = paramvalue - 0x20;
       auto writer = appender!string();
-      formattedWrite(writer, " [%04X]", literal);
+      formattedWrite(writer, " %04X", literal);
       diassembled_inst ~= writer.data;
       return literal;
     }
