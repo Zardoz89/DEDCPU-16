@@ -528,15 +528,25 @@ int main (string[] args) {
           case '\n':
 
         write(cpu.show_state, " ", cpu.actual_instruction, " ");
-        cpu.run_instruction();
-        writeln(cpu.diassembled);
+        try {
+          cpu.run_instruction();
+          writeln(cpu.diassembled);
+        } catch (Exception e) {
+          writeln(e.toString);
+        }
+        
         break;
           default:
       }
     } else if (stop == 0 || count < stop) {
       write(cpu.show_state, " ", cpu.actual_instruction, " ");
-      cpu.run_instruction();
-      writeln(cpu.diassembled);
+      try {
+        cpu.run_instruction();
+        writeln(cpu.diassembled);
+      } catch (Exception e) {
+        writeln(e.msg);
+        step = true; // Go to interactive mode to allow memory dumps
+      }
     } else {
       step = true;
     }
