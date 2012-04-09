@@ -1,6 +1,6 @@
 import std.stdio, std.array, std.string, std.conv, std.getopt, std.format;
 import std.c.stdlib, std.c.stdio;
-alias std.stdio.stdin dstdin;
+import core.thread;
 
 import core.sys.posix.termios;
 import core.sys.posix.unistd;
@@ -9,8 +9,12 @@ alias core.stdc.stdio.stdin stdin;
 
 /**
  * CPU representation
+ * Params:
+ *  f = CPU Frequency
  */
-struct DCpu16 {
+struct DCpu16(double f) {
+  enum double Frequency = f; /// In Herts
+  enum long Period = cast(long) (1000000.0 / Frequency); /// In microseconds
   ushort ram[0x10000];
   
 private :
@@ -18,14 +22,30 @@ private :
     struct {ushort a, b, c, x, y, z, i, j;}
     ushort[8] registers;
   }
-  ushort pc;
+  ushort _pc;
   ushort sp = 0;
   ushort o;
   bool skip_next_instruction; 
   ulong cycles = 0;
 
   string diassembled_inst; // Instruction in string representation
-  
+
+  /**
+   * Do PC++
+   */
+  @property ushort PC_plus() {
+    Thread.sleep( dur!"msecs"( Period ) );
+    return _pc++;
+  }
+
+  /**
+   * Do ++PC
+   */
+  @property ushort plus_PC() {
+    Thread.sleep( dur!"msecs"( Period ) );
+    return ++_pc;
+  }
+
   /**
    * Decode paramaters from a o b parameter
    * Params:
@@ -72,37 +92,37 @@ private :
       
         case 0x10:
       auto writer = appender!string();
-      formattedWrite(writer, " [A+ %04X]", ram[pc]);
-      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
+      formattedWrite(writer, " [A+ %04X]", ram[_pc]);
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[PC_plus]];
         case 0x11:
       auto writer = appender!string();
-      formattedWrite(writer, " [b+ %04X]", ram[pc]);
-      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
+      formattedWrite(writer, " [b+ %04X]", ram[_pc]);
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[PC_plus]];
         case 0x12:
       auto writer = appender!string();
-      formattedWrite(writer, " [C+ %04X]", ram[pc]);
-      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
+      formattedWrite(writer, " [C+ %04X]", ram[_pc]);
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[PC_plus]];
         case 0x13:
       auto writer = appender!string();
-      formattedWrite(writer, " [X+ %04X]", ram[pc]);
-      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
+      formattedWrite(writer, " [X+ %04X]", ram[_pc]);
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[PC_plus]];
         case 0x14:
       auto writer = appender!string();
-      formattedWrite(writer, " [Y+ %04X]", ram[pc]);
-      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
+      formattedWrite(writer, " [Y+ %04X]", ram[_pc]);
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[PC_plus]];
         case 0x15:
       auto writer = appender!string();
-      formattedWrite(writer, " [Z+ %04X]", ram[pc]);
-      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
+      formattedWrite(writer, " [Z+ %04X]", ram[_pc]);
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[PC_plus]];
         case 0x16:
       auto writer = appender!string();
-      formattedWrite(writer, " [I+ %04X]", ram[pc]);
-      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
+      formattedWrite(writer, " [I+ %04X]", ram[_pc]);
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[PC_plus]];
         case 0x17: // Register pointer with added word
       auto writer = appender!string();
-      formattedWrite(writer, " [J+ %04X]", ram[pc]);
+      formattedWrite(writer, " [J+ %04X]", ram[_pc]);
       diassembled_inst ~= writer.data;
-      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[pc++]];
+      use_cycles++; return ram[registers[paramvalue- 0x10] + ram[PC_plus]];
       
         case 0x18: // POP
       diassembled_inst ~= " POP";
@@ -120,7 +140,7 @@ private :
       
         case 0x1C: // PC
       diassembled_inst ~= " PC";
-      return pc;
+      return _pc;
       
         case 0x1D: // Overflow register
       diassembled_inst ~= " O";
@@ -128,17 +148,17 @@ private :
       
         case 0x1E: // next word pointer
       auto writer = appender!string();
-      formattedWrite(writer, " [%04X]", ram[pc]);
+      formattedWrite(writer, " [%04X]", ram[_pc]);
       diassembled_inst ~= writer.data;
       use_cycles++;
-      return ram[ram[pc++]];
+      return ram[ram[PC_plus]];
       
         case 0x1F: // word literal
       auto writer = appender!string();      
-      formattedWrite(writer, " %04X", ram[pc]);
+      formattedWrite(writer, " %04X", ram[_pc]);
       diassembled_inst ~= writer.data;
       use_cycles++;
-      return ram[pc++];
+      return ram[PC_plus];
       
         default: // literal
       literal = paramvalue - 0x20;
@@ -156,15 +176,15 @@ public:
   void run_instruction() {
     ushort use_cycles = 1;
     // Get first word
-    ushort first_word = ram[pc++];
+    ushort first_word = ram[PC_plus];
     // Decode operation
-    ubyte opcode = first_word & 0xF;
+    ubyte o_pcode = first_word & 0xF;
     ubyte parama = (first_word >> 4) & 0x3F;
     ubyte paramb = (first_word >> 10) & 0x3F;
 
     diassembled_inst = "";
     
-    if (opcode == 0x0) { // Non basic instruction
+    if (o_pcode == 0x0) { // Non basic instruction
       if (skip_next_instruction) {
         skip_next_instruction = false;
         cycles += use_cycles;
@@ -180,8 +200,8 @@ public:
         diassembled_inst = "JSR"  ~ diassembled_inst;
         use_cycles++;
         sp--;
-        ram[sp] = pc;
-        pc = *param_value;
+        ram[sp] = _pc;
+        _pc = *param_value;
         cycles += use_cycles;
         break;
           default: // Nothing
@@ -199,7 +219,7 @@ public:
       ushort* paramb_value = &decode_parameter(paramb, paramb_literal, use_cycles);
 
       // Decode operation
-      switch (opcode) {
+      switch (o_pcode) {
           case 0x1: // SET
         diassembled_inst = "SET" ~ diassembled_inst;
         *parama_value = *paramb_value;
@@ -367,7 +387,7 @@ public:
     string r;
     auto writer = appender!string();
     formattedWrite(writer, "%06u %04X %04X %04X %04X %04X %04X %04X %04X %04X %04X %04X",
-     cycles, pc, sp, o, a, b, c, x, y, z, i, j);
+     cycles, _pc, sp, o, a, b, c, x, y, z, i, j);
     r ~= writer.data;
     return r;
   }
@@ -378,7 +398,7 @@ public:
   @property string actual_instruction() {
     string r;
     auto writer = appender!string();
-    formattedWrite(writer,"[%04X]", ram[pc]);
+    formattedWrite(writer,"[%04X]", ram[_pc]);
     r ~= writer.data;
     return r;
   }
@@ -414,7 +434,7 @@ int main (string[] args) {
     return 0;
   }
 
-  DCpu16 cpu;
+  DCpu16!100000.0 cpu; // CPU @ 100Khz
   // Open input file
   File f;
   try {
