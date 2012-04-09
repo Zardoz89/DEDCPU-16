@@ -533,7 +533,7 @@ int main (string[] args) {
         break;
           default:
       }
-    } else if (count < stop) {
+    } else if (stop == 0 || count < stop) {
       write(cpu.show_state, " ", cpu.actual_instruction, " ");
       cpu.run_instruction();
       writeln(cpu.diassembled);

@@ -7,7 +7,7 @@ Parameters:
 Commands:
   q or Q              -> End emulation
   s or S or Enter key -> Step one instruction
-  r or R number       -> Runs number instructions without stop
+  r or R number       -> Runs number instructions without stop. 0 for running forever (Ctrl+C to abort)
   m or M begin-end    -> Dumps from begin to end address of RAM (address in hex)
   v or V              -> Show header
 
