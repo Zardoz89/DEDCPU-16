@@ -10,11 +10,11 @@ The test.ascii file was made with swetland dcpu-16 assembler
 <https://github.com/swetland/dcpu16>
 
 The notch.bin file was made with interfect dcpu-emu assembler
->https://bitbucket.org/interfect/dcpu-emu>
+<https://bitbucket.org/interfect/dcpu-emu>
 
 ## Usage: ##
-  ./dedcpu -ifilename [-ttype]
-Parameters:
+    ./dedcpu -ifilename [-ttype]
+##Parameters:##
 * __-i --i --input__ *file* : Input file with memmory map
 * __-t --t --type__ *lraw|braw|ahex* : Type of file with memory map. lraw -> little endian raw binary ; braw -> big endian raw binary ; ahex -> ascii hexadecimal file
 
@@ -27,7 +27,7 @@ Parameters:
 
 In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.
 
-NOTE: video_test.bin writes in video ram (0x8000) forever. It test video ram and cooperative multitasking. This program is know that not runs in some emulators.
+__NOTE__: video_test.bin writes in video ram (0x8000) forever. It test video ram and cooperative multitasking. This program is know that not runs in some emulators.
 
 Based over DCPU-16 C Emulator of Karl Hobley <turbodog10(at)yahoo.co.uk>
 
