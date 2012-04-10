@@ -1,7 +1,0 @@
-If you have Ubuntu 12.xx You can install gdc (for language version 2) and simply do:
-gdmd dedcpu.d -J.
-
-If have a more older version of Ubuntu, or you are using other distribution or other SO, use the 
-official D compiler at http://dlang.org/download.html
-and run in console:
-dmd dedcpu.d -J.
