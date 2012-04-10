@@ -1,5 +1,5 @@
 A D based minimal emulator for Notch's DCPU-16 v1.1, written for the fun of it.
-DEDCPU-16 aims to be a acurrated and wuick emulator working of CLI and capable of working like a emulation/debugger backend for any IDE aimed to programing DCPU-16.
+DEDCPU-16 aims to be a accurate and quick emulator working of CLI and capable of working like a emulation/debugger back-end for any IDE aimed to programming DCPU-16.
 
 See: http://0x10c.com/doc/dcpu-16.txt
 
