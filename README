@@ -11,10 +11,10 @@ The notch.bin file was made with interfect dcpu-emu assembler
 https://bitbucket.org/interfect/dcpu-emu
 
 Usage:
-./dedcpu -ifilename [-b]
+./dedcpu -ifilename [-ttype]
 Parameters:
-  -i --i --input : Input file with the machine code
-  -t : Uses text files in big-endian made by swetland dcpu-16 assembler. By default loads raw binary data in little endian.
+  -i --i --input : Input file with memmory map
+  -t --t --type lraw|braw|ahex : Type of file with memory map. lraw -> little endian raw binary ; braw -> big endian raw binary ; ahex -> ascii hexadecimal file
 
 Commands:
   q or Q              -> End emulation

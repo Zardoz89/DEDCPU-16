@@ -382,7 +382,7 @@ public:
         f.rawRead(word);
         
         if (ln == 7) writeln();
-        writef("%02X%02X ", word[1], word[0]);
+        writef("%02X%02X ", word[0], word[1]);
         ram[i] = cast(ushort) (word[1] | word[0] << 8);
         ln = i % 8;
       }
@@ -465,18 +465,18 @@ termios  ostate; // Old state of stdin
 
 int main (string[] args) {
   string filename;
-  bool ascci_fmt = false; // Use binary or textual format
+  TypeHexFile file_fmt; // Use binary or textual format
 
- void showHelp() {
+  void showHelp() {
     writeln(import("help.txt"));
     exit(0);
- }
+  }
   
-  // Process arguements
+  // Process arguements 
   getopt(
     args,
     "input|i", &filename,
-    "t", &ascci_fmt,
+    "type|t", &file_fmt,
     "h", &showHelp);
     
   if (filename.length == 0) {
@@ -485,12 +485,21 @@ int main (string[] args) {
   }
 
   DCpu16!100000.0 cpu; // CPU @ 100Khz
+  
   // Open input file
   try {
-    if (ascci_fmt) {
+    if (TypeHexFile.lraw == file_fmt) {
+      writeln("little endian raw binary");
+      cpu.load_ram!(TypeHexFile.lraw)(filename);
+    } else if (TypeHexFile.braw == file_fmt) {
+      writeln("big endian raw binary");
+      cpu.load_ram!(TypeHexFile.braw)(filename);
+    } else if (TypeHexFile.ahex == file_fmt) {
+      writeln("ascii hexadecimal");
       cpu.load_ram!(TypeHexFile.ahex)(filename);
     } else {
-      cpu.load_ram!(TypeHexFile.lraw)(filename);
+      writeln("Not implemented yet");
+      return -1;
     }
   } catch (Exception e) {
     writeln(e.msg,"\n", filename);
