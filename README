@@ -25,6 +25,8 @@ Commands:
 
 In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.
 
+NOTE: video_test.bin writes in video ram (0x8000) forever. It test video ram and cooperative multitasking. This programn is know that not runs in some emulators.
+
 Based over DCPU-16 C Emulator of Karl Hobley <turbodog10(at)yahoo.co.uk>
 
 This project is licensed under the BSD license.
