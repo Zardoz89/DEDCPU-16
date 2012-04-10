@@ -411,43 +411,44 @@ public:
     assert(begin <= end, "Invalid RAM range");
   } body {
     string r; int i;
+    const int cols = 7;
+    
     for (; i <= (end - begin); i++) {
-      if (i % 4 == 0) { // Address
+      if (i % cols == 0) { // Address
         auto writer = appender!string();
-        formattedWrite(writer, "%04X:", i + begin);
+        formattedWrite(writer, "%04X: ", i + begin);
         r = r ~ writer.data ~ " ";
       }
       auto writer = appender!string(); // Word
       formattedWrite(writer, "%04X ", ram[i + begin]);
       r = r ~ writer.data;
       
-      if (i!= 0 && ((i+1)%4) ==0 ) { // Show 8 ascii 7-bit characters
-        char[8] chars;
-        chars[0] = cast(char)(ram[i-3 + begin] >> 8);
-        chars[1] = cast(char)(ram[i-3 + begin] & 0xFF);
-        chars[2] = cast(char)(ram[i-2 + begin] >> 8);
-        chars[3] = cast(char)(ram[i-2 + begin] & 0xFF);
-        chars[4] = cast(char)(ram[i-1 + begin] >> 8);
-        chars[5] = cast(char)(ram[i-1 + begin] & 0xFF);
-        chars[6] = cast(char)(ram[i + begin]   >> 8);
-        chars[7] = cast(char)(ram[i + begin]   & 0xFF);
-
+      if (i!= 0 && ((i+1)%cols) ==0 ) { // Show 8 ascii 7-bit characters
+        char[cols*2] chars = void;
+        for (int j; j < cols*2; j++) {
+          if ((j%2) == 0) {
+            chars[j] = cast(char)(ram[i-(cols -(j/2) -1) + begin] >> 8);
+          } else {
+            chars[j] = cast(char)(ram[i-(cols -(j/2) -1) + begin] & 0xFF);
+          }
+        }
+        
+        r ~= " ";
         foreach (ref c; chars) {
           if (c > 0x7F || !isPrintable(c))
             c = '.';
+          r = r ~ c;
         }
-        
-        r = r ~ " " ~ chars[0] ~ chars[1]~ chars[2]~ chars[3]~ chars[4]~ chars[5]
-                    ~ chars[6] ~ chars[7] ~ "\n";
+        r = r ~ "\n";
       }
     }
     
-    if (((i+1)%4) != 0 ) { // Show remaning ascii chars
-      for (int remaning = 4-(i%4); remaning > 0; remaning--) {
+    if ((i%cols) != 0 ) { // Show remaning ascii chars
+      for (int remaning = cols-(i%cols); remaning > 0; remaning--) {
         r ~= "     ";
       }
-      r ~="  ";
-      for (int remaning = i%4; remaning > 0; remaning--) {
+      r ~=" ";
+      for (int remaning = i%cols; remaning > 0; remaning--) {
         char c[2];
         c[0] = cast(char)(ram[i-remaning + begin] >> 8);
         c[1] = cast(char)(ram[i-remaning + begin] & 0xFF);
