@@ -1,4 +1,5 @@
 A D based minimal emulator for Notch's DCPU-16 v1.1, written for the fun of it.
+DEDCPU-16 aims to be a acurrated and wuick emulator working of CLI and capable of working like a emulation/debugger backend for any IDE aimed to programing DCPU-16.
 
 See: http://0x10c.com/doc/dcpu-16.txt
 
@@ -11,7 +12,7 @@ The notch.bin file was made with interfect dcpu-emu assembler
 https://bitbucket.org/interfect/dcpu-emu
 
 Usage:
-./dedcpu -ifilename [-ttype]
+  ./dedcpu -ifilename [-ttype]
 Parameters:
   -i --i --input : Input file with memmory map
   -t --t --type lraw|braw|ahex : Type of file with memory map. lraw -> little endian raw binary ; braw -> big endian raw binary ; ahex -> ascii hexadecimal file
