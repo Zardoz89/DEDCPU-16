@@ -571,37 +571,43 @@ int main (string[] args) {
         step = false;
         tcsetattr(fileno(stdin), TCSADRAIN, &nstate);
         continue;
+          case 'd':
+          case 'D': // Memory dump
           case 'm':
-          case 'M': { // Memory dump
-          tcsetattr(fileno(stdin), TCSADRAIN, &ostate); // original mode
-          auto input = strip(readln());
-          tcsetattr(fileno(stdin), TCSADRAIN, &nstate);
-          ushort begin, end;
+          case 'M': // Memory display
+        tcsetattr(fileno(stdin), TCSADRAIN, &ostate); // original mode
+        auto input = strip(readln());
+        tcsetattr(fileno(stdin), TCSADRAIN, &nstate);
+        ushort begin, end;
+        try {
+          begin = parse!ushort(input, 16);
+        } catch (ConvException e) {
+          writeln("Invalid value");
+          continue;
+        }
+
+        munch(input,"- "); // skip - or whitespaces
+        if (input.length > 0) {
           try {
-            begin = parse!ushort(input, 16);
-          } catch (ConvException e) {
+            end = parse!ushort(input, 16);
+
+          } catch (ConvException e){
             writeln("Invalid value");
             continue;
           }
-          
-          munch(input,"- "); // skip - or whitespaces
-          if (input.length > 0) {
-            try {
-              end = parse!ushort(input, 16);
-              
-            } catch (ConvException e){
-              writeln("Invalid value");
-              continue;
-            }
-          } else {
-            end = begin;
-          }
-          
-          if (begin > end)
-            continue;
-          writeln(cpu.display_ram(begin, end));
-          continue;
+        } else {
+          end = begin;
         }
+
+        if (begin > end)
+          continue;
+        if (c == 'm' || c == 'M') { // View memory
+          writeln(cpu.display_ram(begin, end));
+        } else { // Dump memory
+          cpu.dump_ram(begin, end);
+        }
+        continue;
+       
           case 's':
           case 'S':
           case '\n':
