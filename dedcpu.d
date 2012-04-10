@@ -1,5 +1,5 @@
 import std.stdio, std.array, std.string, std.conv, std.getopt, std.format;
-import std.c.stdlib, std.c.stdio;
+import std.ascii, std.c.stdlib, std.c.stdio;
 import core.thread;
 
 import core.sys.posix.termios;
@@ -410,22 +410,58 @@ public:
   in {
     assert(begin <= end, "Invalid RAM range");
   } body {
-    string r;
-    for (int i; i <= (end - begin); i++) {
-      if (i % 4 == 0) {
-        if (i != 0)
-          r ~= "\n";
-          
+    string r; int i;
+    for (; i <= (end - begin); i++) {
+      if (i % 4 == 0) { // Address
         auto writer = appender!string();
         formattedWrite(writer, "%04X:", i + begin);
-        r ~= writer.data ~ " ";
+        r = r ~ writer.data ~ " ";
       }
-
-      auto writer = appender!string();
+      auto writer = appender!string(); // Word
       formattedWrite(writer, "%04X ", ram[i + begin]);
-      r ~= writer.data;
+      r = r ~ writer.data;
+      
+      if (i!= 0 && ((i+1)%4) ==0 ) { // Show 8 ascii 7-bit characters
+        char[8] chars;
+        chars[0] = cast(char)(ram[i-3 + begin] >> 8);
+        chars[1] = cast(char)(ram[i-3 + begin] & 0xFF);
+        chars[2] = cast(char)(ram[i-2 + begin] >> 8);
+        chars[3] = cast(char)(ram[i-2 + begin] & 0xFF);
+        chars[4] = cast(char)(ram[i-1 + begin] >> 8);
+        chars[5] = cast(char)(ram[i-1 + begin] & 0xFF);
+        chars[6] = cast(char)(ram[i + begin]   >> 8);
+        chars[7] = cast(char)(ram[i + begin]   & 0xFF);
+
+        foreach (ref c; chars) {
+          if (c > 0x7F || !isPrintable(c))
+            c = '.';
+        }
+        
+        r = r ~ " " ~ chars[0] ~ chars[1]~ chars[2]~ chars[3]~ chars[4]~ chars[5]
+                    ~ chars[6] ~ chars[7] ~ "\n";
+      }
+    }
+    
+    if (((i+1)%4) != 0 ) { // Show remaning ascii chars
+      for (int remaning = 4-(i%4); remaning > 0; remaning--) {
+        r ~= "     ";
+      }
+      r ~="  ";
+      for (int remaning = i%4; remaning > 0; remaning--) {
+        char c[2];
+        c[0] = cast(char)(ram[i-remaning + begin] >> 8);
+        c[1] = cast(char)(ram[i-remaning + begin] & 0xFF);
+        if (c[0] > 0x7F || !isPrintable(c[0]))
+          c[0] = '.';
+        if (c[1] > 0x7F || !isPrintable(c[1]))
+          c[1] = '.';
+            
+        r = r ~ c[0] ~ c[1];
+      }
+      
     }
 
+    
     return r;
   }
 
