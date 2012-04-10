@@ -1,28 +1,29 @@
+# DEDCPU-16 D Emulator for DCPU-16 #
 A D based minimal emulator for Notch's DCPU-16 v1.1, written for the fun of it.
 DEDCPU-16 aims to be a accurate and quick emulator working of CLI and capable of working like a emulation/debugger back-end for any IDE aimed to programming DCPU-16.
 
-See: http://0x10c.com/doc/dcpu-16.txt
+See: [DCPU-16 specs](http://0x10c.com/doc/dcpu-16.txt)
 
 Why: Why not ?
 
 The test.ascii file was made with swetland dcpu-16 assembler
-https://github.com/swetland/dcpu16
+<https://github.com/swetland/dcpu16>
 
 The notch.bin file was made with interfect dcpu-emu assembler
-https://bitbucket.org/interfect/dcpu-emu
+>https://bitbucket.org/interfect/dcpu-emu>
 
-Usage:
+## Usage: ##
   ./dedcpu -ifilename [-ttype]
 Parameters:
-  -i --i --input : Input file with memmory map
-  -t --t --type lraw|braw|ahex : Type of file with memory map. lraw -> little endian raw binary ; braw -> big endian raw binary ; ahex -> ascii hexadecimal file
+* __-i --i --input__ *file* : Input file with memmory map
+* __-t --t --type__ *lraw|braw|ahex* : Type of file with memory map. lraw -> little endian raw binary ; braw -> big endian raw binary ; ahex -> ascii hexadecimal file
 
-Commands:
-  q or Q              -> End emulation
-  s or S or Enter key -> Step one instruction
-  r or R number       -> Runs number instructions without stop. 0 for running forever (Ctrl+C to abort)
-  m or M begin[-end]    -> Display a chunk of RAM from begin to end address of RAM (address in hex). If end it's omitted, only show RAM value at begin address.
-  v or V              -> Show header
+## Commands: ##
+* __q__               -> End emulation
+* __s__ or Enter key  -> Step one instruction
+* __r__ *number*      -> Runs number instructions without stop. 0 for running forever (Ctrl+C to abort)
+* __m__ *begin[-end]* -> Display a chunk of RAM from begin to end address of RAM (address in hex). If end it's omitted, only show RAM value at begin address.
+* __v__               -> Show header
 
 In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.
 
@@ -30,6 +31,7 @@ NOTE: video_test.bin writes in video ram (0x8000) forever. It test video ram and
 
 Based over DCPU-16 C Emulator of Karl Hobley <turbodog10(at)yahoo.co.uk>
 
+## License: ##
 This project is licensed under the BSD license.
 
 Copyright (c) 2012, Luis Panadero Guardeño
