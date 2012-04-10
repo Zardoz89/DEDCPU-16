@@ -7,6 +7,8 @@ import core.sys.posix.unistd;
 alias core.stdc.stdio.fileno fileno;
 alias core.stdc.stdio.stdin stdin;
 
+enum TypeHexFile {lraw, braw, ahex, hex8}; /// Type of machine code file
+
 /**
  * CPU representation
  * Params:
@@ -54,7 +56,7 @@ private :
    *  use_cycles = How many cycles needed to read the paramenter
    * Returns: A reference to the value (RAM memory, literal, register)
    */
-  private ref ushort decode_parameter(ubyte paramvalue, ref ushort literal, ref ushort use_cycles) {
+  ref ushort decode_parameter(ubyte paramvalue, ref ushort literal, ref ushort use_cycles) {
     switch (paramvalue) {
         case 0x00:
       diassembled_inst ~= " A"; return registers[paramvalue];
@@ -350,6 +352,54 @@ public:
   }
 
   /**
+   * Load a file with a image of RAM
+   * Params:
+   *  type = Type of file
+   *  file = Name and path of the file
+   */
+  void load_ram(TypeHexFile type)(const string filename )
+  in {
+    assert (filename.length >0);    
+  } body {
+    auto f = File(filename, "r");
+
+    scope(exit) {f.close();}
+    
+    ulong ln, i;
+    static if (type == TypeHexFile.lraw) { // RAW little-endian binary file
+      for (;i < 0x10000 && !f.eof; i++) {
+        ubyte[2] word = void;
+        f.rawRead(word);
+
+        if (ln == 7) writeln();
+        writef("%02X%02X ", word[1], word[0]);
+        ram[i] = cast(ushort) (word[0] | word[1] << 8); // Swap endianes
+        ln = i % 8;
+      }
+    } else if (type == TypeHexFile.braw) { // RAW big-endian binary file
+      for (;i < 0x10000 && !f.eof; i++) {
+        ubyte[2] word = void;
+        f.rawRead(word);
+        
+        if (ln == 7) writeln();
+        writef("%02X%02X ", word[1], word[0]);
+        ram[i] = cast(ushort) (word[1] | word[0] << 8);
+        ln = i % 8;
+      }
+    } else if (type == TypeHexFile.ahex) { // plain ASCII hex file
+      foreach ( line; f.byLine()) { // each line only have a hex 16-bit word
+        ram[i] = parse!ushort(line, 16);
+        if (ln == 7) writeln();
+        writef("%04X ", ram[i]);
+        ln = i % 8;
+        i++; 
+      }
+    } else {
+      throw new Exception("Not implemented file type");
+    }
+  }
+
+  /**
    * Generate a string representation of a range of RAM
    * Params:
    *  begin = Where the dump begin
@@ -436,38 +486,17 @@ int main (string[] args) {
 
   DCpu16!100000.0 cpu; // CPU @ 100Khz
   // Open input file
-  File f;
   try {
-    f = File(filename, "r");
+    if (ascci_fmt) {
+      cpu.load_ram!(TypeHexFile.ahex)(filename);
+    } else {
+      cpu.load_ram!(TypeHexFile.lraw)(filename);
+    }
   } catch (Exception e) {
-    writeln("Failed to open input file ", filename);
-    return 0;
+    writeln(e.msg,"\n", filename);
+    return -1;
   }
 
-  // Read words into RAM
-  ushort i, ln;
-  if (ascci_fmt) { // Textual files from swetland dcpu-16 assembler
-    foreach ( line; f.byLine()) {
-      foreach (word; splitter(strip(line))) {
-        cpu.ram[i] = parse!ushort(word, 16);
-        if (ln == 7) writeln();
-        writef("%04X ", cpu.ram[i]);
-        ln = i % 8;
-        i++; 
-      }
-    }
-  } else { // Binary file from DCPU-EMU little-endian format    
-    for (;i < 0x10000 && !f.eof; i++) {
-      ubyte[2] word = void;
-      f.rawRead(word);
-      
-      if (ln == 7) writeln();
-      writef("%02X%02X ", word[1], word[0]);
-      cpu.ram[i] = cast(ushort) (word[0] | word[1] << 8); // Swap endianes
-      ln = i % 8;
-    }
-  }
-  f.close();
   writeln();
 
   termios  nstate; // New state for stdin
