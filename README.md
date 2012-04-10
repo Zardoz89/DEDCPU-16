@@ -15,21 +15,21 @@ The notch.bin file was made with interfect dcpu-emu assembler
 ## Usage: ##
     ./dedcpu -ifilename [-ttype]
 ##Parameters:##
-* __-i --i --input__ *file* : Input file with memmory map
-* __-t --t --type__ *lraw|braw|ahex* : Type of file with memory map. lraw -> little endian raw binary ; braw -> big endian raw binary ; ahex -> ascii hexadecimal file
+* __-i --i --input__ *file* : Input file with memory map
+* __-t --t --type__ *lraw|braw|ahex* : Type of file with memory map. *lraw* -> little endian raw binary ; *braw* -> big endian raw binary ; *ahex* -> ascii hexadecimal file
 
 ## Commands: ##
 * __q__               -> End emulation
 * __s__ or Enter key  -> Step one instruction
 * __r__ *number*      -> Runs number instructions without stop. 0 for running forever (Ctrl+C to abort)
 * __m__ *begin[-end]* -> Display a chunk of RAM from begin to end address of RAM (address in hex). If end it's omitted, only show RAM value at begin address.
-* __v__               -> Show header
+* __v__               -> Show a label showing the meaning of each column
 
 In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.
 
 __NOTE__: video_test.bin writes in video ram (0x8000) forever. It test video ram and cooperative multitasking. This program is know that not runs in some emulators.
 
-Based over DCPU-16 C Emulator of Karl Hobley <turbodog10(at)yahoo.co.uk>
+Based over DCPU-16 C Emulator of Karl Hobley turbodog10(at)yahoo.co.uk
 
 ## License: ##
 This project is licensed under the BSD license.

@@ -2,3 +2,4 @@
 * Implement break points and full code disassembler
 * Implement a Video Emulation (waiting for a official explanation from Notch of how video will work)
 * Implement Keyboard input (waiting for a official explanation from Notch of how keyboard input will work)
+* Implement a Intel HEX input/output data
