@@ -1,0 +1,6 @@
+dedcpu.d   - Source code of D Emulator of DCPU-16 (DEDCPU)
+help.txt   - Help file (same text that dedcpu -h)
+HowCompile - How compile dedcpu
+test.ascii - Notch's example in ascci hex file format
+noth.bin   - Notch's exmaple in raw binary little-endian format
+video_test.bin - Video and cooperative multitasking test in raw binary little-endian format. 

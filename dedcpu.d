@@ -510,7 +510,7 @@ int main (string[] args) {
         tcsetattr(fileno(stdin), TCSADRAIN, &nstate);
         continue;
           case 'm':
-          case 'M': {
+          case 'M': { // Memory dump
           tcsetattr(fileno(stdin), TCSADRAIN, &ostate); // original mode
           auto input = strip(readln());
           ushort begin = parse!ushort(input, 16);
