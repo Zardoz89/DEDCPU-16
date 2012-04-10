@@ -17,9 +17,9 @@ enum TypeHexFile {lraw, braw, ahex, hex8}; /// Type of machine code file
 struct DCpu16(double f) {
   enum double Frequency = f; /// In Herts
   enum long Period = cast(long) (1000000.0 / Frequency); /// In microseconds
-  ushort ram[0x10000];
-  
+    
 private :
+  ushort ram[0x10000];
   union {
     struct {ushort a, b, c, x, y, z, i, j;}
     ushort[8] registers;
@@ -406,7 +406,7 @@ public:
    *  end = Where the dump ends
    * Returns: A string representation of a valid range of RAM
    */
-  string dump_ram(ushort begin, ushort end)
+  string display_ram(ushort begin, ushort end)
   in {
     assert(begin <= end, "Invalid RAM range");
   } body {
@@ -429,6 +429,30 @@ public:
     return r;
   }
 
+  /**
+   * Dumps a region of RAM in little endian format
+   * Params:
+   *  begin = Where the dump begin
+   *  end = Where the dump ends
+   * Returns: A string representation of a valid range of RAM
+   */
+  void dump_ram(ushort begin, ushort end)
+  in {
+    assert(begin <= end, "Invalid RAM range");
+  } body {
+    auto f = File("dump.bin", "w");
+    scope(exit) {f.close();}
+    
+    ubyte[2] word = void;
+    for (int i = begin; i <= end; i++) {
+      // word[0] is the lowest byte
+      word[0] =cast(ubyte)(ram[i]& 0xFF);
+      word[1] =cast(ubyte)(ram[i] >> 8);
+      
+      f.rawWrite(word);
+    }
+  }
+  
   /**
    * Generate a string representation registers status and number of cpu cycles
    * Returns: String representation registers status and number of cpu cycles
@@ -551,14 +575,31 @@ int main (string[] args) {
           case 'M': { // Memory dump
           tcsetattr(fileno(stdin), TCSADRAIN, &ostate); // original mode
           auto input = strip(readln());
-          ushort begin = parse!ushort(input, 16);
-          munch(input,"- "); // skip - or whitespaces
-          ushort end = parse!ushort(input, 16);
           tcsetattr(fileno(stdin), TCSADRAIN, &nstate);
-
+          ushort begin, end;
+          try {
+            begin = parse!ushort(input, 16);
+          } catch (ConvException e) {
+            writeln("Invalid value");
+            continue;
+          }
+          
+          munch(input,"- "); // skip - or whitespaces
+          if (input.length > 0) {
+            try {
+              end = parse!ushort(input, 16);
+              
+            } catch (ConvException e){
+              writeln("Invalid value");
+              continue;
+            }
+          } else {
+            end = begin;
+          }
+          
           if (begin > end)
             continue;
-          writeln(cpu.dump_ram(begin, end));
+          writeln(cpu.display_ram(begin, end));
           continue;
         }
           case 's':
