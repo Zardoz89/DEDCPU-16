@@ -1,17 +1,18 @@
 A D based minimal emulator for Notch's DCPU-16 v1.1, written for the fun of it.
-DEDCPU-16 aims to be a acurrated and wuick emulator working of CLI and capable of working like a emulation/debugger backend for any IDE aimed to programing DCPU-16.
+DEDCPU-16 aims to be a accurate and quick emulator working of CLI and capable of working like a emulation/debugger back-end for any IDE aimed to programming DCPU-16.
 
 Usage:
   ./dedcpu -ifilename [-ttype]
 Parameters:
-  -i --i --input : Input file with memmory map
+  -i --i --input : Input file with memory map
   -t --t --type lraw|braw|ahex : Type of file with memory map. lraw -> little endian raw binary ; braw -> big endian raw binary ; ahex -> ascii hexadecimal file
 
 Commands:
-  q or Q              -> End emulation
-  s or S or Enter key -> Step one instruction
-  r or R number       -> Runs number instructions without stop. 0 for running forever (Ctrl+C to abort)
-  m or M begin[-end]    -> Display a chunk of RAM from begin to end address of RAM (address in hex). If end it's omitted, only show RAM value at begin address.
-  v or V              -> Show header
+  q                -> End emulation
+  s or Enter key   -> Step one instruction
+  r number         -> Runs number instructions without stop. 0 for running forever (Ctrl+C to abort)
+  m begin[-end]    -> Display a chunk of RAM from begin to end address of RAM (address in hex). If end it's omitted, only show RAM value at begin address.
+  d begin[-end]    -> Dumps a chunk of RAM to a dump.bin file in little endian raw binary. Same semantics that 'm'
+  v                -> Show a label showing the meaning of each column
 
 In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.
