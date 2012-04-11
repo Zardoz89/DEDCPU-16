@@ -27,6 +27,8 @@ private :
   ushort _pc;
   ushort sp = 0;
   ushort o;
+
+  ubyte keyboard_ptr; // Points to the last character
   bool skip_next_instruction; 
   ulong cycles = 0;
 
@@ -489,7 +491,24 @@ public:
       f.rawWrite(word);
     }
   }
-  
+
+  /**
+   * Writes a tring in keyboard buffer
+   * Params:
+   *  input = String that contains the text that will we write in the buffer
+   */
+  void write_keyboard_buffer(string input) {    
+    const ushort buffer = 0x9000;
+    const ushort b_size = 16;
+    if (input.length > 0) {
+      foreach(size_t i , char c ; input) {
+        ram[buffer+keyboard_ptr] = c;
+        keyboard_ptr++;
+        keyboard_ptr = keyboard_ptr % b_size;
+      }
+    }
+  }
+
   /**
    * Generate a string representation registers status and number of cpu cycles
    * Returns: String representation registers status and number of cpu cycles
@@ -644,7 +663,17 @@ int main (string[] args) {
           cpu.dump_ram(begin, end);
         }
         continue;
-       
+
+          case 'i':
+          case 'I': // Keyboard input to emulated machine
+        tcsetattr(fileno(stdin), TCSADRAIN, &ostate); // original mode
+        auto input = readln();
+        tcsetattr(fileno(stdin), TCSADRAIN, &nstate);
+        if (input.length > 16)
+          input = input[0..16]; // We only use the first 16 characters
+        cpu.write_keyboard_buffer(input);
+        continue;
+          
           case 's':
           case 'S':
           case '\n':
