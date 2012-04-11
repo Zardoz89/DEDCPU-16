@@ -61,13 +61,14 @@ DEDCPU-16 aims to be a accurate and quick emulator working of CLI and capable of
 </ul><h2>Commands:</h2>
 
 <ul>
-<li>quit <strong>q</strong>               - End emulation</li>
-<li>step <strong>s</strong> or Enter key  - Step one instruction</li>
-<li>run <strong>r</strong> <em>number</em>       - Runs number instructions without stop. 0 for running forever (Ctrl+C to abort)</li>
-<li>memory display <strong>m</strong> <em>begin[-end]</em> - Display a chunk of RAM from begin to end address of RAM (address in hex). If end it's omitted, only show RAM value at begin address.</li>
-<li>dump memory <strong>d</strong> <em>begin[-end]</em> - Dumps a chunk of RAM to a <strong>dump.bin</strong> file in little endian raw binary. Same semantics that <strong>'m'</strong>
+<li>quit &nbsp;<strong>q</strong>               - End emulation</li>
+<li>step &nbsp;<strong>s</strong> or Enter key  - Step one instruction</li>
+<li>run &nbsp;<strong>r</strong> <em>number</em>       - Runs number instructions without stop. 0 for running forever (Ctrl+C to abort)</li>
+<li>memory display &nbsp;<strong>m</strong> <em>begin[-end]</em> - Display a chunk of RAM from begin to end address of RAM (address in hex). If end it's omitted, only show RAM value at begin address.</li>
+<li>dump memory &nbsp;<strong>d</strong> <em>begin[-end]</em> - Dumps a chunk of RAM to a <strong>dump.bin</strong> file in little endian raw binary. Same semantics that <strong>'m'</strong>
 </li>
-<li>view label <strong>v</strong>         - Show a label showing the meaning of each column</li>
+<li>input &nbsp;<strong>i</strong> <em>text>em          - Sends text to keyboard input buffer in emaulted machine</li>
+<li>view label &nbsp;<strong>v</strong>         - Show a label showing the meaning of each column</li>
 </ul><h4>Example of use:</h4>
 
 <p>Memory Display command:
