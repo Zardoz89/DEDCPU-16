@@ -13,7 +13,7 @@ Commands:
   run             r number         Runs number instructions without stop. 0 for running forever (Ctrl+C to abort)
   memory display  m begin[-end]    Display a chunk of RAM from begin to end address of RAM (address in hex). If end it's omitted, only show RAM value at begin address.
   memory dump     d begin[-end]    Dumps a chunk of RAM to a dump.bin file in little endian raw binary. Same semantics that 'm'
-  input           i text           Sends text to keyboard input buffer in emaulted machine
+  input           i text           Sends text to keyboard input buffer in emulated machine
   view header     v                Show a label showing the meaning of each column
 
 In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.
