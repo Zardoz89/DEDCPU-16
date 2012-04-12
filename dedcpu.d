@@ -437,9 +437,11 @@ public:
         
         r ~= " ";
         foreach (ref c; chars) {
-          if (c > 0x7F || !isPrintable(c))
-            c = '.';
-          r = r ~ c;
+          if (c > 0x7F || !isPrintable(c)) {
+            r = r ~ "ᛝ";
+          } else {
+            r = r ~ c;
+          }
         }
         r = r ~ "\n";
       }
@@ -454,11 +456,12 @@ public:
         char c[2];
         c[0] = cast(char)(ram[i-remaning + begin] >> 8);
         c[1] = cast(char)(ram[i-remaning + begin] & 0xFF);
-        if (c[0] > 0x7F || !isPrintable(c[0]))
+        if (c[0] > 0x7F || !isPrintable(c[0])) {
           c[0] = '.';
-        if (c[1] > 0x7F || !isPrintable(c[1]))
+        }
+        if (c[1] > 0x7F || !isPrintable(c[1])) {
           c[1] = '.';
-            
+        }
         r = r ~ c[0] ~ c[1];
       }
       
@@ -506,6 +509,7 @@ public:
         keyboard_ptr++;
         keyboard_ptr = keyboard_ptr % b_size;
       }
+      ram[buffer+keyboard_ptr] = 0; // NULL character
     }
   }
 
