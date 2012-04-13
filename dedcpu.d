@@ -731,20 +731,26 @@ int main (string[] args) {
         break;
           default:
       }
-    } else if (stop == 0 || count < stop) {
-      write(cpu.show_state, " ", cpu.actual_instruction, " ");
+    } else if (stop == 0 || count < stop) {      
       if (cpu.PC in breakpoint) {
         writeln("Breakpoint reached");
+        writeln(cpu.show_state, " ", cpu.actual_instruction, " ");
         step = true;
         continue;
       }
+
+      if (stop != 0) 
+        write(cpu.show_state, " ", cpu.actual_instruction, " ");
+
       try {
-        cpu.run_instruction();
-        writeln(cpu.diassembled);
+        cpu.run_instruction();        
       } catch (Exception e) {
         writeln(e.msg);
+        writeln(cpu.show_state, " ", cpu.actual_instruction, " ");
         step = true; // Go to interactive mode to allow memory dumps
       }
+      if (stop != 0)
+        writeln(cpu.diassembled);
     } else {
       step = true;
     }
