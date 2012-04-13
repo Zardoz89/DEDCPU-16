@@ -656,6 +656,7 @@ int main (string[] args) {
         auto input = strip(readln());
         tcsetattr(fileno(stdin), TCSADRAIN, &nstate);
         if (input== "") { // r0 or r means run forever
+        writeln("Running...");
           stop = 0;
           step = false;
           continue;
@@ -667,6 +668,7 @@ int main (string[] args) {
           writeln("Invalid value");
           continue;
         }
+        writeln("Running ", stop, " cycles");
         step = false;        
         continue;
           case 'd':
