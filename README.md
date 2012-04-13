@@ -21,7 +21,8 @@ The notch.bin file was made with interfect dcpu-emu assembler
 ## Commands: ##
 * __q__               -> End emulation
 * __s__ or Enter key  -> Step one instruction
-* __r__ *number*      -> Runs number instructions without stop. 0 for running forever (Ctrl+C to abort)
+* __r__ *number*      -> Runs number instructions without stop. Nothing or 0 for running forever (Ctrl+C to abort)
+* __b__ *address*     -> Toggle breakpoint at address. Only works if is the begin of a valid instruction.
 * __m__ *begin[-end]* -> Display a chunk of RAM from begin to end address of RAM (address in hex). If end it's omitted, only show RAM value at begin address.
 * __d__ *begin[-end]* -> Dumps a chunk of RAM to a __dump.bin__ file in little endian raw binary. Same semantics that __'m'__
 * __i__ *text*        -> Sends text to keyboard input buffer in emulated machine

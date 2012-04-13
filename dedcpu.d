@@ -15,7 +15,7 @@ enum TypeHexFile {lraw, braw, ahex, hex8}; /// Type of machine code file
  *  f = CPU Frequency
  */
 struct DCpu16(double f) {
-  enum double Frequency = f; /// In Herts
+  enum double Frequency = f; /// In Hertzs
   enum long Period = cast(long) (1000000.0 / Frequency); /// In microseconds
     
 private :
@@ -50,6 +50,9 @@ private :
     return ++_pc;
   }
 
+  @property ushort PC() {
+    return _pc;
+  }
   /**
    * Decode paramaters from a o b parameter
    * Params:
@@ -610,6 +613,8 @@ int main (string[] args) {
 
   bool step = true;
   ulong count, stop = ulong.max;
+  bool[ushort] breakpoint; // Sets breakpoints
+  
   while(1) {
     if (step) {
     auto c = fgetc(stdin);
@@ -617,6 +622,28 @@ int main (string[] args) {
           case 'q':
           case 'Q': // Quit
         return(0);
+        
+          case 'b':
+          case 'B': // Break point
+        tcsetattr(fileno(stdin), TCSADRAIN, &ostate); // original mode
+        auto input = strip(readln());
+        tcsetattr(fileno(stdin), TCSADRAIN, &nstate);
+        ushort pos;
+        try {
+          pos = parse!ushort(input, 16); // PC value
+        } catch (ConvException e) {
+          writeln("Invalid value");
+          continue;
+        }
+        if ( pos in breakpoint) {
+          writefln("Erasing breakpoint at 0x%04X", pos);
+          breakpoint.remove(pos);
+        } else {
+          writefln("Enabling breakpoint at 0x%04X", pos);
+          breakpoint[pos] = true;
+        }
+        
+        continue;
           case 'v':
           case 'V': // Print info head
         writeln("Cycles  PC   SP   O    A    B    C    X    Y    Z    I    J   Instruction");
@@ -624,12 +651,23 @@ int main (string[] args) {
         continue;
           case 'r':
           case 'R':
-        tcsetattr(fileno(stdin), TCSADRAIN, &ostate); // original mode
         count = 0;
+        tcsetattr(fileno(stdin), TCSADRAIN, &ostate); // original mode        
         auto input = strip(readln());
-        stop = parse!ushort(input, 10); // How many cycles
-        step = false;
         tcsetattr(fileno(stdin), TCSADRAIN, &nstate);
+        if (input== "") { // r0 or r means run forever
+          stop = 0;
+          step = false;
+          continue;
+        }
+        
+        try {
+          stop = parse!ushort(input, 10); // How many cycles
+        } catch (ConvException e) {
+          writeln("Invalid value");
+          continue;
+        }
+        step = false;        
         continue;
           case 'd':
           case 'D': // Memory dump
@@ -695,6 +733,11 @@ int main (string[] args) {
       }
     } else if (stop == 0 || count < stop) {
       write(cpu.show_state, " ", cpu.actual_instruction, " ");
+      if (cpu.PC in breakpoint) {
+        writeln("Breakpoint reached");
+        step = true;
+        continue;
+      }
       try {
         cpu.run_instruction();
         writeln(cpu.diassembled);
