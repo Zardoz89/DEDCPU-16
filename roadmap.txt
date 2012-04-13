@@ -1,4 +1,5 @@
+* Full rewrite of DECPU-16 to be a more acurrated emulations, plus using a thread to display a Video output that allow direct keyboard input
 * Implement memory editing via a command
-* Implement break points and full code disassembler
-* Implement a Video Emulation (waiting for a official explanation from Notch of how video will work)
+* Implement a full code disassembler
+* More debugging usefull options
 * Implement a Intel HEX input/output data
