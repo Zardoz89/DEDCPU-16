@@ -1,10 +1,9 @@
-module disassembler.d;
-
-import std.format, std.conv, std.string, std.stdio;
-
 /**
- * DEDCPU-16 companion Disassembler
+ * DEDCPU-16 companion Disassembler library
  */
+module disassembler;
+
+import std.stdio, std.array, std.string, std.conv, std.getopt, std.format;
 
 private:
 
@@ -220,29 +219,29 @@ string operand(string op ) (ubyte operand) {
     return "[J]";
 
       case Aptr_word: // Register pointer with added word
-    formattedWrite(writer, "[A+ %04X]", ram[pc +1]);
-    return write.data;
+    formattedWrite(writer, "[A+ %04X]", ram[++pc]);
+    return writer.data;
       case Bptr_word:
-    formattedWrite(writer, "[B+ %04X]", ram[pc +1]);
-    return write.data;
+    formattedWrite(writer, "[B+ %04X]", ram[++pc]);
+    return writer.data;
       case Cptr_word:
-    formattedWrite(writer, "[C+ %04X]", ram[pc +1]);
-    return write.data;
+    formattedWrite(writer, "[C+ %04X]", ram[++pc]);
+    return writer.data;
       case Xptr_word:
-    formattedWrite(writer, "[X+ %04X]", ram[pc +1]);
-    return write.data;
+    formattedWrite(writer, "[X+ %04X]", ram[++pc]);
+    return writer.data;
       case Yptr_word:
-    formattedWrite(writer, "[Y+ %04X]", ram[pc +1]);
-    return write.data;
+    formattedWrite(writer, "[Y+ %04X]", ram[++pc]);
+    return writer.data;
       case Zptr_word:
-    formattedWrite(writer, "[Z+ %04X]", ram[pc +1]);
-    return write.data;
+    formattedWrite(writer, "[Z+ %04X]", ram[++pc]);
+    return writer.data;
       case Iptr_word:
-    formattedWrite(writer, "[I+ %04X]", ram[pc +1]);
-    return write.data;
+    formattedWrite(writer, "[I+ %04X]", ram[++pc]);
+    return writer.data;
       case Jptr_word:
-    formattedWrite(writer, "[J+ %04X]", ram[pc +1]);
-    return write.data;
+    formattedWrite(writer, "[J+ %04X]", ram[++pc]);
+    return writer.data;
 
       case POP: // POP
     return "POP";
@@ -261,16 +260,16 @@ string operand(string op ) (ubyte operand) {
     return "O";
 
       case Word_ptr: // next word pointer
-    formattedWrite(writer, "[%04X]", ram[pc +1]);
-    return write.data;
+    formattedWrite(writer, "[%04X]", ram[++pc]);
+    return writer.data;
 
       case Word: // word literal
-    formattedWrite(writer, "%04X", ram[pc +1]);
-    return write.data;
+    formattedWrite(writer, "%04X", ram[++pc]);
+    return writer.data;
 
       default: // literal
     formattedWrite(writer, "%04X", operand - Literal);
-    return write.data;
+    return writer.data;
   }
 }
   
@@ -279,8 +278,8 @@ public:
 /**
  * Sets assembly machine code to be diassambled
  */
-void set_assembly(ushort[] ram) {
-  this.ram = ram;
+void set_assembly(ushort[] slice) {
+  ram = slice;
 }
 
 /**
@@ -297,5 +296,5 @@ string[] get_diassamble() {
     pc++;
     
   }
-  return ;
+  return ret;
 }
