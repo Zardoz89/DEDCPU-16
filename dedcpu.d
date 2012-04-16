@@ -460,12 +460,15 @@ public:
         c[0] = cast(char)(ram[i-remaning + begin] >> 8);
         c[1] = cast(char)(ram[i-remaning + begin] & 0xFF);
         if (c[0] > 0x7F || !isPrintable(c[0])) {
-          c[0] = '.';
+          r ~= "ᛝ";
+        } else {
+          r = r ~ c[0];
         }
         if (c[1] > 0x7F || !isPrintable(c[1])) {
-          c[1] = '.';
+          r ~= "ᛝ";
+        } else {
+          r = r ~ c[1];
         }
-        r = r ~ c[0] ~ c[1];
       }
       
     }
