@@ -1,5 +1,7 @@
 HowCompile.txt - How compile dedcpu
 dedcpu.d       - Source code of D Emulator of DCPU-16 (DEDCPU)
+ddis.d         - DEDCPU companion Disassembler
+disassembler.d - DEDCPU companion Disassembler libray
 help.txt       - Help file (same text that dedcpu -h)
 noth.bin       - Notch's exmaple in raw binary little-endian format
 roadmap.md     - Next DEDCPU-16 features
