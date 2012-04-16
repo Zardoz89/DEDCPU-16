@@ -5,6 +5,8 @@ module disassembler;
 
 import std.stdio, std.array, std.string, std.conv, std.getopt, std.format;
 
+public import std.typecons;
+
 private:
 
 ushort[] ram; /// Assembly machine code is stored here
@@ -113,63 +115,63 @@ string dissamble(ubyte opcode, ubyte ext_opcode,string op_a, string op_b) {
   } else { // Decode operation
     switch (opcode) {
         case SET: // SET
-      ret = "SET " ~ op_a ~ " " ~ op_b;
+      ret = "SET " ~ op_a ~ ", " ~ op_b;
       return ret;
 
         case ADD: // ADD
-      ret = "ADD " ~ op_a ~ " " ~ op_b;
+      ret = "ADD " ~ op_a ~ ", " ~ op_b;
       return ret;
 
         case SUB: // SUB
-      ret = "SUB " ~ op_a ~ " " ~ op_b;
+      ret = "SUB " ~ op_a ~ ", " ~ op_b;
       return ret;
 
         case MUL: // MUL
-      ret = "MUL " ~ op_a ~ " " ~ op_b;
+      ret = "MUL " ~ op_a ~ ", " ~ op_b;
       return ret;
 
         case DIV: // DIV
-      ret = "DIV " ~ op_a ~ " " ~ op_b;
+      ret = "DIV " ~ op_a ~ ", " ~ op_b;
       return ret;
 
         case MOD: // MOD
-      ret = "MOD " ~ op_a ~ " " ~ op_b;
+      ret = "MOD " ~ op_a ~ ", " ~ op_b;
       return ret;
 
         case SHL: // SHL
-      ret = "SHL " ~ op_a ~ " " ~ op_b;
+      ret = "SHL " ~ op_a ~ ", " ~ op_b;
       return ret;
 
         case SHR: // SHR
-      ret = "SHR " ~ op_a ~ " " ~ op_b;
+      ret = "SHR " ~ op_a ~ ", " ~ op_b;
       return ret;
 
         case AND: // AND
-      ret = "AND " ~ op_a ~ " " ~ op_b;
+      ret = "AND " ~ op_a ~ ", " ~ op_b;
       return ret;
 
         case OR: // bOR
-      ret = "BOR " ~ op_a ~ " " ~ op_b;
+      ret = "BOR " ~ op_a ~ ", " ~ op_b;
       return ret;
 
         case XOR: // XOR
-      ret = "XOR " ~ op_a ~ " " ~ op_b;
+      ret = "XOR " ~ op_a ~ ", " ~ op_b;
       return ret;
 
         case IFE: // IFEqual
-      ret = "IFE " ~ op_a ~ " " ~ op_b;
+      ret = "IFE " ~ op_a ~ ", " ~ op_b;
       return ret;
 
         case IFN: // IFNot equal
-      ret = "IFN " ~ op_a ~ " " ~ op_b;
+      ret = "IFN " ~ op_a ~ ", " ~ op_b;
       return ret;
 
         case IFG: // IFGreat
-      ret = "IFG " ~ op_a ~ " " ~ op_b;
+      ret = "IFG " ~ op_a ~ ", " ~ op_b;
       return ret;
 
         case IFB: //IFBits set
-      ret = "IFB " ~ op_a ~ " " ~ op_b;
+      ret = "IFB " ~ op_a ~ ", " ~ op_b;
       return ret;
       
         default: // Not specs/implemented yet
@@ -219,28 +221,28 @@ string operand(string op ) (ubyte operand) {
     return "[J]";
 
       case Aptr_word: // Register pointer with added word
-    formattedWrite(writer, "[A+ %04X]", ram[++pc]);
+    formattedWrite(writer, "[A+ 0x%04X]", ram[++pc]);
     return writer.data;
       case Bptr_word:
-    formattedWrite(writer, "[B+ %04X]", ram[++pc]);
+    formattedWrite(writer, "[B+ 0x%04X]", ram[++pc]);
     return writer.data;
       case Cptr_word:
-    formattedWrite(writer, "[C+ %04X]", ram[++pc]);
+    formattedWrite(writer, "[C+ 0x%04X]", ram[++pc]);
     return writer.data;
       case Xptr_word:
-    formattedWrite(writer, "[X+ %04X]", ram[++pc]);
+    formattedWrite(writer, "[X+ 0x%04X]", ram[++pc]);
     return writer.data;
       case Yptr_word:
-    formattedWrite(writer, "[Y+ %04X]", ram[++pc]);
+    formattedWrite(writer, "[Y+ 0x%04X]", ram[++pc]);
     return writer.data;
       case Zptr_word:
-    formattedWrite(writer, "[Z+ %04X]", ram[++pc]);
+    formattedWrite(writer, "[Z+ 0x%04X]", ram[++pc]);
     return writer.data;
       case Iptr_word:
-    formattedWrite(writer, "[I+ %04X]", ram[++pc]);
+    formattedWrite(writer, "[I+ 0x%04X]", ram[++pc]);
     return writer.data;
       case Jptr_word:
-    formattedWrite(writer, "[J+ %04X]", ram[++pc]);
+    formattedWrite(writer, "[J+ 0x%04X]", ram[++pc]);
     return writer.data;
 
       case POP: // POP
@@ -260,21 +262,24 @@ string operand(string op ) (ubyte operand) {
     return "O";
 
       case Word_ptr: // next word pointer
-    formattedWrite(writer, "[%04X]", ram[++pc]);
+    formattedWrite(writer, "[0x%04X]", ram[++pc]);
     return writer.data;
 
       case Word: // word literal
-    formattedWrite(writer, "%04X", ram[++pc]);
+    formattedWrite(writer, "0x%04X", ram[++pc]);
     return writer.data;
 
       default: // literal
-    formattedWrite(writer, "%04X", operand - Literal);
+    formattedWrite(writer, "0x%02X", operand - Literal);
     return writer.data;
   }
 }
   
 public:
- 
+
+// pair of addreses that contains only one instruction 
+alias Tuple!(ushort, ushort) addr_pair;
+
 /**
  * Sets assembly machine code to be diassambled
  */
@@ -284,17 +289,42 @@ void set_assembly(ushort[] slice) {
 
 /**
  * Diassamble the assembly machine code
+ * Params:
+ *  comment = Add comments to assembly code with the addre and hex machine code
+ *  labels = auto tab and add labels to jumps
+ * Returns a asociative array where the key is a pair of addreses that contains
+ * the instruction in machine code
  */
-string[] get_diassamble() {
-  string[] ret;
+string[addr_pair] get_diassamble(bool comment = false, bool labels = false) {
+  string[addr_pair] ret;
   while(ram.length > pc) {
-    ushort word = ram[pc];
-    
-    ret ~= dissamble(decode!"OpCode"(word), decode!"ExtOpCode"(word),
+    ushort word = ram[pc]; ushort old_pc = pc;
+    string inst= dissamble(decode!"OpCode"(word), decode!"ExtOpCode"(word),
                 operand!"A"(decode!"OpA"(word)), operand!"B"(decode!"OpB"(word)));
-      
+    addr_pair pos = tuple(old_pc, pc);
     pc++;
     
+    if (comment) { // Add coment  ; [addr] - xxxx ....
+      if (labels) {
+        ret[pos] = "                " ~ inst;
+      } else {
+        ret[pos] = inst;
+      }
+
+      for(auto i=0; i<(26- inst.length); i++)
+        ret[pos] ~= " ";
+      auto writer = appender!string();
+      formattedWrite(writer, "[%04X] - %04X", pos[0], ram[pos[0]]);
+      ret[pos] ~= ";"~ writer.data;
+
+      for (auto i=pos[0] +1; i <= pos[1]; i++) {
+        writer = appender!string();
+        formattedWrite(writer, " %04X", ram[i]);
+        ret[pos] ~= writer.data;
+      }
+    } else {
+      ret[pos] = inst;
+    }
   }
   return ret;
 }

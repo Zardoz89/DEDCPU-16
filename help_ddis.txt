@@ -1,0 +1,8 @@
+A D based disassenbler for Notch's DCPU-16 v1.1.
+
+Usage:
+  ./ddis filename [-ttype -c]
+Parameters:
+  -t --t --type lraw|braw|ahex : Type of file with memory map. lraw -> little endian raw binary ; braw -> big endian raw binary ; ahex -> ascii hexadecimal file
+  -c : Add comments to all lines of the style [address] xxxx ....   where xxxx its the hexadecimal representation of these instruction.
+

@@ -1,7 +1,9 @@
 /**
  * DEDCPU-16 companion Disassembler
  */
-import std.stdio, std.conv, std.getopt;
+import std.stdio, std.conv, std.getopt, std.algorithm;
+import core.thread;
+import std.c.stdlib;
 
 import disassembler;
 
@@ -54,17 +56,42 @@ in {
 
 int main (string[] args) {
   
+  void showHelp() {
+    writeln(import("help_ddis.txt"));
+    exit(0);
+  }
+
   if (args.length < 2) {
-    writeln("Moar arguments!");
+    writeln(import("help_ddis.txt"));
     return -1;
   }
 
-  set_assembly(load_ram(TypeHexFile.lraw, args[1]));
-  string[] dis = get_diassamble();
-
-  foreach (line; dis) {
-    writeln (line);
+  string filename = args[1]; 
+  args = args[0] ~ args[2..$];
+  bool comment;
+  TypeHexFile file_fmt; // Use binary or textual format
+  
+  // Process arguements 
+  getopt(
+    args,
+    "c", &comment,
+    "type|t", &file_fmt,
+    "h", &showHelp);
+    
+  if (filename.length == 0) {
+    writeln("Missing input file\n Use dedcpu -ifilename");
+    return 0;
   }
+  
+  set_assembly(load_ram(file_fmt, filename));
+  string[addr_pair] dis = get_diassamble(comment);
 
+  addr_pair[] addresses = dis.keys;
+  sort!((a, b) {return a[0] < b[0];}) (addresses);
+  foreach (key ; addresses) {
+    //writefln ("%04X - %s", key[0], dis[key]);
+    writeln(dis[key]);
+  }
+  
   return 0;
 }
