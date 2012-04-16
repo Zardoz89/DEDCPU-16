@@ -34,7 +34,13 @@ __NOTE__: video_test.bin writes in video ram (0x8000) forever. It test video ram
 
 Based over DCPU-16 C Emulator of Karl Hobley turbodog10(at)yahoo.co.uk
 
-## License: ##
+# DEDCPU-16 companion disassembler #
+## Usage: ##
+    ./ddis file
+
+Prints in stdout a disassembled code of input file
+
+# License: #
 This project is licensed under the BSD license.
 
 Copyright (c) 2012, Luis Panadero Guardeño
