@@ -1,3 +1,4 @@
+* Dedicated diassembler subprogram-module
 * Full rewrite of DECPU-16 to be a more acurrated emulations, plus using a thread to display a Video output that allow direct keyboard input
 * Implement memory editing via a command
 * Implement a full code disassembler
