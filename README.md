@@ -41,8 +41,8 @@ Based over DCPU-16 C Emulator of Karl Hobley turbodog10(at)yahoo.co.uk
 Prints in stdout a disassembled code of input file
 ## Parameters: ##
 * __-t --t --type__ *lraw|braw|ahex* : Type of file with memory map. *lraw* -> little endian raw binary ; *braw* -> big endian raw binary ; *ahex* -> ascii hexadecimal file
-* __-c : Add a comentary each line with address and hexadecimal code of these instruction
-* __-l : Auto label jumps. EXPERIMENTA! Can crash and actually need to be used with -c option. Actually only auto labels SET PC, *literal* instructions
+* __-c__ : Add a comentary each line with address and hexadecimal code of these instruction
+* __-l__ : Auto label jumps. EXPERIMENTA! Can crash and actually need to be used with -c option. Actually only auto labels SET PC, *literal* instructions
 
 
 # License: #
