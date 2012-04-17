@@ -13,7 +13,7 @@ The notch.bin file was made with interfect dcpu-emu assembler
 <https://bitbucket.org/interfect/dcpu-emu>
 
 ## Usage: ##
-    ./dedcpu -ifilename [-ttype]
+    ./dedcpu -ifilename [-t*type*]
 ##Parameters:##
 * __-i --i --input__ *file* : Input file with memory map
 * __-t --t --type__ *lraw|braw|ahex* : Type of file with memory map. *lraw* -> little endian raw binary ; *braw* -> big endian raw binary ; *ahex* -> ascii hexadecimal file
@@ -36,9 +36,14 @@ Based over DCPU-16 C Emulator of Karl Hobley turbodog10(at)yahoo.co.uk
 
 # DEDCPU-16 companion disassembler #
 ## Usage: ##
-    ./ddis file
+    ./ddis file [-t*type* -l -c]
 
 Prints in stdout a disassembled code of input file
+## Parameters: ##
+* __-t --t --type__ *lraw|braw|ahex* : Type of file with memory map. *lraw* -> little endian raw binary ; *braw* -> big endian raw binary ; *ahex* -> ascii hexadecimal file
+* __-c : Add a comentary each line with address and hexadecimal code of these instruction
+* __-l : Auto label jumps. EXPERIMENTA! Can crash and actually need to be used with -c option. Actually only auto labels SET PC, *literal* instructions
+
 
 # License: #
 This project is licensed under the BSD license.
