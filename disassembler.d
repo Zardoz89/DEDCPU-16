@@ -277,9 +277,6 @@ string operand(string op ) (ubyte operand) {
   
 public:
 
-// pair of addreses that contains only one instruction 
-alias Tuple!(ushort, ushort) addr_pair;
-
 /**
  * Sets assembly machine code to be diassambled
  */
@@ -292,16 +289,18 @@ void set_assembly(ushort[] slice) {
  * Params:
  *  comment = Add comments to assembly code with the addre and hex machine code
  *  labels = auto tab and add labels to jumps
+ *  offset = add a offset to addresses of each instruction
  * Returns a asociative array where the key is a pair of addreses that contains
  * the instruction in machine code
  */
-string[addr_pair] get_diassamble(bool comment = false, bool labels = false) {
-  string[addr_pair] ret;
+string[ushort] get_diassamble(bool comment = false, bool labels = false, ushort offset = 0) {
+  string[ushort] ret;
   while(ram.length > pc) {
-    ushort word = ram[pc]; ushort old_pc = pc;
+    ushort word = ram[pc];
+    ushort old_pc = pc;
     string inst= dissamble(decode!"OpCode"(word), decode!"ExtOpCode"(word),
                 operand!"A"(decode!"OpA"(word)), operand!"B"(decode!"OpB"(word)));
-    addr_pair pos = tuple(old_pc, pc);
+    ushort pos = cast(ushort)(old_pc + offset);
     pc++;
     
     if (comment) { // Add coment  ; [addr] - xxxx ....
@@ -314,10 +313,10 @@ string[addr_pair] get_diassamble(bool comment = false, bool labels = false) {
       for(auto i=0; i<(26- inst.length); i++)
         ret[pos] ~= " ";
       auto writer = appender!string();
-      formattedWrite(writer, "[%04X] - %04X", pos[0], ram[pos[0]]);
+      formattedWrite(writer, "[%04X] - %04X", pos, ram[pos]);
       ret[pos] ~= ";"~ writer.data;
 
-      for (auto i=pos[0] +1; i <= pos[1]; i++) {
+      for (auto i=pos +1; i <= pc-1; i++) {
         writer = appender!string();
         formattedWrite(writer, " %04X", ram[i]);
         ret[pos] ~= writer.data;

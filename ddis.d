@@ -2,6 +2,7 @@
  * DEDCPU-16 companion Disassembler
  */
 import std.stdio, std.conv, std.getopt, std.algorithm;
+import std.string;
 import core.thread;
 import std.c.stdlib;
 
@@ -68,13 +69,14 @@ int main (string[] args) {
 
   string filename = args[1]; 
   args = args[0] ~ args[2..$];
-  bool comment;
+  bool comment, labels;
   TypeHexFile file_fmt; // Use binary or textual format
   
   // Process arguements 
   getopt(
     args,
     "c", &comment,
+    "l", &labels,
     "type|t", &file_fmt,
     "h", &showHelp);
     
@@ -84,10 +86,23 @@ int main (string[] args) {
   }
   
   set_assembly(load_ram(file_fmt, filename));
-  string[addr_pair] dis = get_diassamble(comment);
+  string[ushort] dis = get_diassamble(comment, labels);
+  // Auto labeling
+  if (labels) {
+    foreach (key, ref line ;dis) {
+      if (line.length > 24 && line[16..26] == "SET PC, 0x" ) {
+        ushort jmp = parse!ushort(line[26..$], 16);
+        if (jmp in dis) {
+          line = line[0..24] ~ format(" lb%04X ", jmp) ~ line[32..$];
+          dis[jmp] = format(":lb%04X ", jmp) ~ dis[jmp][8..$];
+        }
+      }
+    }
+  }
 
-  addr_pair[] addresses = dis.keys;
-  sort!((a, b) {return a[0] < b[0];}) (addresses);
+  // Sort by address
+  ushort[] addresses = dis.keys;
+  sort!("a<b") (addresses);
   foreach (key ; addresses) {
     //writefln ("%04X - %s", key[0], dis[key]);
     writeln(dis[key]);
