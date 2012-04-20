@@ -17,6 +17,8 @@ SOURCES_MAIN =ddis.d dedcpu.d
 # include some command
 include command.Make
 
+EXE_NAME := $(addprefix $(BIN_PATH)$(PATH_SEP), $(EXE_NAME))
+
 OBJECTS       =$(patsubst %.d,$(BUILD_PATH)$(PATH_SEP)%.o, $(SOURCES))
 OBJECTS_MAIN  =$(patsubst %.d,$(BUILD_PATH)$(PATH_SEP)%.o, $(SOURCES_MAIN))
 
@@ -33,7 +35,6 @@ all: $(EXE_NAME)
 ############# Compiling ################
 
 # Do executable files
-# TODO FIX HERE
 $(EXE_NAME): $(OBJECTS_MAIN) $(OBJECTS)
 	$(DC) $< $(OBJECTS) $(OUTPUT)$@
 	@echo ------------------ creating $@ executable done

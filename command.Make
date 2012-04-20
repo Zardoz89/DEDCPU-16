@@ -256,6 +256,7 @@ IMPORT_PATH         = ./import
 DOC_PATH            = ./doc
 DDOC_PATH           = ./ddoc
 BUILD_PATH          = ./build
+BIN_PATH            = ./bin
 
 DCFLAGS_IMPORT      = -J.
 DCFLAGS_LINK        = $(LDCFLAGS)
