@@ -11,8 +11,8 @@ EXE_NAME     =ddis dedcpu
 SOURCES      =disassembler.d
 # Target source code files
 SOURCES_MAIN =ddis.d dedcpu.d
-# Files to be added to DDoc
-DDOCFILES    =
+# DDoc definition files
+#DDOCFILES    =cutedoc.ddoc
 
 # include some command
 include command.Make
@@ -52,16 +52,16 @@ $(OBJECTS_MAIN): $(SOURCES_MAIN)
 ############# Documentation ################
 doc: $(DOCUMENTATIONS)
 
-ddoc:
-	$(DC) $(DDOC_FLAGS) index.d $(DF)$(DOC_PATH)$(PATH_SEP)index.html
+#ddoc:
+#	$(DC) $(DDOC_FLAGS) index.d $(DF)$(DOC_PATH)$(PATH_SEP)index.html
 
 # Generate Documentation
 $(DOC_PATH)$(PATH_SEP)%.html : %.d
 	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $(NO_OBJ)  $< $(DF)$@
 
 # Generate ddoc Documentation
-$(DDOC_PATH)$(PATH_SEP)%.html : %.d
-	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $(NO_OBJ) $(DDOC_FLAGS) $< $(DF)$@
+#$(DDOC_PATH)$(PATH_SEP)%.html : %.d
+#	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $(NO_OBJ) $(DDOC_FLAGS) $< $(DF)$@
 
 ############# CLEAN #############
 clean: clean-objects clean-executable clean-doc clean-ddoc
