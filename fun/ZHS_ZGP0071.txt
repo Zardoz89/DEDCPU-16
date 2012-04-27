@@ -1,0 +1,146 @@
+ZHS_ZGP0071
+
+                            ___
+                               / /
+                              / /     . . .-.
+                             / /      |-| `-.
+                            / /       ' ` `-'
+                           / /___
+                          Z Hardware Solutions
+                       "Zero problem, maximal fun"
+
+
+DCPU-16 Hardware Info:
+    Name: ZGP0071 - Zempston+ Game Port board
+    ID: 0xbe15cafe, version: 0x0002
+    Manufacturer: 0x5a5f4853 (Z_HS)
+    Document version: 1.0
+    
+    
+Change history:
+    1.0: Initial release.
+    1.1: Updated QUERY_INTERRUPT_TYPE to a bitmap
+    
+Description:
+    The ZGP0071, Zempston+ Game Port board, is the evolution of our
+    previously Zempston Game Port board for personal computers. This new kind
+    of game port, supports two joystick per board, and each joystick supports
+    a outstanding quantity of four buttons and two analogical axis that allow
+    precise and soft control for any kind of game.
+
+    The game port it's electrical and mechanical compatible with our previous
+    Zempston Game Port board, allowing using any joystick compatible with the
+    old Zempston joystick game port.
+
+    Sounds good! Why, not?
+      -- Luis Panadero Guarderia, CEO and Chief designer of Z Hardware Solutions
+    
+    
+Interrupt behaviour:
+    The ZHS0071 supports a number of HWI commands based on the value of the A
+    register:
+    
+    0x0000: QUERY_JOYSTICK_PRESENT
+            Sets B register value according the number of connected joysticks.
+            It sets the be register to B if not are any joystick plugged in the
+            board.
+            
+    0x0001: QUERY_J1_VALUES
+            Reads the joystick 1 axis and buttons values, setting:
+            
+            LSB of B: Signed integer that represent X axis value. 0 means center
+                      , 127 means full right and -127 means full left.
+            MSB of B: Signed integer that represent Y axis value. 0 means center
+                      , 127 means full up and -127 means full bottom.
+            C = A bit map showing each button pressed. Where the lowest bit
+                it's the button 1.
+
+            If Joystick 1, it's unplugged, this values will be all 0.
+            
+    0x0002: QUERY_J2_VALUES
+            Reads the joystick 2 axis and buttons values, setting:
+
+            LSB of B: Signed integer that represent X axis value. 0 means center
+                      , 127 means full right and -127 means full left.
+            MSB of B: Signed integer that represent Y axis value. 0 means center
+                      , 127 means full up and -127 means full bottom.
+            C = A bit map showing each button pressed. Where the lowest bit
+                it's the button 1.
+
+            If Joystick 2, it's unplugged, this values will be all 0.
+            
+    0x0003: QUERY_INTERRUPT_TYPE
+            The device will indicate the type of interrupt that it last raised 
+            by clearing B and seeting one or more bits to 1
+            
+            bit 0 : If it's ON, there a Button 1 pressed on J1
+            bit 1 : If it's ON, there a Button 2 pressed on J1
+            bit 2 : If it's ON, there a Button 3 pressed on J1
+            bit 3 : If it's ON, there a Button 4 pressed on J1
+
+            bit 4 : If it's ON, there a Button 1 pressed on J2
+            bit 5 : If it's ON, there a Button 2 pressed on J2
+            bit 6 : If it's ON, there a Button 3 pressed on J2
+            bit 7 : If it's ON, there a Button 4 pressed on J2
+            
+            Rest of bits are not used
+            
+    0x0004: ACTIVATE_INTERRUPTS
+            Reads A, and if A it's 0, not send any interrupt. If A value it's 1
+            or grater, then activate sending interrupts.
+    
+    0x0005: SET_INTERRUPT_MESSAGE
+            Specifies the message the device should use for software interrupts.
+            Takes one parameter:
+            
+            B = Interrupt number to use when interrupting the DCPU.
+            
+            If the device raises an interrupt before the message is set, it will
+            default to using 0xFFFF.
+            
+Characteristic of game port:
+    Connector: DA-15 female
+    Pin-out:
+      Pin   |   Description
+    -----------------------------------------
+       1    |  +5V DC
+       2    |  Button 1
+       3    |  Button 2
+       4    |  Button 3
+       5    |  Button 4
+       6    |  Not used (reserved)
+       7    |  Not used (reserved)
+       8    |  Not used (reserved)
+       9    |  Not used (reserved)
+      10    |  X axis (0-100 kOhm)
+      11    |  GND for X axis
+      12    |  Y axis (0-100 kOhm)
+      13    |  GND for Y axis
+      14    |  GND (short-circuit with pin 15 inside the joystick)
+      15    |  GND
+
+    Pin 14 must be short-circuited with pin 15, because allow to
+    detect when a joysticks is plugged.
+
+    Max total current: 750 mA
+
+Electrical connection:
+    Each axis it's connect in the board to a ADC that reads the resistive value
+    of each axis. At his maximal resistive value, it represents up/right and
+    his minimal value, represents bottom/left. This allow using lineal pots for
+    analogical joysticks or switches that commute resistors for digital
+    joysticks/pads.
+
+    Each button, works setting +5V DC, using a simple switch and a resistor of
+    100kOhm connected to ground and the pin. Internally the board
+    had capacitators of 0,1uC to remove bounce effect of switches.
+      
+    
+
+EOF
+
+
+Author's Note:
+    
+    It's for fun.
+    
