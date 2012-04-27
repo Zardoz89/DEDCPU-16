@@ -14,7 +14,7 @@ DCPU-16 Hardware Info:
     Name: ZGP0071 - Zempston+ Game Port board
     ID: 0xbe15cafe, version: 0x0002
     Manufacturer: 0x5a5f4853 (Z_HS)
-    Document version: 1.0
+    Document version: 1.1
     
     
 Change history:
