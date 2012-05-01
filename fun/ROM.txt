@@ -34,7 +34,7 @@ Interrupt behaviour:
             RAM. So if A = 0x0000, the ROM chip will clone all his contain to
             the RAM from the RAM addres 0x0000 to 0x(size)
             
-    0x0002: GET_SIZE
+    0x0001: GET_SIZE
             Sets B register to the ROM chip size in 16bit words.
             
     0x0002: SERIAL_NUMBER
