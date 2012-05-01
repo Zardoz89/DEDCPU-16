@@ -40,7 +40,10 @@ ubyte decode(string what)(ushort word) pure {
  *  n_words  = Size of disassambled instruction
  * Returns: A string that contains a diassambled code
  */
-string disassamble(ushort[] words, out ushort n_words) {
+string disassamble(ushort[] words, out ushort n_words)
+in {
+  assert(words.length >= 2);
+}body {
   ubyte opcode = decode!"OpCode"(words[0]);
   n_words = 1;
   string op_a = operand!"OpA"(words, n_words);
@@ -54,7 +57,10 @@ string disassamble(ushort[] words, out ushort n_words) {
     return ";Unknow Extended OpCode";
     
   } else { // Decode operation
-    string op_b = operand!"OpB"(words, n_words);
+    ushort[] tmp;
+    tmp ~= words[0];
+    tmp ~= words[n_words];
+    string op_b = operand!"OpB"(tmp, n_words);
     foreach (s; __traits(allMembers, OpCode)) {
       if (opcode == mixin("OpCode." ~ s)) {
         return s ~ " " ~ op_b ~ " " ~ op_a;
@@ -76,6 +82,7 @@ string operand(string op ) (ushort[] words, ref ushort n_words) {
   //assert (words.length >= 3);
   ushort operand = decode!op(words[0]);
   auto writer = appender!string();
+
   switch (operand) {
       case Operand.A:   // Register x
     return "A";
@@ -113,69 +120,41 @@ string operand(string op ) (ushort[] words, ref ushort n_words) {
 
       case Operand.Aptr_word: // Register pointer with added word
     n_words++;
-    static if (op == "OpB") {
-      return format("[A+ 0x%04X]", words[1]);
-    } else {
-      return format("[A+ 0x%04X]", words[0]);
-    }
+    return format("[A+ 0x%04X]", words[1]);
+
     
       case Operand.Bptr_word:
     n_words++;
-    static if (op == "OpB") {
-      return format("[B+ 0x%04X]", words[1]);
-    } else {
-      return format("[B+ 0x%04X]", words[0]);
-    }
-    //formattedWrite(writer, "[B+ 0x%04X]", ram[++pc]);
-    //return writer.data;
-    
+    return format("[B+ 0x%04X]", words[1]);
+
       case Operand.Cptr_word:
     n_words++;
-    static if (op == "OpB") {
-      return format("[C+ 0x%04X]", words[1]);
-    } else {
-      return format("[C+ 0x%04X]", words[0]);
-    }
+    return format("[C+ 0x%04X]", words[1]);
+
     
       case Operand.Xptr_word:
     n_words++;
-    static if (op == "OpB") {
-      return format("[X+ 0x%04X]", words[1]);
-    } else {
-      return format("[X+ 0x%04X]", words[0]);
-    }
+    return format("[X+ 0x%04X]", words[1]);
+
     
       case Operand.Yptr_word:
     n_words++;
-    static if (op == "OpB") {
-      return format("[Y+ 0x%04X]", words[1]);
-    } else {
-      return format("[Y+ 0x%04X]", words[0]);
-    }
+    return format("[Y+ 0x%04X]", words[1]);
+
     
       case Operand.Zptr_word:
     n_words++;
-    static if (op == "OpB") {
-      return format("[Z+ 0x%04X]", words[1]);
-    } else {
-      return format("[Z+ 0x%04X]", words[0]);
-    }
+    return format("[Z+ 0x%04X]", words[1]);
     
       case Operand.Iptr_word:
     n_words++;
-    static if (op == "OpB") {
-      return format("[I+ 0x%04X]", words[1]);
-    } else {
-      return format("[I+ 0x%04X]", words[0]);
-    }
+    return format("[I+ 0x%04X]", words[1]);
+
     
       case Operand.Jptr_word:
     n_words++;
-    static if (op == "OpB") {
-      return format("[J+ 0x%04X]", words[1]);
-    } else {
-      return format("[J+ 0x%04X]", words[0]);
-    }
+    return format("[J+ 0x%04X]", words[1]);
+
 
       case Operand.POP_PUSH: // POP
     static if (op == "OpB") {
@@ -189,11 +168,8 @@ string operand(string op ) (ushort[] words, ref ushort n_words) {
     
       case Operand.PICK_word:
     n_words++;
-    static if (op == "OpB") {
-      return format("[SP+ 0x%04X]", words[1]);
-    } else {
-      return format("[SP+ 0x%04X]", words[0]);
-    }
+    return format("[SP+ 0x%04X]", words[1]);
+
     
       case Operand.SP: // SP
     return "SP";
@@ -206,22 +182,16 @@ string operand(string op ) (ushort[] words, ref ushort n_words) {
 
       case Operand.NWord_ptr: // next word pointer
     n_words++;
-    static if (op == "OpB") {
-      return format("[0x%04X]", words[1]);
-    } else {
-      return format("[0x%04X]", words[0]);
-    }
+    return format("[0x%04X]", words[1]);
+
 
       case Operand.NWord: // word literal
     n_words++;
-    static if (op == "OpB") {
-      return format("0x%04X", words[1]);
-    } else {
-      return format("0x%04X", words[0]);
-    }
+    return format("0x%04X", words[1]);
+
 
       default: // literal
-    return format("0x%02X", operand - Operand.Literal -1); // -1 to 30
+    return format("%d", operand - Operand.Literal -1); // -1 to 30
 
   }
 }
@@ -254,7 +224,10 @@ string[ushort] get_diassamble(bool comment = false, bool labels = false, ushort 
     if (pc < ram.length -3) {
       inst= disassamble(ram[pc..pc+4], n_words);
     } else {
-      inst= disassamble(ram[pc..$], n_words);
+      ushort[] tmp = ram[pc..$];
+      tmp ~= 0;
+      tmp ~= 0;
+      inst= disassamble(tmp, n_words);
     }
 
     ushort pos = cast(ushort)(old_pc + offset);
