@@ -6,7 +6,7 @@ import std.string;
 import core.thread;
 import std.c.stdlib;
 
-import disassembler;
+import dcpu.disassembler;
 
 enum TypeHexFile {lraw, braw, ahex, hex8}; /// Type of machine code file
 
