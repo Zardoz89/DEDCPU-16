@@ -1,0 +1,44 @@
+This text it's under a Creative Commons 3.0 License
+<http://creativecommons.org/licenses/by/3.0/>.
+You are free:
+    to Share — to copy, distribute and transmit the work
+    to Remix — to adapt the work
+    to make commercial use of the work
+
+Under the following conditions:
+    Attribution — You must attribute the work in the manner specified by the
+author or licensor (but not in any way that suggests that they endorse you or
+your use of the of the work)
+
+xxx_ROMxxxx
+
+DCPU-16 Hardware Info:
+    Name: ROMxxxx - ROM chip
+    ID: 0xxxxxxxxx, version: 0xxxx
+    Manufacturer: 0xxxxxxxxx
+    Document version: 1.0
+    
+    
+Change history:
+    1.0: Initial release.
+    
+Description:
+    Generic ROM device specs
+    
+    
+Interrupt behaviour:
+        
+    0x0000: CLONE_ROM_TO_RAM
+            Clone the contain of the ROM chip to the RAM of the DCPU-16. It
+            uses the value of A register to get the origine where to map in the
+            RAM. So if A = 0x0000, the ROM chip will clone all his contain to
+            the RAM from the RAM addres 0x0000 to 0x(size)
+            
+    0x0002: GET_SIZE
+            Sets B register to the ROM chip size in 16bit words.
+            
+    0x0002: SERIAL_NUMBER
+            Sets B register to the ROM chip Serial Number
+            
+
+EOF

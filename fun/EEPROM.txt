@@ -1,0 +1,54 @@
+This text it's under a Creative Commons 3.0 License
+<http://creativecommons.org/licenses/by/3.0/>.
+You are free:
+    to Share — to copy, distribute and transmit the work
+    to Remix — to adapt the work
+    to make commercial use of the work
+
+Under the following conditions:
+    Attribution — You must attribute the work in the manner specified by the
+author or licensor (but not in any way that suggests that they endorse you or
+your use of the of the work)
+
+xxx_EEPROMxxxx
+
+DCPU-16 Hardware Info:
+    Name: ROMxxxx - ROM chip
+    ID: 0xxxxxxxxx, version: 0xxxx
+    Manufacturer: 0xxxxxxxxx
+    Document version: 1.0
+    
+    
+Change history:
+    1.0: Initial release.
+    
+Description:
+    Generic Electrically Erasable Programmable ROM device specs
+    
+    
+Interrupt behaviour:
+        
+    0x0000: CLONE_ROM_TO_RAM
+            Clone the contain of the EEPROM chip to the RAM of the DCPU-16. It
+            uses the value of A register to get the origine where to map in the
+            RAM. So if A = 0x0000, the EEPROM chip will clone all his contain to
+            the RAM from the RAM addres 0x0000 to 0x(size)
+            
+    0x0002: GET_SIZE
+            Sets B register to the EEPROM chip size in 16bit words.
+            
+    0x0002: SERIAL_NUMBER
+            Sets B register to the EEPROM chip Serial Number
+            
+    0x0003: CLONE_RAM_TO_ROM
+            Clone the contain of a slice of RAM of DCPU-16 to the EEPROM chip.
+            It uses the value of A register to get the origin address of RAM
+            were to read, and C register value to get the size of the slice in
+            16bit words. For example, using A = 0 , B = 0x200, It will write to
+            the EEPROM the first 512 word of the RAM.
+            This process takes 5 cycles per 512 words writed in EEPROM
+            chip.
+
+            
+
+EOF
