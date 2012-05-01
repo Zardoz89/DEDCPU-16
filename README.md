@@ -1,16 +1,24 @@
-# DEDCPU-16 D Emulator for DCPU-16 #
+# DDis disassembler for DCPU-16 v1.7 #
+## Usage: ##
+    ./ddis file [-ttype -l -c]
+
+Prints in stdout a disassembled code of input file
+## Parameters: ##
+* __-t --t --type__ *lraw|braw|ahex* : Type of file with memory map. *lraw* -> little endian raw binary ; *braw* -> big endian raw binary ; *ahex* -> ascii hexadecimal file
+* __-c__ : Add a comentary each line with address and hexadecimal code of these instruction
+* __-l__ : Auto label jumps. BROKEN Can crash and actually need to be used with -c option.
+
+# License: #
+This project is licensed under the BSD license.
+
+
+# DEDCPU-16 D Emulator for DCPU-16 v1.1 (not use it)#
 A D based minimal emulator for Notch's DCPU-16 v1.1, written for the fun of it.
 DEDCPU-16 aims to be a accurate and quick emulator working of CLI and capable of working like a emulation/debugger back-end for any IDE aimed to programming DCPU-16.
 
 See: [DCPU-16 specs](http://0x10c.com/doc/dcpu-16.txt)
 
 Why: Why not ?
-
-The test.ascii file was made with swetland dcpu-16 assembler
-<https://github.com/swetland/dcpu16>
-
-The notch.bin file was made with interfect dcpu-emu assembler
-<https://bitbucket.org/interfect/dcpu-emu>
 
 ## Usage: ##
     ./dedcpu -ifilename [-ttype]
@@ -34,19 +42,7 @@ __NOTE__: video_test.bin writes in video ram (0x8000) forever. It test video ram
 
 Based over DCPU-16 C Emulator of Karl Hobley turbodog10(at)yahoo.co.uk
 
-# DEDCPU-16 companion disassembler #
-## Usage: ##
-    ./ddis file [-ttype -l -c]
 
-Prints in stdout a disassembled code of input file
-## Parameters: ##
-* __-t --t --type__ *lraw|braw|ahex* : Type of file with memory map. *lraw* -> little endian raw binary ; *braw* -> big endian raw binary ; *ahex* -> ascii hexadecimal file
-* __-c__ : Add a comentary each line with address and hexadecimal code of these instruction
-* __-l__ : Auto label jumps. EXPERIMENTAL! Can crash and actually need to be used with -c option. Actually only auto labels SET PC, *literal* instructions
-
-
-# License: #
-This project is licensed under the BSD license.
 
 Copyright (c) 2012, Luis Panadero Guardeño
 All rights reserved.

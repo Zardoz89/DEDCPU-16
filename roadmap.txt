@@ -1,5 +1,6 @@
 * Full rewrite of DECPU-16 to be a more acurrated emulations, plus using a thread to display a Video output that allow direct keyboard input
 * Implement memory editing via a command
-* Implement a full code disassembler
-* More debugging usefull options
-* Implement a Intel HEX input/output data
+* Fix some details of ddis disassembler and finish auto-labeling feature
+* Rewrite a new emulator compilant with DCPU-16 v1.7
+* Add multiple hardware support
+* Add a GUI for DEDCPU-16
