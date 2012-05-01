@@ -1,16 +1,16 @@
 export PROJECT_NAME = DEDCPU-16
 export AUTHOR       = Luis Panadero Guardeño
 export DESCRIPTION  = D Emulator for DCPU-16
-export VERSION      = 0.2
+export VERSION      = 0.3
 export LICENSE      = BSD
 
 ################## Source Files and other stuff #######################
 # Executable files
-EXE_NAME     =ddis dedcpu
+EXE_NAME     =ddis
 # Commun source code files
-SOURCES      =disassembler.d
+SOURCES      =dcpu/disassembler.d
 # Target source code files
-SOURCES_MAIN =ddis.d dedcpu.d
+SOURCES_MAIN =ddis.d
 # DDoc definition files
 #DDOCFILES    =cutedoc.ddoc
 
