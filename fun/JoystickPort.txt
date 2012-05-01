@@ -1,19 +1,21 @@
-ZHS_ZGP0071
+This text it's under a Creative Commons 3.0 License
+<http://creativecommons.org/licenses/by/3.0/>.
+You are free:
+    to Share — to copy, distribute and transmit the work
+    to Remix — to adapt the work
+    to make commercial use of the work
 
-                            ___
-                               / /
-                              / /     . . .-.
-                             / /      |-| `-.
-                            / /       ' ` `-'
-                           / /___
-                          Z Hardware Solutions
-                       "Zero problem, maximal fun"
+Under the following conditions:
+    Attribution — You must attribute the work in the manner specified by the
+author or licensor (but not in any way that suggests that they endorse you or
+your use of the of the work)
 
+xxx_ZGPxxxx
 
 DCPU-16 Hardware Info:
-    Name: ZGP0071 - Zempston+ Game Port board
-    ID: 0xbe15cafe, version: 0x0002
-    Manufacturer: 0x5a5f4853 (Z_HS)
+    Name: ZGPxxxx - Zempston+ Game Port board
+    ID: 0xxxxxxxxx, version: 0xxxx
+    Manufacturer: 0xxxxxxxxx
     Document version: 1.1
     
     
@@ -22,22 +24,15 @@ Change history:
     1.1: Updated QUERY_INTERRUPT_TYPE to a bitmap
     
 Description:
-    The ZGP0071, Zempston+ Game Port board, is the evolution of our
-    previously Zempston Game Port board for personal computers. This new kind
-    of game port, supports two joystick per board, and each joystick supports
-    a outstanding quantity of four buttons and two analogical axis that allow
-    precise and soft control for any kind of game.
-
-    The game port it's electrical and mechanical compatible with our previous
-    Zempston Game Port board, allowing using any joystick compatible with the
-    old Zempston joystick game port.
-
-    Sounds good! Why, not?
-      -- Luis Panadero Guarderia, CEO and Chief designer of Z Hardware Solutions
+    The ZGPxxxx, Zempston+ Game Port board .... bla bla bla ...................
+    ...........................................................................
+    supports two joystick per board, and each joystick supports a outstanding
+    quantity of four buttons and two analogical axis that allow precise and
+    soft control for any kind of game.
     
     
 Interrupt behaviour:
-    The ZHS0071 supports a number of HWI commands based on the value of the A
+    The ZGPxxxx supports a number of HWI commands based on the value of the A
     register:
     
     0x0000: QUERY_JOYSTICK_PRESENT
@@ -98,6 +93,9 @@ Interrupt behaviour:
             If the device raises an interrupt before the message is set, it will
             default to using 0xFFFF.
             
+Some spec stuff that you are free to change or remove that only give a bit more
+of realism.
+            
 Characteristic of game port:
     Connector: DA-15 female
     Pin-out:
@@ -134,13 +132,6 @@ Electrical connection:
     Each button, works setting +5V DC, using a simple switch and a resistor of
     100kOhm connected to ground and the pin. Internally the board
     had capacitators of 0,1uC to remove bounce effect of switches.
-      
     
 
 EOF
-
-
-Author's Note:
-    
-    It's for fun.
-    
