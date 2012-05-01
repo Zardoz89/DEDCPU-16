@@ -5,81 +5,14 @@ module disassembler;
 
 import std.stdio, std.array, std.string, std.conv, std.getopt, std.format;
 
+import dcpu.dcpu-16;
+
 public import std.typecons;
 
 private:
 
 ushort[] ram; /// Assembly machine code is stored here
 ushort pc;    /// Pointer to machine code 
-
-/// Valid basic OpCodes
-enum ubyte
-  ExtOpCode=0x00,
-  SET=0x01,
-  ADD=0x02,
-  SUB=0x03,
-  MUL=0x04,
-  DIV=0x05,
-  MOD=0x06,
-  SHL=0x07,
-  SHR=0x08,
-  AND=0x09,
-  OR =0x0A, // BOR
-  XOR=0x0B,
-  IFE=0x0C, // IFEqual
-  IFN=0x0D, // IFNot equal
-  IFG=0x0E, // IFGreat
-  IFB=0x0F; // IFBits set
-
-
-/**
- * Valid ExtendedOpCode
- */
-enum ubyte
-  JSR=0x01;
-  
-/**
- * Cts of operan type when procesing a operand
- */
-enum ubyte
-  A = 0x00, // General Registers
-  B = 0x01,
-  C = 0x02,
-  X = 0x03,
-  Y = 0x04,
-  Z = 0x05,
-  I = 0x06,
-  J = 0x07,
-  
-  Aptr = 0x08, // [register]
-  Bptr = 0x09,
-  Cptr = 0x0A,
-  Xptr = 0x0B,
-  Yptr = 0x0C,
-  Zptr = 0x0D,
-  Iptr = 0x0E,
-  Jptr = 0x0F,
-
-  Aptr_word = 0x10, // [register + next word]
-  Bptr_word = 0x11,
-  Cptr_word = 0x12,
-  Xptr_word = 0x13,
-  Yptr_word = 0x14,
-  Zptr_word = 0x15,
-  Iptr_word = 0x16,
-  Jptr_word = 0x17,
-
-  POP = 0x18, // Stack
-  PEEK = 0x19,
-  PUSH = 0x1A,
-
-  SP = 0x1B, // Non general registers
-  PCr = 0x1C,
-  O = 0x1D,
-
-  Word_ptr = 0x1E, // [next word]
-  Word = 0x1F, // next_word
-  Literal = 0x20; // literal
 
 /**
 * Extract a particular information from a instruction
