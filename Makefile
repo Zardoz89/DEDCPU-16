@@ -8,7 +8,7 @@ export LICENSE      = BSD
 # Executable files
 EXE_NAME     =ddis
 # Commun source code files
-SOURCES      =dcpu/disassembler.d
+SOURCES      =dcpu/ram_loader.d
 # Target source code files
 SOURCES_MAIN =ddis.d
 # DDoc definition files
@@ -35,8 +35,8 @@ all: $(EXE_NAME)
 ############# Compiling ################
 
 # Do executable files
-$(EXE_NAME): $(OBJECTS_MAIN) $(OBJECTS)
-	$(DC) $< $(OBJECTS) $(OUTPUT)$@
+$(EXE_NAME): $(OBJECTS_MAIN) $(OBJECTS) dcpu/disassembler.o
+	$(DC) $< $(OBJECTS) dcpu/disassembler.o $(OUTPUT)$@
 	@echo ------------------ creating $@ executable done
 
 # Do object files
@@ -44,6 +44,10 @@ $(OBJECTS): $(SOURCES)
 	@echo Compiling $< $@
 	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
 
+dcpu/disassembler.o: dcpu/disassembler.d
+	@echo Compiling $< $@
+	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
+	
 # Do main objects files
 $(OBJECTS_MAIN): $(SOURCES_MAIN)
 	@echo Compiling $< $@
