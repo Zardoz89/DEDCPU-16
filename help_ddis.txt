@@ -1,4 +1,4 @@
-A D based disassenbler for Notch's DCPU-16 v1.1.
+A D based disassenbler for Notch's DCPU-16 v1.17
 
 Usage:
   ./ddis filename [-ttype -c]
