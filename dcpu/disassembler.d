@@ -54,7 +54,7 @@ in {
         return s ~ " " ~ op_a;
       }
     }
-    return ";Unknow Extended OpCode";
+    return format("DAT 0x%04X", words[0]);//";Unknow Extended OpCode";
     
   } else { // Decode operation
     ushort[] tmp;
@@ -66,7 +66,7 @@ in {
         return s ~ " " ~ op_b ~ " " ~ op_a;
       }
     }
-    return ";Unknow OpCode";
+    return format("DAT 0x%04X", words[0]);//";Unknow Extended OpCode";
   }
 }
   
