@@ -1,59 +1,33 @@
-# DDis disassembler for DCPU-16 v1.7 #
-## Usage: ##
-    ./ddis file [-ttype -l -c]
+# D DISassembler for DCPU-16 v1.7 #
 
-Prints in stdout a disassembled code of input file
-## Parameters: ##
-* __-t --t --type__ *lraw|braw|ahex* : Type of file with memory map. *lraw* -> little endian raw binary ; *braw* -> big endian raw binary ; *ahex* -> ascii hexadecimal file
-* __-c__ : Add a comentary each line with address and hexadecimal code of these instruction
-* __-l__ : Auto label jumps. BROKEN Can crash and actually need to be used with -c option.
+## Usage: ##
+  ./ddis filename [options]
+## Options: ##
+* __-h__                   Show this message
+*  -t or --type *type*  Type of file with memory map. __lraw__ -> little endian raw binary ; __braw__ -> big endian raw binary ; __ahex__ -> ascii hexadecimal file. By default ddis asumes little endian raw binary input file
+*  __-c__                   Add comments to all lines of the style [address] xxxx ....   where xxxx its the hexadecimal representation of these instruction.
+*  __-l__                   Autolabel all jumps (actually only SET PC, ....)
+
+## Notes: ##
+File test2.bin it's a Big Endian raw binary file for test disassembling. Don't use it in a emulater because it's a imcoplete code. You can compare ddis output of these file with test2.dasm that it's the source code that generated test2.bin.
+
 
 # License: #
 This project is licensed under the BSD license.
-
-
-# DEDCPU-16 D Emulator for DCPU-16 v1.1 (not use it)#
-A D based minimal emulator for Notch's DCPU-16 v1.1, written for the fun of it.
-DEDCPU-16 aims to be a accurate and quick emulator working of CLI and capable of working like a emulation/debugger back-end for any IDE aimed to programming DCPU-16.
-
-See: [DCPU-16 specs](http://0x10c.com/doc/dcpu-16.txt)
-
-Why: Why not ?
-
-## Usage: ##
-    ./dedcpu -ifilename [-ttype]
-##Parameters:##
-* __-i --i --input__ *file* : Input file with memory map
-* __-t --t --type__ *lraw|braw|ahex* : Type of file with memory map. *lraw* -> little endian raw binary ; *braw* -> big endian raw binary ; *ahex* -> ascii hexadecimal file
-
-## Commands: ##
-* __q__               -> End emulation
-* __s__ or Enter key  -> Step one instruction
-* __r__ *number*      -> Runs number instructions without stop. Nothing or 0 for running forever (Ctrl+C to abort)
-* __b__ *address*     -> Toggle breakpoint at address. Only works if is the begin of a valid instruction.
-* __m__ *begin[-end]* -> Display a chunk of RAM from begin to end address of RAM (address in hex). If end it's omitted, only show RAM value at begin address.
-* __d__ *begin[-end]* -> Dumps a chunk of RAM to a __dump.bin__ file in little endian raw binary. Same semantics that __'m'__
-* __i__ *text*        -> Sends text to keyboard input buffer in emulated machine
-* __v__               -> Show a label showing the meaning of each column
-
-In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.
-
-__NOTE__: video_test.bin writes in video ram (0x8000) forever. It test video ram and cooperative multitasking. This program is know that not runs in some emulators.
-
-Based over DCPU-16 C Emulator of Karl Hobley turbodog10(at)yahoo.co.uk
-
-
 
 Copyright (c) 2012, Luis Panadero Guardeño
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
+
 1. Redistributions of source code must retain the above copyright
    notice, this list of conditions and the following disclaimer.
+   
 2. Redistributions in binary form must reproduce the above copyright
    notice, this list of conditions and the following disclaimer in the
    documentation and/or other materials provided with the distribution.
+   
 3. The names of its contributors may not be used to endorse or promote
    products derived from this software without specific prior written permission.
 
