@@ -1,8 +1,13 @@
-If you have Ubuntu 12.xx You can install gdc (for language version 2).
-If have a more older version of Ubuntu, or you are using other distribution or other SO, use the 
-official D compiler at http://dlang.org/download.html .
+DDis and DEDCPU are made with D2 language, so you need a D2 compiler:
+  If you have Ubuntu 12.xx You can install gdc (for language version 2).
+  If have a more older version of Ubuntu, DON'T USE GDC FROM UBUNTU REPOSITORY.
+  Instead I recomend to use the official D compiler at
+  http://dlang.org/download.html for older versions of Ubuntu or for Windows and
+  Mac.
 
-To compile, run:
+To compile:
+  You only need to simple run:
     make
-
-It will compile all executables
+  It will generate executable file in a /bin directory
+  If you have the official D compiler, you can try to use ddis via rdmd:
+    rdmd -J. ddis.d ddis file [ddis options]
