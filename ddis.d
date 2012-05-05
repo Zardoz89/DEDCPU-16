@@ -11,7 +11,7 @@ import dcpu.disassembler, dcpu.ram_loader;
 
 
 int main (string[] args) {
-  
+  ushort[] data;
   void showHelp() {
     writeln(import("help_ddis.txt"));
     exit(0);
@@ -41,26 +41,14 @@ int main (string[] args) {
   }
   
   if (file_fmt == TypeHexFile.lraw) {
-    set_assembly(load_ram!(TypeHexFile.lraw)(filename));
+    data = load_ram!(TypeHexFile.lraw)(filename);
   } else if (file_fmt == TypeHexFile.braw) {
-    set_assembly(load_ram!(TypeHexFile.braw)(filename));
+    data = load_ram!(TypeHexFile.braw)(filename);
   } else {
-    set_assembly(load_ram!(TypeHexFile.ahex)(filename));
+    data = load_ram!(TypeHexFile.ahex)(filename);
   }
   
-  string[ushort] dis = get_diassamble(comment, labels);
-  // Auto labeling
-  if (labels) {
-    foreach (key, ref line ;dis) {
-      if (line.length > 24 && line[16..26] == "SET PC, 0x" ) {
-        ushort jmp = parse!ushort(line[26..$], 16);
-        if (jmp in dis) {
-          line = line[0..24] ~ format(" lb%04X ", jmp) ~ line[32..$];
-          dis[jmp] = format(":lb%04X ", jmp) ~ dis[jmp][8..$];
-        }
-      }
-    }
-  }
+  string[ushort] dis = range_diassamble(data, comment, labels);
 
   // Sort by address
   ushort[] addresses = dis.keys;

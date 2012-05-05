@@ -10,10 +10,6 @@ import dcpu.constants;
 public import std.typecons;
 
 private:
-
-ushort[] ram; /// Assembly machine code is stored here
-ushort pc;    /// Pointer to machine code 
-
 /**
  * Extract a particular information from a instruction
  * Params:
@@ -34,52 +30,17 @@ ubyte decode(string what)(ushort word) pure {
 }
 
 /**
- * Diassamble a instruction
- * Params:
- *  words    = Instruction to disassemble (A word and his two next words)
- *  n_words  = Size of disassambled instruction
- * Returns: A string that contains a diassambled code
- */
-string disassamble(ushort[] words, out ushort n_words)
-in {
-  assert(words.length >= 2);
-}body {
-  ubyte opcode = decode!"OpCode"(words[0]);
-  n_words = 1;
-  string op_a = operand!"OpA"(words, n_words);
-  if (opcode == OpCode.ExtOpCode) { // Non basic instruction
-    opcode = decode!"ExtOpCode"(words[0]);
-    foreach (s; __traits(allMembers, ExtOpCode)) {
-      if (opcode == mixin("ExtOpCode." ~ s)) {
-        return s ~ " " ~ op_a;
-      }
-    }
-    return format("DAT 0x%04X", words[0]);//";Unknow Extended OpCode";
-    
-  } else { // Decode operation
-    ushort[] tmp;
-    tmp ~= words[0];
-    tmp ~= words[n_words];
-    string op_b = operand!"OpB"(tmp, n_words);
-    foreach (s; __traits(allMembers, OpCode)) {
-      if (opcode == mixin("OpCode." ~ s)) {
-        return s ~ " " ~ op_b ~ " " ~ op_a;
-      }
-    }
-    return format("DAT 0x%04X", words[0]);//";Unknow Extended OpCode";
-  }
-}
-  
-/**
  * Give the string representation of a operand
  * Params:
  *  op        = Operand type ("OpA" o "OpB")
- *  words     = Next words to initial world
+ *  words     = First instruction word and the word that could contain the "next word" value
  *  n_words   = Add 1 if uses "next word".
  * Returns: A string that contains operand representation
  */
-string operand(string op ) (ushort[] words, ref ushort n_words) {
-  //assert (words.length >= 3);
+string operand(string op ) (ushort[] words, ref ushort n_words)
+in {
+  assert(words.length >= 2, "Need first word of instruction and the word that could contain the \"next word\" value");
+} body{
   ushort operand = decode!op(words[0]);
   auto writer = appender!string();
 
@@ -121,7 +82,6 @@ string operand(string op ) (ushort[] words, ref ushort n_words) {
       case Operand.Aptr_word: // Register pointer with added word
     n_words++;
     return format("[A+ 0x%04X]", words[1]);
-
     
       case Operand.Bptr_word:
     n_words++;
@@ -184,78 +144,120 @@ string operand(string op ) (ushort[] words, ref ushort n_words) {
     n_words++;
     return format("[0x%04X]", words[1]);
 
-
       case Operand.NWord: // word literal
     n_words++;
     return format("0x%04X", words[1]);
 
-
       default: // literal
     return format("%d", operand - Operand.Literal -1); // -1 to 30
-
   }
 }
   
 public:
 
 /**
- * Sets assembly machine code to be diassambled
+ * Diassamble ONE instruction
+ * Params:
+ *  words    = Instruction to disassemble (A word and his two next words)
+ *  n_words  = Size of disassambled instruction
+ * Returns: A string that contains a diassambled code
  */
-void set_assembly(ushort[] slice) {
-  ram = slice;
+string disassamble(ushort[] words, out ushort n_words)
+in {
+  assert(words.length >= 3, "Instructions can ben 3 words long");
+}body {
+  ubyte opcode = decode!"OpCode"(words[0]);
+  n_words = 1;
+  string op_a = operand!"OpA"(words, n_words);
+  if (opcode == OpCode.ExtOpCode) { // Non basic instruction
+    opcode = decode!"ExtOpCode"(words[0]);
+    foreach (s; __traits(allMembers, ExtOpCode)) {
+      if (opcode == mixin("ExtOpCode." ~ s)) {
+        return s ~ " " ~ op_a;
+      }
+    }
+    return format("DAT 0x%04X", words[0]);//";Unknow Extended OpCode";
+
+  } else { // Decode operation
+    ushort[] tmp;
+    tmp ~= words[0];
+    tmp ~= words[n_words];
+    string op_b = operand!"OpB"(tmp, n_words);
+    foreach (s; __traits(allMembers, OpCode)) {
+      if (opcode == mixin("OpCode." ~ s)) {
+        return s ~ " " ~ op_b ~ ", " ~ op_a;
+      }
+    }
+    return format("DAT 0x%04X", words[0]);//";Unknow Extended OpCode";
+  }
 }
 
 /**
- * Diassamble the assembly machine code
+ * Diassamble a slice of binary data
  * Params:
+ *  data    = Slice of DCPU-16 binary data
  *  comment = Add comments to assembly code with the addre and hex machine code
- *  labels = auto tab and add labels to jumps
- *  offset = add a offset to addresses of each instruction
+ *  labels  = auto tab and add labels to jumps
+ *  offset  = add a offset to addresses of each instruction
  * Returns a asociative array where the key is a pair of addreses that contains
  * the instruction in machine code
  */
-string[ushort] get_diassamble(bool comment = false, bool labels = false, ushort offset = 0) {
+string[ushort] range_diassamble(in ushort[]data, bool comment = false, bool labels = false, ushort offset = 0)
+in {
+  assert(data.length > 0, "Can't disassamble empty data");
+} body {
+  ushort[] slice;
+  if (slice.length > ushort.max) { // Chop to maximun data addresable
+    slice = data[0..ushort.max+1].dup;
+  } else {
+    slice = data.dup;
+  }
+
   string[ushort] ret;
-  while(ram.length > pc) {
-    ushort word = ram[pc];
-    ushort old_pc = pc;
-    ushort n_words;
+  ushort n_words = 1;
+  for(ushort pos=0; pos < slice.length; pos+=n_words) {
+    ushort word = slice[pos];
     string inst;
-    if (pc < ram.length -3) {
-      inst= disassamble(ram[pc..pc+4], n_words);
+
+    if (pos < slice.length -3) {
+      inst= disassamble(slice[pos..pos+3], n_words); // Disamble one instruction and jump pos to the next instruction
     } else {
-      ushort[] tmp = ram[pc..$];
-      tmp ~= 0;
-      tmp ~= 0;
-      inst= disassamble(tmp, n_words);
+      ushort[] tmp = slice[pos..$] ~ cast(ushort[])[0, 0];
+      inst= disassamble(slice, n_words);
     }
 
-    ushort pos = cast(ushort)(old_pc + offset);
-    pc += n_words;
-    
-    if (comment) { // Add coment  ; [addr] - xxxx ....
-      if (labels) {
-        ret[pos] = "                " ~ inst;
-      } else {
-        ret[pos] = inst;
-      }
-
-      for(auto i=0; i<(26- inst.length); i++)
-        ret[pos] ~= " ";
-      auto writer = appender!string();
-      ret[pos] ~= ";" ~ format("[%04X] - %04X ", pos, ram[pos]);
-      //formattedWrite(writer, "[%04X] - %04X", pos, ram[pos]);
-      //ret[pos] ~= ";"~ writer.data;
-
-      for (auto i=pos +1; i <= pc-1; i++) {
-        writer = appender!string();
-        ret[pos] ~= format("%04X ", ram[i]);
-        //formattedWrite(writer, " %04X", ram[i]);
-        //ret[pos] ~= writer.data;
-      }
+    if (labels) { // Appends a 15 wide space
+      ret[pos] = "                " ~ inst;
     } else {
       ret[pos] = inst;
     }
+    
+    if (comment) { // Add coment  like ; [addr] - xxxx ....
+      for(auto i=0; i<(26- inst.length); i++)
+        ret[pos] ~= " ";
+      ret[pos] ~= ";" ~ format("[%04X] - %04X ", pos, slice[pos]);
+
+      for (auto i=pos +1; i < pos + n_words; i++) {
+        ret[pos] ~= format("%04X ", slice[i]);
+      }
+    }
   }
+
+  if (labels) {
+    foreach (key, ref line ;ret) {
+      if (line.length >= 26 && line[16..26] == "SET PC, 0x" ) {
+        ushort jmp = parse!ushort(line[26..$], 16);
+        if (jmp in ret) {
+          if (comment) {
+            line = line[0..24] ~ format(" lb%04X ", jmp) ~ line[32..$];
+          } else {
+            line = line[0..24] ~ format(" lb%04X ", jmp);
+          }
+          ret[jmp] = format(":lb%04X ", jmp) ~ ret[jmp][8..$];
+        }
+      }
+    }
+  }
+  
   return ret;
 }
