@@ -31,65 +31,17 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <h1>DEDCPU-16 D Emulator for DCPU-16</h1>
-
-<p>A D based minimal emulator for Notch's DCPU-16 v1.1, written for the fun of it.
-DEDCPU-16 aims to be a accurate and quick emulator working of CLI and capable of working like a emulation/debugger back-end for any IDE aimed to programming DCPU-16.</p>
-
-<p>See: <a href="http://0x10c.com/doc/dcpu-16.txt">DCPU-16 specs</a></p>
-
-<p>Why: Why not ?</p>
-
-<p>The test.ascii file was made with swetland dcpu-16 assembler
-<a href="https://github.com/swetland/dcpu16">https://github.com/swetland/dcpu16</a></p>
-
-<p>The notch.bin file was made with interfect dcpu-emu assembler
-<a href="https://bitbucket.org/interfect/dcpu-emu">https://bitbucket.org/interfect/dcpu-emu</a></p>
+        
+<h1>D DISassembler for DCPU-16 v1.7</h1>
 
 <h2>Usage:</h2>
 
-<pre><code>./dedcpu -ifilename [-ttype]
-</code></pre>
+<pre>./ddis filename [options]</pre>
 
-<h2>Parameters:</h2>
-
-<ul>
-<li>
-<strong>-i --i --input</strong> <em>file</em> : Input file with memory map</li>
-<li>
-<strong>-t --t --type</strong> <em>lraw|braw|ahex</em> : Type of file with memory map. <em>lraw</em> -&gt; little endian raw binary ; <em>braw</em> -&gt; big endian raw binary ; <em>ahex</em> -&gt; ascii hexadecimal file</li>
-</ul><h2>Commands:</h2>
-
-<ul>
-<li>quit &nbsp;<strong>q</strong>               - End emulation</li>
-<li>step &nbsp;<strong>s</strong> or Enter key  - Step one instruction</li>
-<li>breakpoint &nbsp;<strong>b</strong> <em>address</em> - Togggle breakpoint at address. Only works if is the begin of a valid instruction.
-<li>run &nbsp;<strong>r</strong> <em>number</em>       - Runs number instructions without stop. Nothing or 0 for running forever (Ctrl+C to abort)</li>
-<li>memory display &nbsp;<strong>m</strong> <em>begin[-end]</em> - Display a chunk of RAM from begin to end address of RAM (address in hex). If end it's omitted, only show RAM value at begin address.</li>
-<li>dump memory &nbsp;<strong>d</strong> <em>begin[-end]</em> - Dumps a chunk of RAM to a <strong>dump.bin</strong> file in little endian raw binary. Same semantics that <strong>'m'</strong>
-</li>
-<li>input &nbsp;<strong>i</strong> <em>text</em>          - Sends text to keyboard input buffer in emulated machine</li>
-<li>view label &nbsp;<strong>v</strong>         - Show a label showing the meaning of each column</li>
-</ul><h4>Example of use:</h4>
-
-<p>Memory Display command:
-<img src="http://img706.imageshack.us/img706/368/dedcpu3.png" alt="Program example writing Video RAM"></p>
-
-<h2>Notes:</h2>
-
-<ul>
-<li>video_test.bin writes in video ram (0x8000) forever. It test video ram and cooperative multitasking. This program is know that not runs in some emulators.</li>
-<li>In branch instructions, the emulator will read the next instruction but will no execute if the condition fails.</li>
-</ul><p>Based over DCPU-16 C Emulator of Karl Hobley turbodog10(at)yahoo.co.uk</p>
-
-<h1>DEDCPU-16 companion disassembler</h1>
-
-<h2>Usage:</h2>
-
-<pre><code>./ddis file
-</code></pre>
-
-<p>Prints in stdout a disassembled code of input file</p>
+<p>Prints in stdout a disassembled code of input file. 
+It can add coments to the generated code showing what hex words and what addres generated each instrucction.
+  In addtion can auto-label jumps, making more easy to read and understand disassembled code.
+</p>
 
 <h2>License:</h2>
 
