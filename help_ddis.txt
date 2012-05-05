@@ -7,4 +7,6 @@ Options:
   -t or --type <type>  Type of file with memory map. lraw -> little endian raw binary ; braw -> big endian raw binary ; ahex -> ascii hexadecimal file. By default ddis asumes little endian raw binary input file
   -c                   Add comments to all lines of the style [address] xxxx ....   where xxxx its the hexadecimal representation of these instruction.
   -l                   Autolabel all jumps (actually only SET PC, ....)
+  -b<number>           Sets the absolute position were begin to disassembly the file. By default it's 0
+  -e<number>           Sets the absolute position were end to disassembly the file. By default it's the end of the file.
 

@@ -4,9 +4,11 @@
   ./ddis filename [options]
 ## Options: ##
 * __-h__                   Show this message
-*  -t or --type *type*  Type of file with memory map. __lraw__ -> little endian raw binary ; __braw__ -> big endian raw binary ; __ahex__ -> ascii hexadecimal file. By default ddis asumes little endian raw binary input file
+* __-t__ or __--type__ *type*  Type of file with memory map. __lraw__ -> little endian raw binary ; __braw__ -> big endian raw binary ; __ahex__ -> ascii hexadecimal file. By default ddis asumes little endian raw binary input file
 *  __-c__                   Add comments to all lines of the style [address] xxxx ....   where xxxx its the hexadecimal representation of these instruction.
 *  __-l__                   Autolabel all jumps (actually only SET PC, ....)
+*  __-b__*number*           Sets the absolute position were begin to disassembly the file. By default it's 0
+*  __-e__*number*           Sets the absolute position were end to disassembly the file. By default it's the end of the file.
 
 ## Notes: ##
 File test2.bin it's a Big Endian raw binary file for test disassembling. Don't use it in a emulater because it's a imcoplete code. You can compare ddis output of these file with test2.dasm that it's the source code that generated test2.bin.
