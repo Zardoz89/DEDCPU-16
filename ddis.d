@@ -41,7 +41,7 @@ int main (string[] args) {
   string filename = args[1];
   
   if (filename.length == 0) {
-    stderr.writeln("Missing input file\n");
+    stderr.writeln("Missing input file");
     return -1;
   }
   
@@ -54,12 +54,17 @@ int main (string[] args) {
     try {
       data = load_ram!(TypeHexFile.ahex)(filename);
     } catch (ConvException e){
-      stderr.writeln("Error: Bad file format\nCould be a binary file?\n");
+      stderr.writeln("Error: Bad file format\nCould be a binary file?");
       return -1;
     }
   }
   end = end < data.length ? end : data.length; // Clamp between 0 to 0xFFFF
   start = start < ushort.max ? start : ushort.max;
+  if (start > end || start > data.length || start == end) {
+    stderr.writeln("Error: Invalid ranges");
+    stderr.writeln("\tBegin: ", start,"\n\tEnd: ", end,"\n\tData dump size: ",data.length);
+    return -1;
+  }
   data = data[start..end]; // Slice
   
   string[ushort] dis = range_diassamble(data, comment, labels, cast(ushort)start);
