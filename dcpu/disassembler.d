@@ -219,26 +219,26 @@ in {
     ushort word = slice[pos];
     string inst;
 
-    if (pos < slice.length -3) {
+    if (pos < slice.length -3 && slice.length >= 3) {
       inst= disassamble(slice[pos..pos+3], n_words); // Disamble one instruction and jump pos to the next instruction
     } else {
       ushort[] tmp = slice[pos..$] ~ cast(ushort[])[0, 0];
-      inst= disassamble(slice, n_words);
+      inst= disassamble(tmp, n_words);
     }
 
     if (labels) { // Appends a 15 wide space
-      ret[pos] = "                " ~ inst;
+      ret[cast(ushort)(pos + offset)] = "                " ~ inst;
     } else {
-      ret[pos] = inst;
+      ret[cast(ushort)(pos + offset)] = inst;
     }
     
     if (comment) { // Add coment  like ; [addr] - xxxx ....
       for(auto i=0; i<(26- inst.length); i++)
-        ret[pos] ~= " ";
-      ret[pos] ~= ";" ~ format("[%04X] - %04X ", pos, slice[pos]);
+        ret[cast(ushort)(pos + offset)] ~= " ";
+      ret[cast(ushort)(pos + offset)] ~= ";" ~ format("[%04X] - %04X ", pos + offset, slice[pos]);
 
-      for (auto i=pos +1; i < pos + n_words; i++) {
-        ret[pos] ~= format("%04X ", slice[i]);
+      for (auto i=pos +1; i < pos + n_words && i < slice.length; i++) {
+        ret[cast(ushort)(pos + offset)] ~= format("%04X ", slice[i]);
       }
     }
   }

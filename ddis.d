@@ -12,7 +12,6 @@ void showhelp() {
   stderr.writeln(import("help_ddis.txt"));
 }
 
-
 int main (string[] args) {
   if (args.length < 2) { // No params
     showhelp();
@@ -21,11 +20,14 @@ int main (string[] args) {
   
   bool help; // Show help
   bool comment, labels;
+  ulong start; ulong end = ushort.max;
   TypeHexFile file_fmt; // Use binary or textual format
   
   // Process arguements 
   getopt(
     args,
+    "b", &start,
+    "e", &end,
     "c", &comment,
     "l", &labels,
     "type|t", &file_fmt,
@@ -56,8 +58,11 @@ int main (string[] args) {
       return -1;
     }
   }
+  end = end < data.length ? end : data.length; // Clamp between 0 to 0xFFFF
+  start = start < ushort.max ? start : ushort.max;
+  data = data[start..end]; // Slice
   
-  string[ushort] dis = range_diassamble(data, comment, labels);
+  string[ushort] dis = range_diassamble(data, comment, labels, cast(ushort)start);
 
   // Sort by address
   ushort[] addresses = dis.keys;
