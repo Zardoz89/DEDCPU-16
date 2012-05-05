@@ -39,7 +39,7 @@ add a, screen_width
 set [cursor],a 
 set a, [store_a] 
 set pc, pop 
-set [store_a], a 
+:print_start set [store_a], a 
 set [store_b], b 
 set a, pop 
 set b, [cursor] 
