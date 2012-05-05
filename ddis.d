@@ -8,22 +8,18 @@ import core.thread, std.c.stdlib;
 
 import dcpu.disassembler, dcpu.ram_loader;
 
+void showhelp() {
+  stderr.writeln(import("help_ddis.txt"));
+}
 
 
 int main (string[] args) {
-  ushort[] data;
-  void showHelp() {
-    writeln(import("help_ddis.txt"));
-    exit(0);
-  }
-
-  if (args.length < 2) {
-    writeln(import("help_ddis.txt"));
+  if (args.length < 2) { // No params
+    showhelp();
     return -1;
   }
-
-  string filename = args[1]; 
-  args = args[0] ~ args[2..$];
+  
+  bool help; // Show help
   bool comment, labels;
   TypeHexFile file_fmt; // Use binary or textual format
   
@@ -33,19 +29,32 @@ int main (string[] args) {
     "c", &comment,
     "l", &labels,
     "type|t", &file_fmt,
-    "h", &showHelp);
-    
-  if (filename.length == 0) {
-    writeln("Missing input file\n Use dedcpu -ifilename");
+    "h|?", &help);
+
+  if (help) {
+    showhelp();
     return 0;
   }
   
+  string filename = args[1];
+  
+  if (filename.length == 0) {
+    stderr.writeln("Missing input file\n");
+    return -1;
+  }
+  
+  ushort[] data;
   if (file_fmt == TypeHexFile.lraw) {
     data = load_ram!(TypeHexFile.lraw)(filename);
   } else if (file_fmt == TypeHexFile.braw) {
     data = load_ram!(TypeHexFile.braw)(filename);
   } else {
-    data = load_ram!(TypeHexFile.ahex)(filename);
+    try {
+      data = load_ram!(TypeHexFile.ahex)(filename);
+    } catch (ConvException e){
+      stderr.writeln("Error: Bad file format\nCould be a binary file?\n");
+      return -1;
+    }
   }
   
   string[ushort] dis = range_diassamble(data, comment, labels);
