@@ -5,29 +5,11 @@ module dcpu.disassembler;
 
 import std.stdio, std.array, std.string, std.conv, std.getopt, std.regex;
 // import std.format;
-import dcpu.constants;
+import dcpu.constants, dcpu.cpu;
 
 public import std.typecons;
 
 private:
-/**
- * Extract a particular information from a instruction
- * Params:
- *  what = Type of data to decode from a instruction
-           ("OpCode", "ExtOpCode","OpA" or "OpB")
- *  word = Data to decode. A word and his two next words
- * Returns: Extracted data from a instruction
-*/
-ubyte decode(string what)(ushort word) pure {
-  // Format is aaaaaabbbbbooooo or aaaaaaooooo00000
-  static if (what == "OpCode") {
-    return word & 0b00000000_00011111;
-  } else if (what == "OpB" || what == "ExtOpCode") {
-    return (word >> 5) & 0b00000000_00011111;
-  } else if (what == "OpA") {
-    return (word >> 10) & 0b00000000_00111111;
-  }
-}
 
 /**
  * Give the string representation of a operand

@@ -35,8 +35,8 @@ all: $(EXE_NAME)
 ############# Compiling ################
 
 # Do executable files
-$(EXE_NAME): $(OBJECTS_MAIN) $(OBJECTS) dcpu/disassembler.o
-	$(DC) $< $(OBJECTS) dcpu/disassembler.o $(OUTPUT)$@
+$(EXE_NAME): $(OBJECTS_MAIN) $(OBJECTS) dcpu/disassembler.o dcpu/cpu.o
+	$(DC) $< $(OBJECTS) dcpu/disassembler.o dcpu/cpu.o $(OUTPUT)$@
 	@echo ------------------ creating $@ executable done
 
 # Do object files
@@ -44,6 +44,10 @@ $(OBJECTS): $(SOURCES)
 	@echo Compiling $< $@
 	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
 
+dcpu/cpu.o: dcpu/cpu.d
+	@echo Compiling $< $@
+	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
+	
 dcpu/disassembler.o: dcpu/disassembler.d
 	@echo Compiling $< $@
 	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
