@@ -253,7 +253,7 @@ in {
  * Returns: The same table autolabeled
  */
 ref string[ushort] auto_label(ref string[ushort] code) {
-  enum reg = ctRegex!(r"SET PC, 0x",`g`);
+  auto reg = regex(r"(SET PC, 0x)|(JSR 0x)","g");
   foreach (key, ref line ;code) {
     auto m = match(line, reg);
     if (m && ! m.empty && m.pre.length > 6 ) {
