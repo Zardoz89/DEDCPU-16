@@ -233,7 +233,7 @@ in {
     }
     
     if (comment) { // Add coment  like: spaces ; [addr] - xxxx ....
-      for(auto i=0; i<(26- inst.length); i++)
+      for(auto i=0; i<(21- inst.length); i++)
         ret[cast(ushort)(pos + offset)] ~= " ";
       ret[cast(ushort)(pos + offset)] ~= ";" ~ format("[%04X] - %04X ", pos + offset, slice[pos]);
 
@@ -246,6 +246,12 @@ in {
   return ret;
 }
 
+/**
+ * Auto labeling a source code
+ * Params:
+ *  code    = Associtive array that contains lines of code
+ * Returns: The same table autolabeled
+ */
 ref string[ushort] auto_label(ref string[ushort] code) {
   enum reg = ctRegex!(r"SET PC, 0x",`g`);
   foreach (key, ref line ;code) {
@@ -255,7 +261,7 @@ ref string[ushort] auto_label(ref string[ushort] code) {
       if (m.post.length > 7) { // has comments
         line = m.pre ~ m.hit[0..$-2] ~ format("lb%04X ", jmp) ~ m.post[5..$];
       } else {
-        line = m.pre ~ m.hit[0..$] ~ format("lb%04X ", jmp);
+        line = m.pre ~ m.hit[0..$-2] ~ format("lb%04X ", jmp);
       }
       if (jmp in code) {
         code[jmp] = format(":lb%04X", jmp) ~ code[jmp][7..$];

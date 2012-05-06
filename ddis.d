@@ -78,7 +78,7 @@ int main (string[] args) {
   sort!("a<b") (addresses);
   foreach (key ; addresses) {
     //writefln ("%04X - %s", key[0], dis[key]);
-    writeln(dis[key]);
+    writeln(entab(dis[key]));
   }
   
   return 0;
