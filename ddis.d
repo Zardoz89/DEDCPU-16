@@ -69,6 +69,10 @@ int main (string[] args) {
   
   string[ushort] dis = range_diassamble(data, comment, labels, cast(ushort)start);
 
+  if (labels) {
+    auto_label(dis);
+  }
+  
   // Sort by address
   ushort[] addresses = dis.keys;
   sort!("a<b") (addresses);

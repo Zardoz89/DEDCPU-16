@@ -3,7 +3,7 @@
  */
 module dcpu.disassembler;
 
-import std.stdio, std.array, std.string, std.conv, std.getopt;
+import std.stdio, std.array, std.string, std.conv, std.getopt, std.regex;
 // import std.format;
 import dcpu.constants;
 
@@ -197,12 +197,12 @@ in {
  * Params:
  *  data    = Slice of DCPU-16 binary data
  *  comment = Add comments to assembly code with the addre and hex machine code
- *  labels  = auto tab and add labels to jumps
+ *  tab     = auto tab
  *  offset  = add a offset to addresses of each instruction
  * Returns a asociative array where the key is a pair of addreses that contains
  * the instruction in machine code
  */
-string[ushort] range_diassamble(in ushort[]data, bool comment = false, bool labels = false, ushort offset = 0)
+string[ushort] range_diassamble(in ushort[]data, bool comment = false, bool tab = false, ushort offset = 0)
 in {
   assert(data.length > 0, "Can't disassamble empty data");
 } body {
@@ -226,13 +226,13 @@ in {
       inst= disassamble(tmp, n_words);
     }
 
-    if (labels) { // Appends a 15 wide space
-      ret[cast(ushort)(pos + offset)] = "                " ~ inst;
+    if (tab) { // Appends a 16 wide space
+      ret[cast(ushort)(pos + offset)] = "                 " ~ inst;
     } else {
       ret[cast(ushort)(pos + offset)] = inst;
     }
     
-    if (comment) { // Add coment  like ; [addr] - xxxx ....
+    if (comment) { // Add coment  like: spaces ; [addr] - xxxx ....
       for(auto i=0; i<(26- inst.length); i++)
         ret[cast(ushort)(pos + offset)] ~= " ";
       ret[cast(ushort)(pos + offset)] ~= ";" ~ format("[%04X] - %04X ", pos + offset, slice[pos]);
@@ -242,22 +242,28 @@ in {
       }
     }
   }
+  
+  return ret;
+}
 
-  if (labels) {
-    foreach (key, ref line ;ret) {
-      if (line.length >= 26 && line[16..26] == "SET PC, 0x" ) {
-        ushort jmp = parse!ushort(line[26..$], 16);
-        if (jmp in ret) {
-          if (comment) {
-            line = line[0..24] ~ format(" lb%04X ", jmp) ~ line[32..$];
-          } else {
-            line = line[0..24] ~ format(" lb%04X ", jmp);
-          }
-          ret[jmp] = format(":lb%04X ", jmp) ~ ret[jmp][8..$];
-        }
+ref string[ushort] auto_label(ref string[ushort] code) {
+  enum reg = ctRegex!(r"SET PC, 0x",`g`);
+  foreach (key, ref line ;code) {
+    auto m = match(line, reg);
+    if (m && ! m.empty && m.pre.length > 6 ) {
+      ushort jmp = parse!ushort(m.post[], 16); // Get jump address
+      if (m.post.length > 7) { // has comments
+        line = m.pre ~ m.hit[0..$-2] ~ format("lb%04X ", jmp) ~ m.post[5..$];
+      } else {
+        line = m.pre ~ m.hit[0..$] ~ format("lb%04X ", jmp);
+      }
+      if (jmp in code) {
+        code[jmp] = format(":lb%04X", jmp) ~ code[jmp][7..$];
+      } else {
+        code[jmp] = format(":lb%04X", jmp);
       }
     }
   }
-  
-  return ret;
+
+  return code;
 }
