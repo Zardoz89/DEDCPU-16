@@ -80,7 +80,7 @@ ifndef DC
     else ifneq ($(strip $(shell which ldc2 2>/dev/null)),)
         DC=ldc2
     else
-        DC=gdc
+        DC=gdmd
     endif
 endif
 
