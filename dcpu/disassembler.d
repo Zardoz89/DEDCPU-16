@@ -238,7 +238,7 @@ ref string[ushort] auto_label(ref string[ushort] code) {
   auto reg = regex(r"(SET PC, 0x)|(JSR 0x)","g");
   foreach (key, ref line ;code) {
     auto m = match(line, reg);
-    if (m && ! m.empty && m.pre.length > 6 ) {
+    if (! m.empty && m.pre.length > 6 ) {
       ushort jmp = parse!ushort(m.post[], 16); // Get jump address
       if (m.post.length > 7) { // has comments
         line = m.pre ~ m.hit[0..$-2] ~ format("lb%04X ", jmp) ~ m.post[5..$];
