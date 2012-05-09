@@ -20,7 +20,6 @@ all: ddis
 
 $(BUILD_PATH)$(PATH_SEP)microcode.o: $(SRC_DIR)dcpu/microcode.d
 	@$(MKDIR) build
-	echo $(SRC_DIR)
 	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
 	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
@@ -108,8 +107,7 @@ clean: clean-objects clean-executable
 	@echo "------------------ $(niceMsgBeg1)cleaning $^ done$(niceMsgEnd)"
 
 clean-objects:
-	$(RM) *.o
-	$(RM) build/*.o
+	$(RM) $(BUILD_PATH)$(PATH_SEP)*.o
 
 clean-executable:
 	$(RM) ddis
