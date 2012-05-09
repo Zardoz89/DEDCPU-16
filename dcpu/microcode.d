@@ -1,10 +1,10 @@
 /**
- * DCPU-16 cpu constants
+ * DCPU-16 cpu constants and some generic functions
  *
  * See_Also:
  *  http://pastebin.com/raw.php?i=Q4JvQvnM
  */
-module dcpu.constants;
+module dcpu.microcode;
 
 /// Valid basic OpCodes
 enum OpCode: ubyte {
@@ -92,3 +92,22 @@ enum Operand : ubyte {
   NWord = 0x1f,     /// next_word literal
   Literal = 0x20    /// literal from -1 to 30 (only if is 'a' operator)
 };
+
+/**
+ * Extract a particular information from a instruction
+ * Params:
+ *  what = Type of data to decode from a instruction
+           ("OpCode", "ExtOpCode","OpA" or "OpB")
+ *  word = Data to decode. A word and his two next words
+ * Returns: Extracted data from a instruction
+*/
+ubyte decode(string what)(ushort word) pure {
+  // Format is aaaaaabbbbbooooo or aaaaaaooooo00000
+  static if (what == "OpCode") {
+    return word & 0b00000000_00011111;
+  } else if (what == "OpB" || what == "ExtOpCode") {
+    return (word >> 5) & 0b00000000_00011111;
+  } else if (what == "OpA") {
+    return (word >> 10) & 0b00000000_00111111;
+  }
+}

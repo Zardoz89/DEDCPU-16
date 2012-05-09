@@ -4,8 +4,7 @@
 module dcpu.disassembler;
 
 import std.stdio, std.array, std.string, std.conv, std.getopt, std.regex;
-// import std.format;
-import dcpu.constants, dcpu.cpu;
+import dcpu.microcode;
 
 public import std.typecons;
 

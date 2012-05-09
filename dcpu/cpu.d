@@ -7,7 +7,7 @@
 module dcpu.cpu;
 
 import std.array;
-//import dcpu.constants, dcpu.machine, dcpu.hardware;
+import dcpu.microcode, dcpu.machine, dcpu.hardware;
 
 /**
  * CPU State
@@ -19,24 +19,7 @@ enum CpuState {
   EXECUTE /// Execute the OpCode
 }
 
-/**
- * Extract a particular information from a instruction
- * Params:
- *  what = Type of data to decode from a instruction
-           ("OpCode", "ExtOpCode","OpA" or "OpB")
- *  word = Data to decode. A word and his two next words
- * Returns: Extracted data from a instruction
-*/
-package ubyte decode(string what)(ushort word) pure {
-  // Format is aaaaaabbbbbooooo or aaaaaaooooo00000
-  static if (what == "OpCode") {
-    return word & 0b00000000_00011111;
-  } else if (what == "OpB" || what == "ExtOpCode") {
-    return (word >> 5) & 0b00000000_00011111;
-  } else if (what == "OpA") {
-    return (word >> 10) & 0b00000000_00111111;
-  }
-}
+
 
 
 final class DCpu {
@@ -47,7 +30,7 @@ final class DCpu {
   bool f_fire;              /// CPU on fire
 
   // Stores state between clock cycles
-  CpuState state;           /// Actual state of CPU
+  CpuState stabranch_skipedte;           /// Actual state of CPU
   ushort word;              /// Value of [PC] when begin ready state
   ubyte opcode;             /// OpCode
   ubyte ext_opcode;         /// Extendend Opcode if OpCode == 0
@@ -421,7 +404,7 @@ private:
           cycles = 1;
           break;
 
-        case OpCode.IFB: // TODO Chaining branchs
+        case OpCode.IFB: // TODO Wrong. Must Skip next instruccion, not PC value, plus need chaining (not execute flagg)
           if ((val_b & val_a) != 0) {
             cycles = 2;
           } else {

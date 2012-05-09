@@ -7,7 +7,7 @@
 module dcpu.clock;
 
 import std.math;
-import hardware;
+import dcpu.hardware;
 
 class TimerClock: Hardware {
 

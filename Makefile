@@ -34,15 +34,27 @@ all: ddis
 
 ############# Compiling ################
 
+dcpu/microcode.o: dcpu/microcode.d
+	@echo Compiling $< $@
+	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
+
 dcpu/cpu.o: dcpu/cpu.d
 	@echo Compiling $< $@
 	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
 
-dcpu/ram_loader.o: dcpu/ram_loader.d
+dcpu/hardware.o: dcpu/hardware.d
 	@echo Compiling $< $@
 	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
 
-dcpu/constants.o: dcpu/constants.d
+dcpu/machine.o: dcpu/machine.d
+	@echo Compiling $< $@
+	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
+
+dcpu/clock.o: dcpu/clock.d
+	@echo Compiling $< $@
+	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
+
+dcpu/ram_loader.o: dcpu/ram_loader.d
 	@echo Compiling $< $@
 	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
 
@@ -54,7 +66,7 @@ ddis.o: ddis.d
 	@echo Compiling $< $@
 	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
 
-ddis: ddis.o dcpu/disassembler.o dcpu/constants.o dcpu/cpu.o dcpu/ram_loader.o
+ddis: ddis.o dcpu/disassembler.o dcpu/microcode.o dcpu/ram_loader.o
 	$(DC) $^ $(OUTPUT)$@
 	@echo ------------------ creating $@ executable done
 
