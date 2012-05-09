@@ -24,7 +24,6 @@ in {
   assert(words.length >= 2, "Need first word of instruction and the word that could contain the \"next word\" value");
 } body{
   ushort operand = decode!op(words[0]);
-  auto writer = appender!string();
 
   switch (operand) {
       case Operand.A:   // Register x
