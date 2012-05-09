@@ -21,6 +21,7 @@ class Hardware {
   static uint vendor;    /// Hardware manufacturer
 
   public:
+  
   /**
    * Sets Hardware ID, version and vendor
    * It must be override by new hardware

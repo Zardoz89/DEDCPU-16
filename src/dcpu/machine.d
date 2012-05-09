@@ -22,7 +22,13 @@ final class Ram {
 //  -Some quanty of hardware attached
 
 struct Machine {
-  // DCpu cpu;
+  DCpu cpu;
   shared Ram ram;
   Hardware[] hard;
+
+  void init() {
+    cpu = new DCpu(this);
+    ram = new shared(Ram);
+    
+  }
 }
