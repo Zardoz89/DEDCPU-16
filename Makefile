@@ -34,40 +34,48 @@ all: ddis
 
 ############# Compiling ################
 
-dcpu/microcode.o: dcpu/microcode.d
+$(BUILD_PATH)$(PATH_SEP)microcode.o: dcpu/microcode.d
+	@$(MKDIR) build
 	@echo Compiling $< $@
-	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
+	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-dcpu/cpu.o: dcpu/cpu.d
+$(BUILD_PATH)$(PATH_SEP)cpu.o: dcpu/cpu.d
+	@$(MKDIR) build
 	@echo Compiling $< $@
-	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
+	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-dcpu/hardware.o: dcpu/hardware.d
+$(BUILD_PATH)$(PATH_SEP)hardware.o: dcpu/hardware.d
+	@$(MKDIR) build
 	@echo Compiling $< $@
-	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
+	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-dcpu/machine.o: dcpu/machine.d
+$(BUILD_PATH)$(PATH_SEP)machine.o: dcpu/machine.d
+	@$(MKDIR) build
 	@echo Compiling $< $@
-	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
+	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-dcpu/clock.o: dcpu/clock.d
+$(BUILD_PATH)$(PATH_SEP)clock.o: dcpu/clock.d
+	@$(MKDIR) build
 	@echo Compiling $< $@
-	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
+	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-dcpu/ram_loader.o: dcpu/ram_loader.d
+$(BUILD_PATH)$(PATH_SEP)ram_loader.o: dcpu/ram_loader.d
+	@$(MKDIR) build
 	@echo Compiling $< $@
-	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
+	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-dcpu/disassembler.o: dcpu/disassembler.d
+$(BUILD_PATH)$(PATH_SEP)disassembler.o: dcpu/disassembler.d
+	@$(MKDIR) build
 	@echo Compiling $< $@
-	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
+	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-ddis.o: ddis.d
+$(BUILD_PATH)$(PATH_SEP)ddis.o: ddis.d
+	@$(MKDIR) build
 	@echo Compiling $< $@
-	$(DC) $(DCFLAGS) $(DCFLAGS_LINK) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@ -J.
+	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-ddis: ddis.o dcpu/disassembler.o dcpu/microcode.o dcpu/ram_loader.o
-	$(DC) $^ $(OUTPUT)$@
+ddis: $(BUILD_PATH)$(PATH_SEP)ddis.o $(BUILD_PATH)$(PATH_SEP)disassembler.o $(BUILD_PATH)$(PATH_SEP)microcode.o $(BUILD_PATH)$(PATH_SEP)ram_loader.o
+	$(DC) $^ $(OUTPUT)$@ $(DCFLAGS_LINK)
 	@echo ------------------ creating $@ executable done
 
 # Do executable files
@@ -115,7 +123,7 @@ clean: clean-objects clean-executable
 
 clean-objects:
 	$(RM) *.o
-	$(RM) dcpu/*.o
+	$(RM) build/*.o
 
 clean-executable:
 	$(RM) ddis

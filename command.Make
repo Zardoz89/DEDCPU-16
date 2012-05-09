@@ -158,7 +158,11 @@ endif
 # Add -ldl flag for linux
 ifeq ($(OS),"Linux")
 #    LDCFLAGS += $(LINKERFLAG) -ldl
+  ifeq ($(DC),dmd)
+    LDCFLAGS += -L-ldl
+  else
     LDCFLAGS += $(LINKERFLAG) -Ldl
+  endif
 endif
 
 # If model are not given take the same as current system
