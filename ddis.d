@@ -20,7 +20,7 @@ int main (string[] args) {
   
   bool help; // Show help
   bool comment, labels;
-  ulong start; ulong end = ushort.max;
+  size_t start; size_t end = ushort.max;
   TypeHexFile file_fmt; // Use binary or textual format
   
   // Process arguements 
