@@ -59,6 +59,7 @@ final class DCpu {
 
   //shared Ram ram;           /// Ram of computer
   public:
+  bool wait_hwd;            /// Need to wait a hardware device?
   
   union {
     struct {ushort a, b, c, x, y, z, i, j;}
@@ -125,8 +126,7 @@ final class DCpu {
       return;
       
     } else { // Execute
-      execute_op(); // I will increase pc when the last cycle is made
-      state = CpuState.READY;
+      execute_op(); // I will increase pc when the last cycle is made      
     }
   }
 
@@ -317,11 +317,11 @@ private:
           cycles = 2;
           break;
 
-        case OpCode.SUB: // TODO Mirar por que demonios entienden UNDERFLOW
+        case OpCode.SUB:
           ushort neg_a = !val_a +1; // Comp 2 negation of val_a
           uint tmp = val_b + neg_a;
           val = cast(ushort)(tmp & 0xFFFF);
-          if ( (val_a & 0x8000) > 0 && (val_b & 0x8000) > 0 && (tmp & 0x8000) != 0 ) {
+          if ( val & 0x800 ) { // val < 0
             ex = 0xFFFF; // Underflow
           } else {
             ex = 0;
@@ -497,23 +497,105 @@ private:
           uint tmp = val_b + val_a + ex;
           val = cast(ushort)(tmp & 0xFFFF);
           ex = tmp > 0xFFFF; // Overflow
-          cycles = 2;
+          cycles = 3;
           break;
 
         case OpCode.SBX:
           ushort neg_a = !val_a +1; // Comp 2 negation of val_a
-          uint tmp = val_b + neg_a +
+          uint tmp = val_b + neg_a + ex;
           ex;
           val = cast(ushort)(tmp & 0xFFFF);
-          if ( (val_a & 0x8000) > 0 && (val_b & 0x8000) > 0 && (tmp & 0x8000) != 0 ) {
+          if ( val & 0x800 ) { // val < 0
             ex = 0xFFFF; // Underflow
           } else {
             ex = 0;
           }
+          cycles = 3;
+          break;
+
+        case OpCode.STI:
+          val = val_a;
+          i++;
+          j++;
           cycles = 2;
           break;
+
+        case OpCode.STD:
+          val = val_a;
+          i--;
+          j--;
+          cycles = 2;
+          break;
+          
+        default: // Unknow OpCode
+          // Do Nothing (I should do a random OpCode ?)
+          cycles = 1;
       }
+      return;
+    } else if (cycles == -1) { // Extended OpCode
+      switch (ext_opcode) {
+        case ExtOpCode.JSR:
+          synchronized (ram) {
+            ram.ram[--sp] = pc +1;            
+          }
+          pc = val_a;
+          cycles = 3;
+          break;
+
+        case ExtOpCode.INT: // TODO Interrupcion software
+          cycles = 4;
+          break;
+
+        case ExtOpCode.IAG:
+          val_a = ia;
+          cycles = 1;
+          break;
+
+        case ExtOpCode.IAS:
+          ia = val_a;
+          cycles = 1;
+          break;
+
+        case ExtOpCode.RFI:
+          read_queue = true;
+          synchronized (ram) {
+            a  = ram.ram[sp++];
+            pc = ram.ram[sp++];
+          }
+          cycles = 3;
+          break;
+
+        case ExtOpCode.IAQ:
+          read_queue = val_a == 0; // if val_a != 0 Not read the interrupt queue
+          cycles = 2;
+          break;
+
+        case ExtOpCode.HWN: // TODO
+          cycles = 2;
+          break;
+
+        case ExtOpCode.HWQ: // TODO
+          cycles = 4;
+          break;
+
+        case ExtOpCode.HWI: // TODO
+          cycles = 4; // Or more
+          break;
+
+        default:/ Unknow OpCode
+          // Do Nothing (I should do a random OpCode ?)
+          cycles = 1;
+      }
+      return;
     }
 
+    if (wait_hwd) // Some hardware when receive a HWI can make to wait more cycles
+      cycles--;
+      
+    if (cycles == 0) { // Only increment PC and set Ready when cycle count == 0
+      state = CpuState.READY;
+      pc++;
+    }
+    
   }+/
 }
