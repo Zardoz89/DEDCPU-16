@@ -303,19 +303,21 @@ private:
   void execute_op() {
     ushort val; 
     
-    if (opcode != 0) { // Not extended opcode
+    if (opcode != 0 && cycles == -1) { // Execute Not extended opcode
       switch (opcode) {
         case OpCode.SET:
           val = val_a;
+          cycles = 1;
           break;
 
         case OpCode.ADD:
           uint tmp = val_b + val_a;
           val = cast(ushort)(tmp & 0xFFFF);
           ex = tmp > 0xFFFF; // Overflow
+          cycles = 2;
           break;
 
-        case OpCode.SUB:
+        case OpCode.SUB: // TODO Mirar por que demonios entienden UNDERFLOW
           ushort neg_a = !val_a +1; // Comp 2 negation of val_a
           uint tmp = val_b + neg_a;
           val = cast(ushort)(tmp & 0xFFFF);
@@ -324,18 +326,21 @@ private:
           } else {
             ex = 0;
           }
+          cycles = 2;
           break;
 
         case OpCode.MUL:
           uint tmp = val_b * val_a;
           val = cast(ushort)(tmp & 0xFFFF);
           ex = cast(ushort)(tmp >> 16);
+          cycles = 2;
           break;
           
         case OpCode.MLI: // Mul with sign
           int tmp = cast(short)val_b * cast(short)val_a;
           val = cast(ushort)(tmp & 0xFFFF);
           ex = cast(ushort)(tmp >> 16);
+          cycles = 2;
           break;
 
         case OpCode.DIV:
@@ -347,6 +352,7 @@ private:
           val = cast(ushort)(tmp & 0xFFFF);
           ex = cast(ushort)(tmp2 & 0xFFFF);
           }
+          cycles = 3;
           break;
 
         case OpCode.DVI: // Div with sign
@@ -358,6 +364,7 @@ private:
           val = cast(ushort)(tmp & 0xFFFF);
           ex = cast(ushort)(tmp2 & 0xFFFF);
           }
+          cycles = 3;
           break;
 
         case OpCode.MOD:
@@ -366,6 +373,7 @@ private:
           } else {
             val = val_b % val_a;
           }
+          cycles = 3;
           break;
 
         case OpCode.MDI: // Mod with sign
@@ -374,22 +382,135 @@ private:
           } else {
             val = cast(short)val_b % cast(short)val_a;
           }
+          cycles = 3;
           break;
 
         case OpCode.AND:
           val = val_b & val_a;
+          cycles = 1;
           break;
 
         case OpCode.BOR:
           val = val_b | val_a;
+          cycles = 1;
           break;
 
         case OpCode.XOR:
           val = val_b ^ val_a;
+          cycles = 1;
           break;
 
-        case OpCode.SHR:
-          val = val_b & val_a;
+        case OpCode.SHR: // Logical Shift
+          uint tmp = val_b >>> val_a;
+          val = cast(ushort)(tmp & 0xFFFF);
+          ex  = cast(ushort)(tmp << 16);
+          cycles = 1;
+          break;
+
+        case OpCode.ASR: // Arthmetic shift
+          uint tmp = val_b >> val_a;
+          val = cast(ushort)(tmp & 0xFFFF);
+          ex  = cast(ushort)(tmp << 16);
+          cycles = 1;
+          break;
+
+        case OpCode.SHL:
+          uint tmp = val_b >>> (16 - val_a);
+          val = cast(ushort)(tmp << 16);
+          ex  = cast(ushort)(tmp & 0xFFFF);
+          cycles = 1;
+          break;
+
+        case OpCode.IFB: // TODO Chaining branchs
+          if ((val_b & val_a) != 0) {
+            cycles = 2;
+          } else {
+            cycles = 3;
+            pc++; // Skip next instrucction
+          }
+          break;
+
+        case OpCode.IFC:
+          if ((val_b & val_a) == 0) {
+            cycles = 2;
+          } else {
+            cycles = 3;
+            pc++;
+          }
+          break;
+
+        case OpCode.IFE:
+          if (val_b == val_a) {
+            cycles = 2;
+          } else {
+            cycles = 3;
+            pc++;
+          }
+          break;
+
+        case OpCode.IFN:
+          if (val_b != val_a) {
+            cycles = 2;
+          } else {
+            cycles = 3;
+            pc++;
+          }
+          break;
+
+        case OpCode.IFG:
+          if (val_b > val_a) {
+            cycles = 2;
+          } else {
+            cycles = 3;
+            pc++;
+          }
+          break;
+
+        case OpCode.IFA:
+          if (cast(short)val_b > cast(short)val_a) {
+            cycles = 2;
+          } else {
+            cycles = 3;
+            pc++;
+          }
+          break;
+
+        case OpCode.IFL:
+          if (val_b < val_a) {
+            cycles = 2;
+          } else {
+            cycles = 3;
+          }
+            pc++;
+          break;
+
+        case OpCode.IFL:
+          if (cast(short)val_b < cast(short)val_a) {
+            cycles = 2;
+          } else {
+            cycles = 3;
+            pc++;
+          }
+          break;
+
+        case OpCode.ADX:
+          uint tmp = val_b + val_a + ex;
+          val = cast(ushort)(tmp & 0xFFFF);
+          ex = tmp > 0xFFFF; // Overflow
+          cycles = 2;
+          break;
+
+        case OpCode.SBX:
+          ushort neg_a = !val_a +1; // Comp 2 negation of val_a
+          uint tmp = val_b + neg_a +
+          ex;
+          val = cast(ushort)(tmp & 0xFFFF);
+          if ( (val_a & 0x8000) > 0 && (val_b & 0x8000) > 0 && (tmp & 0x8000) != 0 ) {
+            ex = 0xFFFF; // Underflow
+          } else {
+            ex = 0;
+          }
+          cycles = 2;
           break;
       }
     }
