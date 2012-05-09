@@ -9,5 +9,3 @@ To compile:
   You only need to simple run:
     make
   It will generate executable file in a /bin directory
-  If you have the official D compiler, you can try to use ddis via rdmd:
-    rdmd -J. ddis.d ddis file [ddis options]

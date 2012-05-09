@@ -7,10 +7,19 @@ ifdef SystemRoot
     SHELL           = cmd.exe
     Filter          = %/linux/%.d %/darwin/%.d %/freebsd/%.d %/solaris/%.d
     getSource       =$(shell dir $(ROOT_SOURCE_DIR) /s /b)
+    
+    niceMsgBeg1     =
+    niceMsgBeg2     =
+    niceMsgEnd      =
 else
     SHELL           = sh
     PATH_SEP        =/
     getSource       =$(shell find $(ROOT_SOURCE_DIR) -name "*.d")
+    
+    niceMsgBeg1     =\033[32;01m
+    niceMsgBeg2     =\033[36;01m
+    niceMsgEnd      =\033[00m
+    
     ifeq ($(shell uname), Linux)
         OS              = "Linux"
         STATIC_LIB_EXT  = .a
@@ -79,8 +88,10 @@ ifndef DC
         DC=ldc
     else ifneq ($(strip $(shell which ldc2 2>/dev/null)),)
         DC=ldc2
-    else
+    else ifneq ($(strip $(shell which gdmd 2>/dev/null)),)
         DC=gdmd
+    else
+        DC=gdc
     endif
 endif
 
@@ -159,6 +170,8 @@ endif
 ifeq ($(OS),"Linux")
 #    LDCFLAGS += $(LINKERFLAG) -ldl
   ifeq ($(DC),dmd)
+    LDCFLAGS += -L-ldl
+  else ifeq ($(DC),gdmd)
     LDCFLAGS += -L-ldl
   else
     LDCFLAGS += $(LINKERFLAG) -Ldl
@@ -262,7 +275,8 @@ DDOC_PATH           = ./ddoc
 BUILD_PATH          = ./build
 BIN_PATH            = ./bin
 
-DCFLAGS_IMPORT      = -J.
+DCFLAGS            += -I$(ROOT_SOURCE_DIR)
+DCFLAGS_IMPORT      = -J$(ROOT_SOURCE_DIR) -w
 DCFLAGS_LINK        = $(LDCFLAGS)
 
 STATIC_LIBNAME      = lib$(PROJECT_NAME)-$(COMPILER)$(STATIC_LIB_EXT)
@@ -303,6 +317,9 @@ export FPIC
 export LIBNAME
 export LIB_DIR
 export LINKERFLAG
+export niceMsgBeg1
+export niceMsgBeg2
+export niceMsgEnd
 export message
 export MAKE
 export MKDIR

@@ -4,27 +4,11 @@ export DESCRIPTION  = D Emulator for DCPU-16
 export VERSION      = 0.4
 export LICENSE      = BSD
 
-################## Source Files and other stuff #######################
-# # Executable files
-# EXE_NAME     =ddis
-# # Commun source code files
-# SOURCES      =dcpu/ram_loader.d
-# # Target source code files
-# SOURCES_MAIN =ddis.d
-# DDoc definition files
-#DDOCFILES    =cutedoc.ddoc
+ROOT_SOURCE_DIR     = ./src/
+SRC_DIR             = $(ROOT_SOURCE_DIR)
 
-# include some command
+# include some commands
 include command.Make
-
-# EXE_NAME := $(addprefix $(BIN_PATH)$(PATH_SEP), $(EXE_NAME))
-# 
-# OBJECTS       =$(patsubst %.d,$(BUILD_PATH)$(PATH_SEP)%.o, $(SOURCES))
-# OBJECTS_MAIN  =$(patsubst %.d,$(BUILD_PATH)$(PATH_SEP)%.o, $(SOURCES_MAIN))
-# 
-# DOCUMENTATIONS      = $(patsubst %.d,$(DOC_PATH)$(PATH_SEP)%.html,   $(SOURCES))
-# DDOCUMENTATIONS     = $(patsubst %.d,$(DDOC_PATH)$(PATH_SEP)%.html,  $(SOURCES))
-# DDOC_FLAGS          = $(foreach macro,$(DDOCFILES), $(DDOC_MACRO)$(macro))
 
 all: ddis
 
@@ -34,49 +18,51 @@ all: ddis
 
 ############# Compiling ################
 
-$(BUILD_PATH)$(PATH_SEP)microcode.o: dcpu/microcode.d
+$(BUILD_PATH)$(PATH_SEP)microcode.o: $(SRC_DIR)dcpu/microcode.d
 	@$(MKDIR) build
-	@echo Compiling $< $@
+	echo $(SRC_DIR)
+	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
 	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-$(BUILD_PATH)$(PATH_SEP)cpu.o: dcpu/cpu.d
+$(BUILD_PATH)$(PATH_SEP)cpu.o: $(SRC_DIR)dcpu/cpu.d
 	@$(MKDIR) build
-	@echo Compiling $< $@
+	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
 	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-$(BUILD_PATH)$(PATH_SEP)hardware.o: dcpu/hardware.d
+$(BUILD_PATH)$(PATH_SEP)hardware.o: $(SRC_DIR)dcpu/hardware.d
 	@$(MKDIR) build
-	@echo Compiling $< $@
+	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
 	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-$(BUILD_PATH)$(PATH_SEP)machine.o: dcpu/machine.d
+$(BUILD_PATH)$(PATH_SEP)machine.o: $(SRC_DIR)dcpu/machine.d
 	@$(MKDIR) build
-	@echo Compiling $< $@
+	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
 	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-$(BUILD_PATH)$(PATH_SEP)clock.o: dcpu/clock.d
+$(BUILD_PATH)$(PATH_SEP)clock.o: $(SRC_DIR)dcpu/clock.d
 	@$(MKDIR) build
-	@echo Compiling $< $@
+	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
 	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-$(BUILD_PATH)$(PATH_SEP)ram_loader.o: dcpu/ram_loader.d
+$(BUILD_PATH)$(PATH_SEP)ram_loader.o: $(SRC_DIR)dcpu/ram_loader.d
 	@$(MKDIR) build
-	@echo Compiling $< $@
+	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
 	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-$(BUILD_PATH)$(PATH_SEP)disassembler.o: dcpu/disassembler.d
+$(BUILD_PATH)$(PATH_SEP)disassembler.o: $(SRC_DIR)dcpu/disassembler.d
 	@$(MKDIR) build
-	@echo Compiling $< $@
+	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
 	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-$(BUILD_PATH)$(PATH_SEP)ddis.o: ddis.d
+$(BUILD_PATH)$(PATH_SEP)ddis.o: $(SRC_DIR)ddis.d
 	@$(MKDIR) build
-	@echo Compiling $< $@
+	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
 	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
 ddis: $(BUILD_PATH)$(PATH_SEP)ddis.o $(BUILD_PATH)$(PATH_SEP)disassembler.o $(BUILD_PATH)$(PATH_SEP)microcode.o $(BUILD_PATH)$(PATH_SEP)ram_loader.o
+	@echo "$(niceMsgBeg2)Linking $< $@$(niceMsgEnd)"
 	$(DC) $^ $(OUTPUT)$@ $(DCFLAGS_LINK)
-	@echo ------------------ creating $@ executable done
+	@echo "------------------ $(niceMsgBeg1)Creating $@ executable done$(niceMsgEnd)"
 
 # Do executable files
 # $(EXE_NAME): $(OBJECTS_MAIN) $(OBJECTS) dcpu/disassembler.o dcpu/cpu.o
@@ -119,7 +105,7 @@ ddis: $(BUILD_PATH)$(PATH_SEP)ddis.o $(BUILD_PATH)$(PATH_SEP)disassembler.o $(BU
 ############# CLEAN #############
 #  clean-doc clean-ddoc
 clean: clean-objects clean-executable
-	@echo ------------------ cleaning $^ done
+	@echo "------------------ $(niceMsgBeg1)cleaning $^ done$(niceMsgEnd)"
 
 clean-objects:
 	$(RM) *.o
