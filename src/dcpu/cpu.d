@@ -13,10 +13,10 @@ import dcpu.microcode, dcpu.machine, dcpu.hardware;
  * CPU State
  */
 enum CpuState {
-  READY,  /// Ready to init to execute the next instruction
-  OPA,    /// Waiting to the next clock tick to feth Operator A value
-  OPB,    /// Waiting to the next clock tick to feth Operator B value
-  EXECUTE /// Execute the OpCode
+  DECO,     /// Decoding an instrucction
+  OPA,      /// Get Operator A value
+  OPB,      /// Get Operator B value
+  EXECUTE   /// Execute the OpCode
 }
 
 
@@ -27,20 +27,26 @@ final class DCpu {
   Machine machine;          /// Self-reference to the machine
   
   ushort[255] int_queue;    /// Interrupt queue
-  bool read_queue;          /// FrontPop interrupt queue ?
+  bool read_queue = true;   /// FrontPop interrupt queue ?
   bool f_fire;              /// CPU on fire
   bool skip;                /// Skip next instrucction
 
   // Stores state between clock cycles
   CpuState state;           /// Actual state of CPU
   ushort word;              /// Value of [PC] when begin ready state
+  
   ubyte opcode;             /// OpCode
   ubyte ext_opcode;         /// Extendend Opcode if OpCode == 0
+
+  bool do_inmediate = true; /// Do an inmediate operand or next word operand
   ubyte opa;                /// Operand A
   ubyte opb;                /// Operand B
+  
   ushort val_a;             /// Value of operand A
   ushort val_b;             /// Value of operand B
   ushort val;               /// Result of an operation
+  bool write_val;           /// Must write val to a register or ram
+  
   int cycles;               /// Cycles to do in execute
 
   //shared Ram ram;           /// Ram of computer
@@ -65,7 +71,7 @@ final class DCpu {
    * Steps one cycle
    */
   void step() {
-    if (state == CpuState.READY) { // Feth [PC] and extract operands
+    if (state == CpuState.DECO) { // Feth [PC] and extract operands and opcodes
       synchronized (machine.ram) {
         word = machine.ram.ram[pc];
       }
@@ -73,8 +79,8 @@ final class DCpu {
       opcode = decode!"OpCode"(word);
       opa = decode!"OpA"(word);
       opb = decode!"OpB"(word);
-
-      mixin(inmediate_opval!"OpA"());
+      ext_opcode = decode!"ExtOpCode"(word);
+      /*mixin(inmediate_opval!"OpA"());
       
       if (opcode == 0) {
         ext_opcode = decode!"ExtOpCode"(word);
@@ -90,34 +96,62 @@ final class DCpu {
       state = CpuState.EXECUTE;
       cycles = -1;  // It will be calculated in Execute mode
       step();       // Jump to Execute state 
-      return;
+      return;*/
 
-    } else if (state == CpuState.OPA) { // Get ram[pc]
-      pc++;
-      
+      state = CpuState.OPA;
+      step(); // Jump to OPA to try to get a not "next word" operand
+
+    } else if (state == CpuState.OPA) { // Get Operand A
+      if (do_inmediate) {
+        do_inmediate = false;
+        mixin(inmediate_opval!"OpA"());
+        // If not is a inmediate, the mixin will do return; keeping the flag to false
+        // So the next cycle will get the next word operand
+        do_inmediate = true;
+      } else {
+        pc++;
+        mixin(nextword_opval!"OpA");
+        do_inmediate = true;
+      }
+
+      if (opcode == 0) {
+        state = CpuState.EXECUTE;
+        cycles = -1;  // Say to Execute to calc it
+        step();       // Jump to Execute state
+      } else {
+        state = CpuState.OPB;
+        step(); // Jump to OPB to try to get a not "next word" operand
+      }
+      /*pc++;
       mixin(nextword_opval!"OpA");
-      
       mixin(inmediate_opval!"OpB");
       
       // Execute Operantion
       state = CpuState.EXECUTE;
       cycles = -1;  // It will be calculated in Execute mode
       step();       // Jump to Execute state
-      return;
+      return;*/
       
-    } else if (state == CpuState.OPB) { // Get ram[pc]
-      pc++;
-      
-      //mixin(nextword_opval!"OpB");
+    } else if (state == CpuState.OPB) { // Get Operand B
+      if (do_inmediate) {
+        do_inmediate = false;
+        mixin(inmediate_opval!"OpB"());
+        // If not is a inmediate, the mixin will do return; keeping the flag to false
+        do_inmediate = true;
+      } else {
+        pc++;
+        mixin(nextword_opval!"OpB");
+        do_inmediate = true;
+      }
       
       state = CpuState.EXECUTE;
       cycles = -1;  // It will be calculated in Execute mode
       step();       // Jump to Execute state
-      return;
       
-    } else { // Execute
+    } else { // Execute the OpCode
       execute_op(); // I will increase pc when the last cycle is made
     }
+    
   }
 
   /**
@@ -134,297 +168,317 @@ private:
   /**
    * Execute a OpCode
    */
-  void execute_op() {   
-    if (opcode != 0 && cycles == -1) { // Execute Not extended opcode
-      switch (opcode) {
-        case OpCode.SET:
-          val = val_a;
-          cycles = 1;
-          break;
+  void execute_op() {
+    bool new_skip;   // New value of skip
+    
+    if (opcode != 0 && cycles < 0) { // Execute Not extended opcode
+      if (!skip) {
+        write_val = true;
+        switch (opcode) {
+          case OpCode.SET:
+            val = val_a;
+            cycles = 1;
+            break;
 
-        case OpCode.ADD:
-          uint tmp = val_b + val_a;
-          val = cast(ushort)(tmp & 0xFFFF);
-          ex = tmp > 0xFFFF; // Overflow
-          cycles = 2;
-          break;
-
-        case OpCode.SUB:
-          ushort neg_a = !val_a +1; // Comp 2 negation of val_a
-          uint tmp = val_b + neg_a;
-          val = cast(ushort)(tmp & 0xFFFF);
-          if ( val & 0x800 ) { // val < 0
-            ex = 0xFFFF; // Underflow
-          } else {
-            ex = 0;
-          }
-          cycles = 2;
-          break;
-
-        case OpCode.MUL:
-          uint tmp = val_b * val_a;
-          val = cast(ushort)(tmp & 0xFFFF);
-          ex = cast(ushort)(tmp >> 16);
-          cycles = 2;
-          break;
-          
-        case OpCode.MLI: // Mul with sign
-          int tmp = cast(short)val_b * cast(short)val_a;
-          val = cast(ushort)(tmp & 0xFFFF);
-          ex = cast(ushort)(tmp >> 16);
-          cycles = 2;
-          break;
-
-        case OpCode.DIV:
-          if (val_a == 0) {
-            val = 0;
-          } else {
-          uint tmp = val_b / val_a;
-          uint tmp2 = (val_b << 16) / val_a;
-          val = cast(ushort)(tmp & 0xFFFF);
-          ex = cast(ushort)(tmp2 & 0xFFFF);
-          }
-          cycles = 3;
-          break;
-
-        case OpCode.DVI: // Div with sign
-          if (val_a == 0) {
-            val = 0;
-          } else {
-          int tmp = cast(short)val_b / cast(short)val_a;
-          int tmp2 = (cast(short)val_b << 16) / cast(short)val_a;
-          val = cast(ushort)(tmp & 0xFFFF);
-          ex = cast(ushort)(tmp2 & 0xFFFF);
-          }
-          cycles = 3;
-          break;
-
-        case OpCode.MOD:
-          if (val_a == 0) {
-            val = 0;
-          } else {
-            val = val_b % val_a;
-          }
-          cycles = 3;
-          break;
-
-        case OpCode.MDI: // Mod with sign
-          if (val_a == 0) {
-            val = 0;
-          } else {
-            val = cast(short)val_b % cast(short)val_a;
-          }
-          cycles = 3;
-          break;
-
-        case OpCode.AND:
-          val = val_b & val_a;
-          cycles = 1;
-          break;
-
-        case OpCode.BOR:
-          val = val_b | val_a;
-          cycles = 1;
-          break;
-
-        case OpCode.XOR:
-          val = val_b ^ val_a;
-          cycles = 1;
-          break;
-
-        case OpCode.SHR: // Logical Shift
-          uint tmp = val_b >>> val_a;
-          val = cast(ushort)(tmp & 0xFFFF);
-          ex  = cast(ushort)(tmp << 16);
-          cycles = 1;
-          break;
-
-        case OpCode.ASR: // Arthmetic shift
-          uint tmp = val_b >> val_a;
-          val = cast(ushort)(tmp & 0xFFFF);
-          ex  = cast(ushort)(tmp << 16);
-          cycles = 1;
-          break;
-
-        case OpCode.SHL:
-          uint tmp = val_b >>> (16 - val_a);
-          val = cast(ushort)(tmp << 16);
-          ex  = cast(ushort)(tmp & 0xFFFF);
-          cycles = 1;
-          break;
-
-        case OpCode.IFB: // TODO Wrong. Must Skip next instruccion, not PC value, plus need chaining (not execute flagg)
-          if ((val_b & val_a) != 0) {
+          case OpCode.ADD:
+            uint tmp = val_b + val_a;
+            val = cast(ushort)(tmp & 0xFFFF);
+            ex = tmp > 0xFFFF; // Overflow
             cycles = 2;
-          } else {
-            cycles = 3;
-            pc++; // Skip next instrucction
-          }
-          break;
+            break;
 
-        case OpCode.IFC:
-          if ((val_b & val_a) == 0) {
+          case OpCode.SUB:
+            ushort neg_a = !val_a +1; // Comp 2 negation of val_a
+            uint tmp = val_b + neg_a;
+            val = cast(ushort)(tmp & 0xFFFF);
+            if ( val & 0x800 ) { // val < 0
+              ex = 0xFFFF; // Underflow
+            } else {
+              ex = 0;
+            }
             cycles = 2;
-          } else {
-            cycles = 3;
-            pc++;
-          }
-          break;
+            break;
 
-        case OpCode.IFE:
-          if (val_b == val_a) {
+          case OpCode.MUL:
+            uint tmp = val_b * val_a;
+            val = cast(ushort)(tmp & 0xFFFF);
+            ex = cast(ushort)(tmp >> 16);
             cycles = 2;
-          } else {
-            cycles = 3;
-            pc++;
-          }
-          break;
+            break;
 
-        case OpCode.IFN:
-          if (val_b != val_a) {
+          case OpCode.MLI: // Mul with sign
+            int tmp = cast(short)val_b * cast(short)val_a;
+            val = cast(ushort)(tmp & 0xFFFF);
+            ex = cast(ushort)(tmp >> 16);
             cycles = 2;
-          } else {
-            cycles = 3;
-            pc++;
-          }
-          break;
+            break;
 
-        case OpCode.IFG:
-          if (val_b > val_a) {
+          case OpCode.DIV:
+            if (val_a == 0) {
+              val = 0;
+            } else {
+            uint tmp = val_b / val_a;
+            uint tmp2 = (val_b << 16) / val_a;
+            val = cast(ushort)(tmp & 0xFFFF);
+            ex = cast(ushort)(tmp2 & 0xFFFF);
+            }
+            cycles = 3;
+            break;
+
+          case OpCode.DVI: // Div with sign
+            if (val_a == 0) {
+              val = 0;
+            } else {
+            int tmp = cast(short)val_b / cast(short)val_a;
+            int tmp2 = (cast(short)val_b << 16) / cast(short)val_a;
+            val = cast(ushort)(tmp & 0xFFFF);
+            ex = cast(ushort)(tmp2 & 0xFFFF);
+            }
+            cycles = 3;
+            break;
+
+          case OpCode.MOD:
+            if (val_a == 0) {
+              val = 0;
+            } else {
+              val = val_b % val_a;
+            }
+            cycles = 3;
+            break;
+
+          case OpCode.MDI: // Mod with sign
+            if (val_a == 0) {
+              val = 0;
+            } else {
+              val = cast(short)val_b % cast(short)val_a;
+            }
+            cycles = 3;
+            break;
+
+          case OpCode.AND:
+            val = val_b & val_a;
+            cycles = 1;
+            break;
+
+          case OpCode.BOR:
+            val = val_b | val_a;
+            cycles = 1;
+            break;
+
+          case OpCode.XOR:
+            val = val_b ^ val_a;
+            cycles = 1;
+            break;
+
+          case OpCode.SHR: // Logical Shift
+            uint tmp = val_b >>> val_a;
+            val = cast(ushort)(tmp & 0xFFFF);
+            ex  = cast(ushort)(tmp << 16);
+            cycles = 1;
+            break;
+
+          case OpCode.ASR: // Arthmetic shift
+            uint tmp = val_b >> val_a;
+            val = cast(ushort)(tmp & 0xFFFF);
+            ex  = cast(ushort)(tmp << 16);
+            cycles = 1;
+            break;
+
+          case OpCode.SHL:
+            uint tmp = val_b >>> (16 - val_a);
+            val = cast(ushort)(tmp << 16);
+            ex  = cast(ushort)(tmp & 0xFFFF);
+            cycles = 1;
+            break;
+
+          case OpCode.IFB:
             cycles = 2;
-          } else {
-            cycles = 3;
-            pc++;
-          }
-          break;
+            write_val = false;
+            new_skip = ((val_b & val_a) != 0); // Skip next instrucction
+            break;
 
-        case OpCode.IFA:
-          if (cast(short)val_b > cast(short)val_a) {
+          case OpCode.IFC:
             cycles = 2;
-          } else {
-            cycles = 3;
-            pc++;
-          }
-          break;
+            write_val = false;
+            new_skip = ((val_b & val_a) == 0);
+            break;
 
-        case OpCode.IFL:
-          if (val_b < val_a) {
+          case OpCode.IFE:
+            new_skip = (val_b == val_a);
+            write_val = false;
             cycles = 2;
-          } else {
-            cycles = 3;
-          }
-            pc++;
-          break;
+            break;
 
-        case OpCode.IFU:
-          if (cast(short)val_b < cast(short)val_a) {
+          case OpCode.IFN:
             cycles = 2;
-          } else {
+            write_val = false;
+            new_skip = (val_b != val_a);
+            break;
+
+          case OpCode.IFG:
+            cycles = 2;
+            write_val = false;
+            new_skip = (val_b > val_a);
+            break;
+
+          case OpCode.IFA:
+            cycles = 2;
+            write_val = false;
+            new_skip = (cast(short)val_b > cast(short)val_a);
+            break;
+
+          case OpCode.IFL:
+            cycles = 2;
+            write_val = false;
+            new_skip = (val_b < val_a);
+            break;
+
+          case OpCode.IFU:
+            cycles = 2;
+            write_val = false;
+            new_skip = (cast(short)val_b < cast(short)val_a);
+            break;
+
+          case OpCode.ADX:
+            uint tmp = val_b + val_a + ex;
+            val = cast(ushort)(tmp & 0xFFFF);
+            ex = tmp > 0xFFFF; // Overflow
             cycles = 3;
-            pc++;
-          }
-          break;
+            break;
 
-        case OpCode.ADX:
-          uint tmp = val_b + val_a + ex;
-          val = cast(ushort)(tmp & 0xFFFF);
-          ex = tmp > 0xFFFF; // Overflow
-          cycles = 3;
-          break;
+          case OpCode.SBX:
+            ushort neg_a = !val_a +1; // Comp 2 negation of val_a
+            uint tmp = val_b + neg_a + ex;
+            val = cast(ushort)(tmp & 0xFFFF);
+            if ( val & 0x800 ) { // val < 0
+              ex = 0xFFFF; // Underflow
+            } else {
+              ex = 0;
+            }
+            cycles = 3;
+            break;
 
-        case OpCode.SBX:
-          ushort neg_a = !val_a +1; // Comp 2 negation of val_a
-          uint tmp = val_b + neg_a + ex;
-          val = cast(ushort)(tmp & 0xFFFF);
-          if ( val & 0x800 ) { // val < 0
-            ex = 0xFFFF; // Underflow
-          } else {
-            ex = 0;
-          }
-          cycles = 3;
-          break;
+          case OpCode.STI:
+            val = val_a;
+            i++;
+            j++;
+            cycles = 2;
+            break;
 
-        case OpCode.STI:
-          val = val_a;
-          i++;
-          j++;
-          cycles = 2;
-          break;
+          case OpCode.STD:
+            val = val_a;
+            i--;
+            j--;
+            cycles = 2;
+            break;
 
-        case OpCode.STD:
-          val = val_a;
-          i--;
-          j--;
-          cycles = 2;
-          break;
-          
-        default: // Unknow OpCode
-          // Do Nothing (I should do a random OpCode ?)
-          cycles = 1;
+          default: // Unknow OpCode
+            // Do Nothing (I should do a random OpCode ?)
+            write_val = false;
+            cycles = 1;
+        }
+        
+      } else { // Skip next basic OpCode instrucction
+        cycles = 1;
+        write_val = false;
+        switch (opcode) { // Skipe chained branchs
+          case OpCode.IFB:
+          case OpCode.IFC:
+          case OpCode.IFE:
+          case OpCode.IFN:
+          case OpCode.IFG:
+          case OpCode.IFA:
+          case OpCode.IFL:
+          case OpCode.IFU:
+            new_skip = true;
+            break;
+            
+          default:
+            new_skip = false;
+        }
       }
       return;
-    } else if (cycles == -1) { // Extended OpCode
-      switch (ext_opcode) {
-        case ExtOpCode.JSR:
-          synchronized (machine.ram) {
-            machine.ram.ram[--sp] = cast(ushort)(pc +1);
-          }
-          pc = val_a;
-          cycles = 3;
-          break;
+    } else if (cycles < 0) { // Extended OpCode
+      write_val = false;
+      if (!skipe) {
+        switch (ext_opcode) {
+          case ExtOpCode.JSR:
+            synchronized (machine.ram) {
+              machine.ram.ram[--sp] = cast(ushort)(pc +1);
+            }
+            pc = val_a;
+            cycles = 3;
+            break;
 
-        case ExtOpCode.INT: // TODO Interrupcion software
-          cycles = 4;
-          break;
+          case ExtOpCode.INT: // TODO Interrupcion software
+            cycles = 4;
+            break;
 
-        case ExtOpCode.IAG:
-          val_a = ia;
-          cycles = 1;
-          break;
+          case ExtOpCode.IAG:
+            write_val = true;
+            val = ia;
+            cycles = 1;
+            break;
 
-        case ExtOpCode.IAS:
-          ia = val_a;
-          cycles = 1;
-          break;
+          case ExtOpCode.IAS:
+            ia = val_a;
+            cycles = 1;
+            break;
 
-        case ExtOpCode.RFI:
-          read_queue = true;
-          synchronized (machine.ram) {
-            a  = machine.ram.ram[sp++];
-            pc = machine.ram.ram[sp++];
-          }
-          cycles = 3;
-          break;
+          case ExtOpCode.RFI:
+            read_queue = true;
+            synchronized (machine.ram) {
+              a  = machine.ram.ram[sp++];
+              pc = machine.ram.ram[sp++];
+            }
+            cycles = 3;
+            break;
 
-        case ExtOpCode.IAQ:
-          read_queue = val_a == 0; // if val_a != 0 Not read the interrupt queue
-          cycles = 2;
-          break;
+          case ExtOpCode.IAQ:
+            read_queue = val_a == 0; // if val_a != 0 Not read the interrupt queue
+            cycles = 2;
+            break;
 
-        case ExtOpCode.HWN: // TODO
-          cycles = 2;
-          break;
+          case ExtOpCode.HWN: // TODO
+            cycles = 2;
+            break;
 
-        case ExtOpCode.HWQ: // TODO
-          cycles = 4;
-          break;
+          case ExtOpCode.HWQ: // TODO
+            cycles = 4;
+            break;
 
-        case ExtOpCode.HWI: // TODO
-          cycles = 4; // Or more
-          break;
+          case ExtOpCode.HWI: // TODO
+            cycles = 4; // Or more
+            break;
 
-        default: // Unknow OpCode
-          // Do Nothing (I should do a random OpCode ?)
-          cycles = 1;
+          default: // Unknow OpCode
+            // Do Nothing (I should do a random OpCode ?)
+            cycles = 1;
+        }
+      } else {
+        cycles = 1;
+        new_skip = false;
       }
-      return;
+
     }
 
     if (wait_hwd) // Some hardware when receive a HWI can make to wait more cycles
       cycles--;
       
     if (cycles == 0) { // Only increment PC and set Ready when cycle count == 0
-      state = CpuState.READY;
+      if (skip) {
+        skip = new_skip;
+      } else {
+        
+        if (opcode != 0 && write_val) { // Basic OpCode
+          // OpB <= OpA Operation OpA = val
+          // TODO
+        } else if (write_val) {         // Extended OpCode
+          // OpA <= val
+          // TODO
+        }
+      }
+      state = CpuState.DECO;
       pc++;
     }
     
@@ -468,18 +522,21 @@ private:
       case Operand.Zptr:
       case Operand.Iptr:
       case Operand.Jptr:
+        if (!skip)
         synchronized (machine.ram) {
           "~val~r" = machine.ram.ram[registers["~op~r"- Operand.Aptr]];
         }
         break;
 
       case Operand.POP_PUSH: // Pop [SP++]
+        if (!skip)
         synchronized (machine.ram) {
           "~val~r" = machine.ram.ram[sp++];
         }
         break;
 
       case Operand.PEEK: // [SP]
+        if (!skip)
         synchronized (machine.ram) {
           "~val~r" = machine.ram.ram[sp];
         }
@@ -547,6 +604,7 @@ private:
       string op = "opb";
     }
     string r = r"
+  if (!skip)
     switch ("~op~r") {
       case Operand.Aptr_word: // Reg. pointer + next word literal
       case Operand.Bptr_word:
