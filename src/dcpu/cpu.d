@@ -400,7 +400,7 @@ private:
       return;
     } else if (cycles < 0) { // Extended OpCode
       write_val = false;
-      if (!skipe) {
+      if (!skip) {
         switch (ext_opcode) {
           case ExtOpCode.JSR:
             synchronized (machine.ram) {
@@ -439,7 +439,8 @@ private:
             cycles = 2;
             break;
 
-          case ExtOpCode.HWN: // TODO
+          case ExtOpCode.HWN: // Number od devices
+            a = cast(ushort)machine.dev.length;
             cycles = 2;
             break;
 
@@ -485,164 +486,262 @@ private:
   }
 }
 
-/**
-   * Meta function that try to get OP value or wait for the next cycle
-   * Call it with mixin
-   * Params:
-   *  opt   = OpA or OpB operator
-   * Returns: A string representation of the code to be generated/executed
-   */
-  string inmediate_opval(string opt)() {
+// TODO Rehacer todo de otra forma mas elegante
+private:
+
+string write_op(string opt)() {
   static assert (opt == "OpA" || opt == "OpB", "Invalid operator");
-    static if (opt == "OpA") {
-      string val = "val_a";
-      string op = "opa";
-    } else {
-      string val = "val_b";
-      string op = "opb";
-    }
-    string r = r"
-    switch ("~op~r") {
-      case Operand.A: // General Registers
-      case Operand.B:
-      case Operand.C:
-      case Operand.X:
-      case Operand.Y:
-      case Operand.Z:
-      case Operand.I:
-      case Operand.J:
-        "~val~r" = registers["~op~r"];
-        break;
+  static if (opt == "OpA") {
+    string op = "opa";
+  } else {
+    string op = "opb";
+  }
+  string r = r"
+  switch ("~op~r") {
+    case Operand.A: // General Registers
+    case Operand.B:
+    case Operand.C:
+    case Operand.X:
+    case Operand.Y:
+    case Operand.Z:
+    case Operand.I:
+    case Operand.J:
+      registers["~op~r"]= val;
+      break;
 
-      case Operand.Aptr:  // General Registers Pointer
-      case Operand.Bptr:
-      case Operand.Cptr:
-      case Operand.Xptr:
-      case Operand.Yptr:
-      case Operand.Zptr:
-      case Operand.Iptr:
-      case Operand.Jptr:
-        if (!skip)
-        synchronized (machine.ram) {
-          "~val~r" = machine.ram.ram[registers["~op~r"- Operand.Aptr]];
-        }
-        break;
-
-      case Operand.POP_PUSH: // Pop [SP++]
-        if (!skip)
-        synchronized (machine.ram) {
-          "~val~r" = machine.ram.ram[sp++];
-        }
-        break;
-
-      case Operand.PEEK: // [SP]
-        if (!skip)
-        synchronized (machine.ram) {
-          "~val~r" = machine.ram.ram[sp];
-        }
-        break;
-
-      case Operand.SP: // SP
-        "~val~r" = sp;
-        break;
-
-      case Operand.PC: // PC
-        "~val~r" = pc;
-        break;
-
-      case Operand.EX: // EXcess
-        "~val~r" = ex;
-        break;
-
-      case Operand.Aptr_word:
-      case Operand.Bptr_word:
-      case Operand.Cptr_word:
-      case Operand.Xptr_word:
-      case Operand.Yptr_word:
-      case Operand.Zptr_word:
-      case Operand.Iptr_word:
-      case Operand.Jptr_word:
-      case Operand.PICK_word:
-      case Operand.NWord_ptr:
-      case Operand.NWord:
-      ";
-      static if (opt == "op_a") {
-        r ~= r"
-        state = CpuState.OPA; // Wait to the next cycle
-        return;
-
-      default: // Literal
-         val_a = op_a - Operand.Literal -1;
-         }";
-      } else {
-        r ~= `
-        state = CpuState.OPB; // Wait to the next cycle
-        return;
-
-      default:
-      assert(false, "This code never should be executed. Operator B can't have literals");
-      }`;
+    case Operand.Aptr:  // General Registers Pointer
+    case Operand.Bptr:
+    case Operand.Cptr:
+    case Operand.Xptr:
+    case Operand.Yptr:
+    case Operand.Zptr:
+    case Operand.Iptr:
+    case Operand.Jptr:
+      if (!skip)
+      synchronized (machine.ram) {
+        machine.ram.ram[registers["~op~r"- Operand.Aptr]] = val;
       }
-
-    return r;
+      break;";
+  static if (opt == "OpB") {
+    r ~= r"case Operand.POP_PUSH: // PUSH [--SP]";
   }
+  r ~= r"
+    case Operand.PEEK: // [SP]
+      if (!skip)
+      synchronized (machine.ram) {
+        machine.ram.ram[sp] = val;
+      }
+      break;
 
-   /**
-   * Meta function that get OP value from the next word (PC was increased previusly)
-   * Call it with mixin
-   * Params:
-   *  opt   = OpA or OpB operator
-   * Returns: A string representation of the code to be generated/executed
-   */
-  string nextword_opval(string opt)() {
-  static assert (opt == "OpA" || opt == "OpB", "Invalid operator");
-    static if (opt == "OpA") {
-      string val = "val_a";
-      string op = "opa";
+    case Operand.SP: // SP
+      sp = val;
+      break;
+
+    case Operand.PC: // PC
+      pc = val;
+      break;
+
+    case Operand.EX: // EXcess
+      ex = val;
+      break;
+
+    case Operand.Aptr_word:
+    case Operand.Bptr_word:
+    case Operand.Cptr_word:
+    case Operand.Xptr_word:
+    case Operand.Yptr_word:
+    case Operand.Zptr_word:
+    case Operand.Iptr_word:
+    case Operand.Jptr_word:
+    case Operand.PICK_word:
+    case Operand.NWord_ptr:
+    case Operand.NWord:
+    ";
+    static if (opt == "op_a") {
+      r ~= r"
+      state = CpuState.OPA; // Wait to the next cycle
+      return;
+
+    default: // Literal
+       val_a = op_a - Operand.Literal -1;
+       }";
     } else {
-      string val = "val_b";
-      string op = "opb";
+      r ~= `
+      state = CpuState.OPB; // Wait to the next cycle
+      return;
+
+    default:
+    assert(false, "This code never should be executed. Operator B can't have literals");
+    }`;
     }
-    string r = r"
-  if (!skip)
-    switch ("~op~r") {
-      case Operand.Aptr_word: // Reg. pointer + next word literal
-      case Operand.Bptr_word:
-      case Operand.Cptr_word:
-      case Operand.Xptr_word:
-      case Operand.Yptr_word:
-      case Operand.Zptr_word:
-      case Operand.Iptr_word:
-      case Operand.Jptr_word:
-        synchronized (machine.ram) {
-          "~val~r" = machine.ram.ram[registers["~op~r"- Operand.Aptr_word] + machine.ram.ram[pc] ];
-        }
-        break;
 
-      case Operand.PICK_word: // [SP + next word literal]
-        synchronized (machine.ram) {
-          "~val~r" = machine.ram.ram[sp + machine.ram.ram[pc]];
-        }
-        break;
+  return r;
+}
 
-      case Operand.NWord_ptr: // Ptr [next word literal ]
-        synchronized (machine.ram) {
-          "~val~r" = machine.ram.ram[machine.ram.ram[pc]];
-        }
-        break;
-
-      case Operand.NWord: // next word literal
-        synchronized (machine.ram) {
-          "~val~` = machine.ram.ram[pc];
-        }
-        break;
-
-      default:
-        assert(false, "This code never should be executed. Get Operator value from next word, was called");
-      }`;
-
-    return r;
+/**
+ * Meta function that try to get OP value or wait for the next cycle
+ * Call it with mixin
+ * Params:
+ *  opt   = OpA or OpB operator
+ * Returns: A string representation of the code to be generated/executed
+ */
+string inmediate_opval(string opt)() {
+  static assert (opt == "OpA" || opt == "OpB", "Invalid operator");
+  static if (opt == "OpA") {
+    string val = "val_a";
+    string op = "opa";
+  } else {
+    string val = "val_b";
+    string op = "opb";
   }
+  string r = r"
+  switch ("~op~r") {
+    case Operand.A: // General Registers
+    case Operand.B:
+    case Operand.C:
+    case Operand.X:
+    case Operand.Y:
+    case Operand.Z:
+    case Operand.I:
+    case Operand.J:
+      "~val~r" = registers["~op~r"];
+      break;
+
+    case Operand.Aptr:  // General Registers Pointer
+    case Operand.Bptr:
+    case Operand.Cptr:
+    case Operand.Xptr:
+    case Operand.Yptr:
+    case Operand.Zptr:
+    case Operand.Iptr:
+    case Operand.Jptr:
+      if (!skip)
+      synchronized (machine.ram) {
+        "~val~r" = machine.ram.ram[registers["~op~r"- Operand.Aptr]];
+      }
+      break;
+
+    case Operand.POP_PUSH: // a Pop [SP++] | b PUSH [--SP]
+      if (!skip)
+      synchronized (machine.ram) {
+        "~val;
+        static if (opt == "OpA") {
+          r ~= r" = machine.ram.ram[sp++];";
+        } else {
+          r ~= r" = machine.ram.ram[--sp];";
+        }
+        r ~= r"
+      }
+      break;
+
+    case Operand.PEEK: // [SP]
+      if (!skip)
+      synchronized (machine.ram) {
+        "~val~r" = machine.ram.ram[sp];
+      }
+      break;
+
+    case Operand.SP: // SP
+      "~val~r" = sp;
+      break;
+
+    case Operand.PC: // PC
+      "~val~r" = pc;
+      break;
+
+    case Operand.EX: // EXcess
+      "~val~r" = ex;
+      break;
+
+    case Operand.Aptr_word:
+    case Operand.Bptr_word:
+    case Operand.Cptr_word:
+    case Operand.Xptr_word:
+    case Operand.Yptr_word:
+    case Operand.Zptr_word:
+    case Operand.Iptr_word:
+    case Operand.Jptr_word:
+    case Operand.PICK_word:
+    case Operand.NWord_ptr:
+    case Operand.NWord:
+    ";
+    static if (opt == "op_a") {
+      r ~= r"
+      state = CpuState.OPA; // Wait to the next cycle
+      return;
+
+    default: // Literal
+       val_a = op_a - Operand.Literal -1;
+       }";
+    } else {
+      r ~= `
+      state = CpuState.OPB; // Wait to the next cycle
+      return;
+
+    default:
+    assert(false, "This code never should be executed. Operator B can't have literals");
+    }`;
+    }
+
+  return r;
+}
+
+ /**
+ * Meta function that get OP value from the next word (PC was increased previusly)
+ * Call it with mixin
+ * Params:
+ *  opt   = OpA or OpB operator
+ * Returns: A string representation of the code to be generated/executed
+ */
+string nextword_opval(string opt)() {
+static assert (opt == "OpA" || opt == "OpB", "Invalid operator");
+  static if (opt == "OpA") {
+    string val = "val_a";
+    string op = "opa";
+  } else {
+    string val = "val_b";
+    string op = "opb";
+  }
+  string r = r"
+if (!skip)
+  switch ("~op~r") {
+    case Operand.Aptr_word: // Reg. pointer + next word literal
+    case Operand.Bptr_word:
+    case Operand.Cptr_word:
+    case Operand.Xptr_word:
+    case Operand.Yptr_word:
+    case Operand.Zptr_word:
+    case Operand.Iptr_word:
+    case Operand.Jptr_word:
+      synchronized (machine.ram) {
+        "~val~r" = machine.ram.ram[registers["~op~r"- Operand.Aptr_word] + machine.ram.ram[pc] ];
+      }
+      break;
+
+    case Operand.PICK_word: // [SP + next word literal]
+      synchronized (machine.ram) {
+        "~val~r" = machine.ram.ram[sp + machine.ram.ram[pc]];
+      }
+      break;
+
+    case Operand.NWord_ptr: // Ptr [next word literal ]
+      synchronized (machine.ram) {
+        "~val~r" = machine.ram.ram[machine.ram.ram[pc]];
+      }
+      break;
+
+    case Operand.NWord: // next word literal
+      synchronized (machine.ram) {
+        "~val~` = machine.ram.ram[pc];
+      }
+      break;
+
+    default:
+      assert(false, "This code never should be executed. Get Operator value from next word, was called");
+    }`;
+
+  return r;
+}
 
 /+
 void main () {

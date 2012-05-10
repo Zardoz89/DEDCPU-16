@@ -24,7 +24,7 @@ final class Ram {
 struct Machine {
   DCpu cpu;
   shared Ram ram;
-  Hardware[] hard;
+  Hardware[] dev;
 
   void init() {
     cpu = new DCpu(this);
