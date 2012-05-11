@@ -24,6 +24,227 @@ enum CpuState {
 
 final class DCpu {
   private:
+  
+  /**
+   * Operator
+   * Params:
+   *  opt = Type of operator (OpA or OpB)
+   */
+  class Operator(string opt) {
+    static assert (opt == "OpA" || opt == "OpB", "Invalid operator");
+
+  private:
+    ushort val;     // Value read
+    ushort op;      // Operand Type
+    ushort ptr;     // Where are pointing the pointer
+    bool _next_word; // Uses the next word and so need a extra cycle
+
+  public:
+    this(ubyte op) {
+      this.op = op;
+      switch (op) {           // Need to read the next word ?
+        case Operand.Aptr_word:
+        case Operand.Bptr_word:
+        case Operand.Cptr_word:
+        case Operand.Xptr_word:
+        case Operand.Yptr_word:
+        case Operand.Zptr_word:
+        case Operand.Iptr_word:
+        case Operand.Jptr_word:
+        case Operand.PICK_word:
+        case Operand.NWord_ptr:
+        case Operand.NWord:
+          _next_word = true;
+          break;
+        default:
+          _next_word = false;
+      }
+
+      if (!skip)
+      switch (op) {         // Read it
+        case Operand.A:     // General Registers
+        case Operand.B:
+        case Operand.C:
+        case Operand.X:
+        case Operand.Y:
+        case Operand.Z:
+        case Operand.I:
+        case Operand.J:
+          val = registers[op];
+          break;
+
+        case Operand.Aptr:  // General Registers Pointer
+        case Operand.Bptr:
+        case Operand.Cptr:
+        case Operand.Xptr:
+        case Operand.Yptr:
+        case Operand.Zptr:
+        case Operand.Iptr:
+        case Operand.Jptr:
+          ptr = registers[op- Operand.Aptr];
+          synchronized (machine.ram) {
+            val = machine.ram.ram[ptr];
+          }
+          break;
+
+        case Operand.Aptr_word: // [Reg + next word litreal]
+        case Operand.Bptr_word:
+        case Operand.Cptr_word:
+        case Operand.Xptr_word:
+        case Operand.Yptr_word:
+        case Operand.Zptr_word:
+        case Operand.Iptr_word:
+        case Operand.Jptr_word:
+          synchronized (machine.ram) {
+            ptr = cast(ushort)(registers[op- Operand.Aptr_word] + machine.ram.ram[pc +1]);
+            val = machine.ram.ram[ptr];
+          }
+          break;
+
+        case Operand.POP_PUSH: // a Pop [SP++] | b PUSH [--SP]
+          static if (opt == "OpA") {
+            synchronized (machine.ram) { // To read the value
+              val =  machine.ram.ram[sp++];
+            }
+          } else { // TODO Need confirmation if this is correct
+            synchronized (machine.ram) {
+              val =  machine.ram.ram[sp-1];
+            }
+          }
+          break;
+
+        case Operand.PEEK: // [SP]
+          synchronized (machine.ram) {
+            ptr = sp;
+            val =  machine.ram.ram[sp];
+          }
+          break;
+
+        case Operand.PICK_word: // [SP + next word litreal]
+          synchronized (machine.ram) {
+            ptr = cast(ushort)(sp + machine.ram.ram[pc +1]);
+            val = machine.ram.ram[ptr];
+          }
+          break;
+
+        case Operand.SP: // SP
+          val = sp;
+          break;
+
+        case Operand.PC: // PC
+          val = pc;
+          break;
+
+        case Operand.EX: // EXcess
+          val = ex;
+          break;
+
+        case Operand.NWord_ptr: // Ptr [next word literal ]
+          synchronized (machine.ram) {
+            ptr = machine.ram.ram[pc];
+            val = machine.ram.ram[ptr];
+          }
+          break;
+
+        case Operand.NWord: // next word literal
+          synchronized (machine.ram) {
+            ptr = pc;
+            val = machine.ram.ram[ptr];
+          }
+          break;
+
+        default: // Literal
+          static if (opt == "OpA") {
+            val = op - Operand.Literal -1;
+          } else {
+            assert(false, "This code never should be executed. Operator B can't have literals");
+          }
+      }
+    }
+
+    /**
+     * Uses next word, so need to increase PC value ?
+     */
+    @property bool next_word()  {
+      return _next_word;
+    }
+    /**
+     * Returns: Value of the operator
+     */
+    ushort read () @property {
+      return val;
+    }
+
+    /**
+     * Writes the new value to his place
+     */
+    void write(ushort v) @property {
+      if (!skip)
+      switch (op) {         // Read it
+        case Operand.A:     // General Registers
+        case Operand.B:
+        case Operand.C:
+        case Operand.X:
+        case Operand.Y:
+        case Operand.Z:
+        case Operand.I:
+        case Operand.J:
+          registers[op] = val;
+          break;
+
+        case Operand.Aptr:  // General Registers Pointer
+        case Operand.Bptr:
+        case Operand.Cptr:
+        case Operand.Xptr:
+        case Operand.Yptr:
+        case Operand.Zptr:
+        case Operand.Iptr:
+        case Operand.Jptr:
+        case Operand.Aptr_word: // [Reg + next word litreal]
+        case Operand.Bptr_word:
+        case Operand.Cptr_word:
+        case Operand.Xptr_word:
+        case Operand.Yptr_word:
+        case Operand.Zptr_word:
+        case Operand.Iptr_word:
+        case Operand.Jptr_word:
+        case Operand.PEEK: // [SP]
+        case Operand.PICK_word: // [SP + next word litreal]
+          synchronized (machine.ram) {
+            machine.ram.ram[ptr] = val;
+          }
+          break;
+
+        case Operand.POP_PUSH: // a Pop [SP++] | b PUSH [--SP]
+          static if (opt == "OpB") {
+            synchronized (machine.ram) { // To read the value
+              machine.ram.ram[--sp] = val;
+            }
+            break;
+          } else {
+            assert (false, "This code must never executed. OpA PUSH can be writted");
+          }
+          
+
+        case Operand.SP: // SP
+          sp = val;
+          break;
+
+        case Operand.PC: // PC
+          pc = val;
+          break;
+
+        case Operand.EX: // EXcess
+          ex = val;
+          break;
+
+        default: // Literal and Next_Word literal or pointer
+          assert(false, "This code never should be executed. Literasl can be writed");
+      }
+    }
+
+  }
+  
   Machine machine;          /// Self-reference to the machine
   
   ushort[255] int_queue;    /// Interrupt queue
@@ -42,14 +263,15 @@ final class DCpu {
   ubyte opa;                /// Operand A
   ubyte opb;                /// Operand B
   
-  ushort val_a;             /// Value of operand A
-  ushort val_b;             /// Value of operand B
+  Operator!"OpA" val_a;     /// Value of operand A
+  Operator!"OpB" val_b;     /// Value of operand B
   ushort val;               /// Result of an operation
   bool write_val;           /// Must write val to a register or ram
   
   int cycles;               /// Cycles to do in execute
 
-  //shared Ram ram;           /// Ram of computer
+  
+  
   public:
   bool wait_hwd;            /// Need to wait a hardware device?
   
@@ -80,38 +302,20 @@ final class DCpu {
       opa = decode!"OpA"(word);
       opb = decode!"OpB"(word);
       ext_opcode = decode!"ExtOpCode"(word);
-      /*mixin(inmediate_opval!"OpA"());
-      
-      if (opcode == 0) {
-        ext_opcode = decode!"ExtOpCode"(word);
-        state = CpuState.EXECUTE;
-        cycles = -1;  // It will be calculated in Execute mode
-        step();       // Jump to Execute state 
-        return;
-      }
-
-      mixin(inmediate_opval!"OpB"());
-
-      // Execute Operation
-      state = CpuState.EXECUTE;
-      cycles = -1;  // It will be calculated in Execute mode
-      step();       // Jump to Execute state 
-      return;*/
 
       state = CpuState.OPA;
       step(); // Jump to OPA to try to get a not "next word" operand
 
     } else if (state == CpuState.OPA) { // Get Operand A
       if (do_inmediate) {
-        do_inmediate = false;
-        mixin(inmediate_opval!"OpA"());
-        // If not is a inmediate, the mixin will do return; keeping the flag to false
-        // So the next cycle will get the next word operand
-        do_inmediate = true;
+        val_a = new Operator!"OpA"(opa);
+        if (val_a.next_word) { // Take a extra cycle
+          do_inmediate = false;
+          step();
+        }
       } else {
-        pc++;
-        mixin(nextword_opval!"OpA");
         do_inmediate = true;
+        pc++;
       }
 
       if (opcode == 0) {
@@ -122,26 +326,17 @@ final class DCpu {
         state = CpuState.OPB;
         step(); // Jump to OPB to try to get a not "next word" operand
       }
-      /*pc++;
-      mixin(nextword_opval!"OpA");
-      mixin(inmediate_opval!"OpB");
-      
-      // Execute Operantion
-      state = CpuState.EXECUTE;
-      cycles = -1;  // It will be calculated in Execute mode
-      step();       // Jump to Execute state
-      return;*/
       
     } else if (state == CpuState.OPB) { // Get Operand B
       if (do_inmediate) {
-        do_inmediate = false;
-        mixin(inmediate_opval!"OpB"());
-        // If not is a inmediate, the mixin will do return; keeping the flag to false
-        do_inmediate = true;
+        val_b = new Operator!"OpB"(opb);
+        if (val_b.next_word) { // Take a extra cycle
+          do_inmediate = false;
+          step();
+        }
       } else {
-        pc++;
-        mixin(nextword_opval!"OpB");
         do_inmediate = true;
+        pc++;
       }
       
       state = CpuState.EXECUTE;
@@ -176,20 +371,20 @@ private:
         write_val = true;
         switch (opcode) {
           case OpCode.SET:
-            val = val_a;
+            val = val_a.read;
             cycles = 1;
             break;
 
           case OpCode.ADD:
-            uint tmp = val_b + val_a;
+            uint tmp = val_b.read + val_a.read;
             val = cast(ushort)(tmp & 0xFFFF);
             ex = tmp > 0xFFFF; // Overflow
             cycles = 2;
             break;
 
           case OpCode.SUB:
-            ushort neg_a = !val_a +1; // Comp 2 negation of val_a
-            uint tmp = val_b + neg_a;
+            ushort neg_a = !val_a.read +1; // Comp 2 negation of val_a
+            uint tmp = val_b.read + neg_a;
             val = cast(ushort)(tmp & 0xFFFF);
             if ( val & 0x800 ) { // val < 0
               ex = 0xFFFF; // Underflow
@@ -200,25 +395,25 @@ private:
             break;
 
           case OpCode.MUL:
-            uint tmp = val_b * val_a;
+            uint tmp = val_b.read * val_a.read;
             val = cast(ushort)(tmp & 0xFFFF);
             ex = cast(ushort)(tmp >> 16);
             cycles = 2;
             break;
 
           case OpCode.MLI: // Mul with sign
-            int tmp = cast(short)val_b * cast(short)val_a;
+            int tmp = cast(short)val_b.read * cast(short)val_a.read;
             val = cast(ushort)(tmp & 0xFFFF);
             ex = cast(ushort)(tmp >> 16);
             cycles = 2;
             break;
 
           case OpCode.DIV:
-            if (val_a == 0) {
+            if (val_a.read == 0) {
               val = 0;
             } else {
-            uint tmp = val_b / val_a;
-            uint tmp2 = (val_b << 16) / val_a;
+            uint tmp = val_b.read / val_a.read;
+            uint tmp2 = (val_b.read << 16) / val_a.read;
             val = cast(ushort)(tmp & 0xFFFF);
             ex = cast(ushort)(tmp2 & 0xFFFF);
             }
@@ -226,11 +421,11 @@ private:
             break;
 
           case OpCode.DVI: // Div with sign
-            if (val_a == 0) {
+            if (val_a.read == 0) {
               val = 0;
             } else {
-            int tmp = cast(short)val_b / cast(short)val_a;
-            int tmp2 = (cast(short)val_b << 16) / cast(short)val_a;
+            int tmp = cast(short)val_b.read / cast(short)val_a.read;
+            int tmp2 = (cast(short)val_b.read << 16) / cast(short)val_a.read;
             val = cast(ushort)(tmp & 0xFFFF);
             ex = cast(ushort)(tmp2 & 0xFFFF);
             }
@@ -238,54 +433,54 @@ private:
             break;
 
           case OpCode.MOD:
-            if (val_a == 0) {
+            if (val_a.read == 0) {
               val = 0;
             } else {
-              val = val_b % val_a;
+              val = val_b.read % val_a.read;
             }
             cycles = 3;
             break;
 
           case OpCode.MDI: // Mod with sign
-            if (val_a == 0) {
+            if (val_a.read == 0) {
               val = 0;
             } else {
-              val = cast(short)val_b % cast(short)val_a;
+              val = cast(short)val_b.read % cast(short)val_a.read;
             }
             cycles = 3;
             break;
 
           case OpCode.AND:
-            val = val_b & val_a;
+            val = val_b.read & val_a.read;
             cycles = 1;
             break;
 
           case OpCode.BOR:
-            val = val_b | val_a;
+            val = val_b.read | val_a.read;
             cycles = 1;
             break;
 
           case OpCode.XOR:
-            val = val_b ^ val_a;
+            val = val_b.read ^ val_a.read;
             cycles = 1;
             break;
 
           case OpCode.SHR: // Logical Shift
-            uint tmp = val_b >>> val_a;
+            uint tmp = val_b.read >>> val_a.read;
             val = cast(ushort)(tmp & 0xFFFF);
             ex  = cast(ushort)(tmp << 16);
             cycles = 1;
             break;
 
           case OpCode.ASR: // Arthmetic shift
-            uint tmp = val_b >> val_a;
+            uint tmp = val_b.read >> val_a.read;
             val = cast(ushort)(tmp & 0xFFFF);
             ex  = cast(ushort)(tmp << 16);
             cycles = 1;
             break;
 
           case OpCode.SHL:
-            uint tmp = val_b >>> (16 - val_a);
+            uint tmp = val_b.read >>> (16 - val_a.read);
             val = cast(ushort)(tmp << 16);
             ex  = cast(ushort)(tmp & 0xFFFF);
             cycles = 1;
@@ -294,17 +489,17 @@ private:
           case OpCode.IFB:
             cycles = 2;
             write_val = false;
-            new_skip = ((val_b & val_a) != 0); // Skip next instrucction
+            new_skip = ((val_b.read & val_a.read) != 0); // Skip next instrucction
             break;
 
           case OpCode.IFC:
             cycles = 2;
             write_val = false;
-            new_skip = ((val_b & val_a) == 0);
+            new_skip = ((val_b.read & val_a.read) == 0);
             break;
 
           case OpCode.IFE:
-            new_skip = (val_b == val_a);
+            new_skip = (val_b.read == val_a.read);
             write_val = false;
             cycles = 2;
             break;
@@ -312,43 +507,43 @@ private:
           case OpCode.IFN:
             cycles = 2;
             write_val = false;
-            new_skip = (val_b != val_a);
+            new_skip = (val_b.read != val_a.read);
             break;
 
           case OpCode.IFG:
             cycles = 2;
             write_val = false;
-            new_skip = (val_b > val_a);
+            new_skip = (val_b.read > val_a.read);
             break;
 
           case OpCode.IFA:
             cycles = 2;
             write_val = false;
-            new_skip = (cast(short)val_b > cast(short)val_a);
+            new_skip = (cast(short)val_b.read > cast(short)val_a.read);
             break;
 
           case OpCode.IFL:
             cycles = 2;
             write_val = false;
-            new_skip = (val_b < val_a);
+            new_skip = (val_b.read < val_a.read);
             break;
 
           case OpCode.IFU:
             cycles = 2;
             write_val = false;
-            new_skip = (cast(short)val_b < cast(short)val_a);
+            new_skip = (cast(short)val_b.read < cast(short)val_a.read);
             break;
 
           case OpCode.ADX:
-            uint tmp = val_b + val_a + ex;
+            uint tmp = val_b.read + val_a.read + ex;
             val = cast(ushort)(tmp & 0xFFFF);
             ex = tmp > 0xFFFF; // Overflow
             cycles = 3;
             break;
 
           case OpCode.SBX:
-            ushort neg_a = !val_a +1; // Comp 2 negation of val_a
-            uint tmp = val_b + neg_a + ex;
+            ushort neg_a = !val_a.read +1; // Comp 2 negation of val_a
+            uint tmp = val_b.read + neg_a + ex;
             val = cast(ushort)(tmp & 0xFFFF);
             if ( val & 0x800 ) { // val < 0
               ex = 0xFFFF; // Underflow
@@ -359,14 +554,14 @@ private:
             break;
 
           case OpCode.STI:
-            val = val_a;
+            val = val_a.read;
             i++;
             j++;
             cycles = 2;
             break;
 
           case OpCode.STD:
-            val = val_a;
+            val = val_a.read;
             i--;
             j--;
             cycles = 2;
@@ -406,7 +601,7 @@ private:
             synchronized (machine.ram) {
               machine.ram.ram[--sp] = cast(ushort)(pc +1);
             }
-            pc = val_a;
+            pc = val_a.read;
             cycles = 3;
             break;
 
@@ -421,7 +616,7 @@ private:
             break;
 
           case ExtOpCode.IAS:
-            ia = val_a;
+            ia = val_a.read;
             cycles = 1;
             break;
 
@@ -435,7 +630,7 @@ private:
             break;
 
           case ExtOpCode.IAQ:
-            read_queue = val_a == 0; // if val_a != 0 Not read the interrupt queue
+            read_queue = val_a.read == 0; // if val_a != 0 Not read the interrupt queue
             cycles = 2;
             break;
 
@@ -473,10 +668,10 @@ private:
         
         if (opcode != 0 && write_val) { // Basic OpCode
           // OpB <= OpA Operation OpA = val
-          // TODO
+          val_b.write = val;
         } else if (write_val) {         // Extended OpCode
           // OpA <= val
-          // TODO
+          val_a.write = val;
         }
       }
       state = CpuState.DECO;
@@ -486,265 +681,3 @@ private:
   }
 }
 
-// TODO Rehacer todo de otra forma mas elegante
-private:
-
-string write_op(string opt)() {
-  static assert (opt == "OpA" || opt == "OpB", "Invalid operator");
-  static if (opt == "OpA") {
-    string op = "opa";
-  } else {
-    string op = "opb";
-  }
-  string r = r"
-  switch ("~op~r") {
-    case Operand.A: // General Registers
-    case Operand.B:
-    case Operand.C:
-    case Operand.X:
-    case Operand.Y:
-    case Operand.Z:
-    case Operand.I:
-    case Operand.J:
-      registers["~op~r"]= val;
-      break;
-
-    case Operand.Aptr:  // General Registers Pointer
-    case Operand.Bptr:
-    case Operand.Cptr:
-    case Operand.Xptr:
-    case Operand.Yptr:
-    case Operand.Zptr:
-    case Operand.Iptr:
-    case Operand.Jptr:
-      if (!skip)
-      synchronized (machine.ram) {
-        machine.ram.ram[registers["~op~r"- Operand.Aptr]] = val;
-      }
-      break;";
-  static if (opt == "OpB") {
-    r ~= r"case Operand.POP_PUSH: // PUSH [--SP]";
-  }
-  r ~= r"
-    case Operand.PEEK: // [SP]
-      if (!skip)
-      synchronized (machine.ram) {
-        machine.ram.ram[sp] = val;
-      }
-      break;
-
-    case Operand.SP: // SP
-      sp = val;
-      break;
-
-    case Operand.PC: // PC
-      pc = val;
-      break;
-
-    case Operand.EX: // EXcess
-      ex = val;
-      break;
-
-    case Operand.Aptr_word:
-    case Operand.Bptr_word:
-    case Operand.Cptr_word:
-    case Operand.Xptr_word:
-    case Operand.Yptr_word:
-    case Operand.Zptr_word:
-    case Operand.Iptr_word:
-    case Operand.Jptr_word:
-    case Operand.PICK_word:
-    case Operand.NWord_ptr:
-    case Operand.NWord:
-    ";
-    static if (opt == "op_a") {
-      r ~= r"
-      state = CpuState.OPA; // Wait to the next cycle
-      return;
-
-    default: // Literal
-       val_a = op_a - Operand.Literal -1;
-       }";
-    } else {
-      r ~= `
-      state = CpuState.OPB; // Wait to the next cycle
-      return;
-
-    default:
-    assert(false, "This code never should be executed. Operator B can't have literals");
-    }`;
-    }
-
-  return r;
-}
-
-/**
- * Meta function that try to get OP value or wait for the next cycle
- * Call it with mixin
- * Params:
- *  opt   = OpA or OpB operator
- * Returns: A string representation of the code to be generated/executed
- */
-string inmediate_opval(string opt)() {
-  static assert (opt == "OpA" || opt == "OpB", "Invalid operator");
-  static if (opt == "OpA") {
-    string val = "val_a";
-    string op = "opa";
-  } else {
-    string val = "val_b";
-    string op = "opb";
-  }
-  string r = r"
-  switch ("~op~r") {
-    case Operand.A: // General Registers
-    case Operand.B:
-    case Operand.C:
-    case Operand.X:
-    case Operand.Y:
-    case Operand.Z:
-    case Operand.I:
-    case Operand.J:
-      "~val~r" = registers["~op~r"];
-      break;
-
-    case Operand.Aptr:  // General Registers Pointer
-    case Operand.Bptr:
-    case Operand.Cptr:
-    case Operand.Xptr:
-    case Operand.Yptr:
-    case Operand.Zptr:
-    case Operand.Iptr:
-    case Operand.Jptr:
-      if (!skip)
-      synchronized (machine.ram) {
-        "~val~r" = machine.ram.ram[registers["~op~r"- Operand.Aptr]];
-      }
-      break;
-
-    case Operand.POP_PUSH: // a Pop [SP++] | b PUSH [--SP]
-      if (!skip)
-      synchronized (machine.ram) {
-        "~val;
-        static if (opt == "OpA") {
-          r ~= r" = machine.ram.ram[sp++];";
-        } else {
-          r ~= r" = machine.ram.ram[--sp];";
-        }
-        r ~= r"
-      }
-      break;
-
-    case Operand.PEEK: // [SP]
-      if (!skip)
-      synchronized (machine.ram) {
-        "~val~r" = machine.ram.ram[sp];
-      }
-      break;
-
-    case Operand.SP: // SP
-      "~val~r" = sp;
-      break;
-
-    case Operand.PC: // PC
-      "~val~r" = pc;
-      break;
-
-    case Operand.EX: // EXcess
-      "~val~r" = ex;
-      break;
-
-    case Operand.Aptr_word:
-    case Operand.Bptr_word:
-    case Operand.Cptr_word:
-    case Operand.Xptr_word:
-    case Operand.Yptr_word:
-    case Operand.Zptr_word:
-    case Operand.Iptr_word:
-    case Operand.Jptr_word:
-    case Operand.PICK_word:
-    case Operand.NWord_ptr:
-    case Operand.NWord:
-    ";
-    static if (opt == "op_a") {
-      r ~= r"
-      state = CpuState.OPA; // Wait to the next cycle
-      return;
-
-    default: // Literal
-       val_a = op_a - Operand.Literal -1;
-       }";
-    } else {
-      r ~= `
-      state = CpuState.OPB; // Wait to the next cycle
-      return;
-
-    default:
-    assert(false, "This code never should be executed. Operator B can't have literals");
-    }`;
-    }
-
-  return r;
-}
-
- /**
- * Meta function that get OP value from the next word (PC was increased previusly)
- * Call it with mixin
- * Params:
- *  opt   = OpA or OpB operator
- * Returns: A string representation of the code to be generated/executed
- */
-string nextword_opval(string opt)() {
-static assert (opt == "OpA" || opt == "OpB", "Invalid operator");
-  static if (opt == "OpA") {
-    string val = "val_a";
-    string op = "opa";
-  } else {
-    string val = "val_b";
-    string op = "opb";
-  }
-  string r = r"
-if (!skip)
-  switch ("~op~r") {
-    case Operand.Aptr_word: // Reg. pointer + next word literal
-    case Operand.Bptr_word:
-    case Operand.Cptr_word:
-    case Operand.Xptr_word:
-    case Operand.Yptr_word:
-    case Operand.Zptr_word:
-    case Operand.Iptr_word:
-    case Operand.Jptr_word:
-      synchronized (machine.ram) {
-        "~val~r" = machine.ram.ram[registers["~op~r"- Operand.Aptr_word] + machine.ram.ram[pc] ];
-      }
-      break;
-
-    case Operand.PICK_word: // [SP + next word literal]
-      synchronized (machine.ram) {
-        "~val~r" = machine.ram.ram[sp + machine.ram.ram[pc]];
-      }
-      break;
-
-    case Operand.NWord_ptr: // Ptr [next word literal ]
-      synchronized (machine.ram) {
-        "~val~r" = machine.ram.ram[machine.ram.ram[pc]];
-      }
-      break;
-
-    case Operand.NWord: // next word literal
-      synchronized (machine.ram) {
-        "~val~` = machine.ram.ram[pc];
-      }
-      break;
-
-    default:
-      assert(false, "This code never should be executed. Get Operator value from next word, was called");
-    }`;
-
-  return r;
-}
-
-/+
-void main () {
-  import std.stdio;
-  writeln(nextword_opval!"OpA"());
-}+/
