@@ -45,10 +45,10 @@ public:
    * What to do when a Hardware interrupt to this hardware, has receive
    */
   override void interrupt() {
-    synchronized (cpu) { //Accesing to CPU registers
-      switch (cpu.a) {
+    synchronized (m) { //Accesing to CPU registers
+      switch (m.cpu.a) {
         case 0:
-          divisor = cpu.b;
+          divisor = m.cpu.b;
           if (divisor > 0) {
             if (f_floor_Ceil) { //
               n_bus_ticks = cast(long)floor(100000.0 / BaseFreq / divisor);
@@ -59,10 +59,10 @@ public:
           }
           break;
         case 1:
-          cpu.c = ticks;
+          m.cpu.c = ticks;
           break;
         case 2:
-          int_msg = cpu.b;
+          int_msg = m.cpu.b;
           break;
         default:
           // Do nothing
@@ -91,7 +91,7 @@ public:
 
         // Send Interrupt to DCPU
         if (int_msg > 0) {
-          synchronized (cpu) {
+          synchronized (m.cpu) {
             //cpu.hardware_int(int_msg);
           }
         }

@@ -6,7 +6,7 @@
  */
 module dcpu.cpu;
 
-import std.array;
+import std.array, std.conv, std.stdio;
 import dcpu.microcode, dcpu.machine, dcpu.hardware;
 
 /**
@@ -18,9 +18,6 @@ enum CpuState {
   OPB,      /// Get Operator B value
   EXECUTE   /// Execute the OpCode
 }
-
-
-
 
 final class DCpu {
   private:
@@ -82,8 +79,8 @@ final class DCpu {
         case Operand.Iptr:
         case Operand.Jptr:
           ptr = registers[op- Operand.Aptr];
-          synchronized (machine.ram) {
-            val = machine.ram.ram[ptr];
+          synchronized (machine) {
+            val = machine.ram[ptr];
           }
           break;
 
@@ -95,35 +92,35 @@ final class DCpu {
         case Operand.Zptr_word:
         case Operand.Iptr_word:
         case Operand.Jptr_word:
-          synchronized (machine.ram) {
-            ptr = cast(ushort)(registers[op- Operand.Aptr_word] + machine.ram.ram[pc +1]);
-            val = machine.ram.ram[ptr];
+          synchronized (machine) {
+            ptr = cast(ushort)(registers[op- Operand.Aptr_word] + machine.ram[pc +1]);
+            val = machine.ram[ptr];
           }
           break;
 
         case Operand.POP_PUSH: // a Pop [SP++] | b PUSH [--SP]
           static if (opt == "OpA") {
-            synchronized (machine.ram) { // To read the value
-              val =  machine.ram.ram[sp++];
+            synchronized (machine) { // To read the value
+              val =  machine.ram[sp++];
             }
           } else { // TODO Need confirmation if this is correct
-            synchronized (machine.ram) {
-              val =  machine.ram.ram[sp-1];
+            synchronized (machine) {
+              val =  machine.ram[sp-1];
             }
           }
           break;
 
         case Operand.PEEK: // [SP]
-          synchronized (machine.ram) {
+          synchronized (machine) {
             ptr = sp;
-            val =  machine.ram.ram[sp];
+            val =  machine.ram[sp];
           }
           break;
 
         case Operand.PICK_word: // [SP + next word litreal]
-          synchronized (machine.ram) {
-            ptr = cast(ushort)(sp + machine.ram.ram[pc +1]);
-            val = machine.ram.ram[ptr];
+          synchronized (machine) {
+            ptr = cast(ushort)(sp + machine.ram[pc +1]);
+            val = machine.ram[ptr];
           }
           break;
 
@@ -140,16 +137,16 @@ final class DCpu {
           break;
 
         case Operand.NWord_ptr: // Ptr [next word literal ]
-          synchronized (machine.ram) {
-            ptr = machine.ram.ram[pc];
-            val = machine.ram.ram[ptr];
+          synchronized (machine) {
+            ptr = machine.ram[pc +1];
+            val = machine.ram[ptr];
           }
           break;
 
         case Operand.NWord: // next word literal
-          synchronized (machine.ram) {
-            ptr = pc;
-            val = machine.ram.ram[ptr];
+          synchronized (machine) {
+            ptr = cast(ushort)(pc +1);
+            val = machine.ram[ptr];
           }
           break;
 
@@ -189,7 +186,7 @@ final class DCpu {
         case Operand.Z:
         case Operand.I:
         case Operand.J:
-          registers[op] = val;
+          registers[op] = v;
           break;
 
         case Operand.Aptr:  // General Registers Pointer
@@ -210,15 +207,15 @@ final class DCpu {
         case Operand.Jptr_word:
         case Operand.PEEK: // [SP]
         case Operand.PICK_word: // [SP + next word litreal]
-          synchronized (machine.ram) {
-            machine.ram.ram[ptr] = val;
+          synchronized (machine) {
+            machine.ram[ptr] = v;
           }
           break;
 
         case Operand.POP_PUSH: // a Pop [SP++] | b PUSH [--SP]
           static if (opt == "OpB") {
-            synchronized (machine.ram) { // To read the value
-              machine.ram.ram[--sp] = val;
+            synchronized (machine) { // To read the value
+              machine.ram[--sp] = v;
             }
             break;
           } else {
@@ -227,15 +224,15 @@ final class DCpu {
           
 
         case Operand.SP: // SP
-          sp = val;
+          sp = v;
           break;
 
         case Operand.PC: // PC
-          pc = val;
+          pc = v;
           break;
 
         case Operand.EX: // EXcess
-          ex = val;
+          ex = v;
           break;
 
         default: // Literal and Next_Word literal or pointer
@@ -293,9 +290,10 @@ final class DCpu {
    * Steps one cycle
    */
   void step() {
+    writeln(to!string(state));
     if (state == CpuState.DECO) { // Feth [PC] and extract operands and opcodes
-      synchronized (machine.ram) {
-        word = machine.ram.ram[pc];
+      synchronized (machine) {
+        word = machine.ram[pc];
       }
       
       opcode = decode!"OpCode"(word);
@@ -311,7 +309,7 @@ final class DCpu {
         val_a = new Operator!"OpA"(opa);
         if (val_a.next_word) { // Take a extra cycle
           do_inmediate = false;
-          step();
+          return;
         }
       } else {
         do_inmediate = true;
@@ -332,7 +330,7 @@ final class DCpu {
         val_b = new Operator!"OpB"(opb);
         if (val_b.next_word) { // Take a extra cycle
           do_inmediate = false;
-          step();
+          return;
         }
       } else {
         do_inmediate = true;
@@ -598,8 +596,8 @@ private:
       if (!skip) {
         switch (ext_opcode) {
           case ExtOpCode.JSR:
-            synchronized (machine.ram) {
-              machine.ram.ram[--sp] = cast(ushort)(pc +1);
+            synchronized (machine) {
+              machine.ram[--sp] = cast(ushort)(pc +1);
             }
             pc = val_a.read;
             cycles = 3;
@@ -622,9 +620,9 @@ private:
 
           case ExtOpCode.RFI:
             read_queue = true;
-            synchronized (machine.ram) {
-              a  = machine.ram.ram[sp++];
-              pc = machine.ram.ram[sp++];
+            synchronized (machine) {
+              a  = machine.ram[sp++];
+              pc = machine.ram[sp++];
             }
             cycles = 3;
             break;
@@ -658,14 +656,13 @@ private:
 
     }
 
-    if (wait_hwd) // Some hardware when receive a HWI can make to wait more cycles
+    if (!wait_hwd) // Some hardware when receive a HWI can make to wait more cycles
       cycles--;
       
     if (cycles == 0) { // Only increment PC and set Ready when cycle count == 0
       if (skip) {
         skip = new_skip;
       } else {
-        
         if (opcode != 0 && write_val) { // Basic OpCode
           // OpB <= OpA Operation OpA = val
           val_b.write = val;

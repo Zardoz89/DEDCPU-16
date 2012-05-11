@@ -35,7 +35,9 @@ int main (string[] args) {
   }
 
   Machine m = new Machine();
-  ushort data[];
+  m.init();
+
+  ushort[] data = void;
   if (file_fmt == TypeHexFile.lraw) {
     data = load_ram!(TypeHexFile.lraw)(filename);
   } else if (file_fmt == TypeHexFile.braw) {
@@ -48,9 +50,14 @@ int main (string[] args) {
       return -1;
     }
   }
-  
-  writeln(data.length);
+  m.ram[0..data.length] = cast(shared) data[0..$];
 
+  for (int i = 0; i < 10; i++) {
+    writeln("PC:", m.cpu.pc, " A:", m.cpu.a);
+    m.cpu.step();
+  }
+
+  
   
   return 0;
 }
