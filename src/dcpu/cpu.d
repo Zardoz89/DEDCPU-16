@@ -6,7 +6,8 @@
  */
 module dcpu.cpu;
 
-import std.array, std.conv, std.stdio;
+import std.array;
+import std.string, std.conv, std.stdio;
 import dcpu.microcode, dcpu.machine, dcpu.hardware;
 
 /**
@@ -152,11 +153,13 @@ final class DCpu {
 
         default: // Literal
           static if (opt == "OpA") {
-            val = op - Operand.Literal -1;
+            val = cast(ushort)((op -1) - Operand.Literal); //(op - (Operand.Literal +1));
           } else {
             assert(false, "This code never should be executed. Operator B can't have literals");
           }
       }
+
+      //writeln(opt, "=> ", format("0x%04X",val), " ", val, " op:", format("0x%04X",op));
     }
 
     /**
@@ -205,7 +208,8 @@ final class DCpu {
         case Operand.Zptr_word:
         case Operand.Iptr_word:
         case Operand.Jptr_word:
-        case Operand.PEEK: // [SP]
+        case Operand.NWord_ptr: // Ptr [next word literal ]
+        case Operand.PEEK:      // [SP]
         case Operand.PICK_word: // [SP + next word litreal]
           synchronized (machine) {
             machine.ram[ptr] = v;
@@ -228,7 +232,7 @@ final class DCpu {
           break;
 
         case Operand.PC: // PC
-          pc = v;
+          pc = cast(ushort)(v -1); // Compesate pc++ of execute
           break;
 
         case Operand.EX: // EXcess
@@ -247,6 +251,7 @@ final class DCpu {
   ushort[255] int_queue;    /// Interrupt queue
   bool read_queue = true;   /// FrontPop interrupt queue ?
   bool f_fire;              /// CPU on fire
+  bool new_skip;            /// New value of skip
   bool skip;                /// Skip next instrucction
 
   // Stores state between clock cycles
@@ -288,9 +293,10 @@ final class DCpu {
 
   /**
    * Steps one cycle
+   * Returns: True if executed an instrucction. False if not ended the execution of a instrucction
    */
-  void step() {
-    writeln(to!string(state));
+  bool step() {
+    //writeln(to!string(state));
     if (state == CpuState.DECO) { // Feth [PC] and extract operands and opcodes
       synchronized (machine) {
         word = machine.ram[pc];
@@ -302,14 +308,14 @@ final class DCpu {
       ext_opcode = decode!"ExtOpCode"(word);
 
       state = CpuState.OPA;
-      step(); // Jump to OPA to try to get a not "next word" operand
+      return step(); // Jump to OPA to try to get a not "next word" operand
 
     } else if (state == CpuState.OPA) { // Get Operand A
       if (do_inmediate) {
         val_a = new Operator!"OpA"(opa);
         if (val_a.next_word) { // Take a extra cycle
           do_inmediate = false;
-          return;
+          return false;
         }
       } else {
         do_inmediate = true;
@@ -319,10 +325,10 @@ final class DCpu {
       if (opcode == 0) {
         state = CpuState.EXECUTE;
         cycles = -1;  // Say to Execute to calc it
-        step();       // Jump to Execute state
+        return step();       // Jump to Execute state
       } else {
         state = CpuState.OPB;
-        step(); // Jump to OPB to try to get a not "next word" operand
+        return step(); // Jump to OPB to try to get a not "next word" operand
       }
       
     } else if (state == CpuState.OPB) { // Get Operand B
@@ -330,7 +336,7 @@ final class DCpu {
         val_b = new Operator!"OpB"(opb);
         if (val_b.next_word) { // Take a extra cycle
           do_inmediate = false;
-          return;
+          return false;
         }
       } else {
         do_inmediate = true;
@@ -339,12 +345,12 @@ final class DCpu {
       
       state = CpuState.EXECUTE;
       cycles = -1;  // It will be calculated in Execute mode
-      step();       // Jump to Execute state
+      return step();       // Jump to Execute state
       
     } else { // Execute the OpCode
-      execute_op(); // I will increase pc when the last cycle is made
+      return execute_op(); // I will increase pc when the last cycle is made
     }
-    
+
   }
 
   /**
@@ -361,9 +367,7 @@ private:
   /**
    * Execute a OpCode
    */
-  void execute_op() {
-    bool new_skip;   // New value of skip
-    
+  bool execute_op() {    
     if (opcode != 0 && cycles < 0) { // Execute Not extended opcode
       if (!skip) {
         write_val = true;
@@ -381,8 +385,7 @@ private:
             break;
 
           case OpCode.SUB:
-            ushort neg_a = !val_a.read +1; // Comp 2 negation of val_a
-            uint tmp = val_b.read + neg_a;
+            int tmp = val_b.read - val_a.read;
             val = cast(ushort)(tmp & 0xFFFF);
             if ( val & 0x800 ) { // val < 0
               ex = 0xFFFF; // Underflow
@@ -478,8 +481,8 @@ private:
             break;
 
           case OpCode.SHL:
-            uint tmp = val_b.read >>> (16 - val_a.read);
-            val = cast(ushort)(tmp << 16);
+            uint tmp = (val_b.read << val_a.read) >> 16;
+            val = cast(ushort)(val_b.read << val_a.read);
             ex  = cast(ushort)(tmp & 0xFFFF);
             cycles = 1;
             break;
@@ -487,17 +490,17 @@ private:
           case OpCode.IFB:
             cycles = 2;
             write_val = false;
-            new_skip = ((val_b.read & val_a.read) != 0); // Skip next instrucction
+            new_skip = !((val_b.read & val_a.read) != 0); // Skip next instrucction
             break;
 
           case OpCode.IFC:
             cycles = 2;
             write_val = false;
-            new_skip = ((val_b.read & val_a.read) == 0);
+            new_skip = !((val_b.read & val_a.read) == 0);
             break;
 
           case OpCode.IFE:
-            new_skip = (val_b.read == val_a.read);
+            new_skip = !(val_b.read == val_a.read);
             write_val = false;
             cycles = 2;
             break;
@@ -505,31 +508,31 @@ private:
           case OpCode.IFN:
             cycles = 2;
             write_val = false;
-            new_skip = (val_b.read != val_a.read);
+            new_skip = !(val_b.read != val_a.read);
             break;
 
           case OpCode.IFG:
             cycles = 2;
             write_val = false;
-            new_skip = (val_b.read > val_a.read);
+            new_skip = !(val_b.read > val_a.read);
             break;
 
           case OpCode.IFA:
             cycles = 2;
             write_val = false;
-            new_skip = (cast(short)val_b.read > cast(short)val_a.read);
+            new_skip = !(cast(short)val_b.read > cast(short)val_a.read);
             break;
 
           case OpCode.IFL:
             cycles = 2;
             write_val = false;
-            new_skip = (val_b.read < val_a.read);
+            new_skip = !(val_b.read < val_a.read);
             break;
 
           case OpCode.IFU:
             cycles = 2;
             write_val = false;
-            new_skip = (cast(short)val_b.read < cast(short)val_a.read);
+            new_skip = !(cast(short)val_b.read < cast(short)val_a.read);
             break;
 
           case OpCode.ADX:
@@ -540,8 +543,7 @@ private:
             break;
 
           case OpCode.SBX:
-            ushort neg_a = !val_a.read +1; // Comp 2 negation of val_a
-            uint tmp = val_b.read + neg_a + ex;
+            int tmp = val_b.read - val_a.read + ex;
             val = cast(ushort)(tmp & 0xFFFF);
             if ( val & 0x800 ) { // val < 0
               ex = 0xFFFF; // Underflow
@@ -590,16 +592,17 @@ private:
             new_skip = false;
         }
       }
-      return;
+      
     } else if (cycles < 0) { // Extended OpCode
       write_val = false;
+      new_skip = false;
       if (!skip) {
         switch (ext_opcode) {
           case ExtOpCode.JSR:
             synchronized (machine) {
               machine.ram[--sp] = cast(ushort)(pc +1);
             }
-            pc = val_a.read;
+            pc = cast(ushort)(val_a.read -1); // Compesate later pc++
             cycles = 3;
             break;
 
@@ -660,9 +663,7 @@ private:
       cycles--;
       
     if (cycles == 0) { // Only increment PC and set Ready when cycle count == 0
-      if (skip) {
-        skip = new_skip;
-      } else {
+      if (!skip) {
         if (opcode != 0 && write_val) { // Basic OpCode
           // OpB <= OpA Operation OpA = val
           val_b.write = val;
@@ -671,10 +672,12 @@ private:
           val_a.write = val;
         }
       }
+      skip = new_skip;
       state = CpuState.DECO;
       pc++;
+      return true;
     }
-    
+    return false;
   }
 }
 
