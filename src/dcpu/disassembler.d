@@ -129,7 +129,7 @@ in {
     return format("0x%04X", words[1]);
 
       default: // literal
-    return format("%d", operand - Operand.Literal -1); // -1 to 30
+    return format("0x%04X", cast(ushort)(operand - Operand.Literal -1)); // -1 to 30
   }
 }
   
