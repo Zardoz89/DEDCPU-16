@@ -6,14 +6,14 @@
  */
 module dcpu.machine;
 
-import dcpu.hardware, dcpu.cpu;
+public import dcpu.hardware, dcpu.cpu;
 
 /**
  * Machine RAM encasulated in a class to get synchronized protection when
  * accesing to ram
  */
 final class Ram {
-  ushort[0x10000] ram;
+  ushort[] ram;
 }
 
 // It contains:
@@ -21,7 +21,7 @@ final class Ram {
 //  -0x10000 words of 16 bit of RAM
 //  -Some quanty of hardware attached
 
-struct Machine {
+final class Machine {
   DCpu cpu;
   shared Ram ram;
   Hardware[] dev;

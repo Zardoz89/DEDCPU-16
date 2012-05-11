@@ -21,16 +21,20 @@ protected:
   static enum BaseFreq = 60; // Max frecuency
 public:
 
-  override static this() {
+  static this() {
     id     = 0x12d0b402;
     ver    = 1;
     vendor = 0; // Not yet
   }
 
+  this(ref Machine machine) {
+    super(machine);
+  }
+
   /**
    * What to do when it's loaded
    */
-  void init() {
+  override void init() {
     f_hwi = false;
     int_msg = 0;
     divisor = 0;
@@ -40,7 +44,7 @@ public:
   /**
    * What to do when a Hardware interrupt to this hardware, has receive
    */
-  void interrupt() {
+  override void interrupt() {
     synchronized (cpu) { //Accesing to CPU registers
       switch (cpu.a) {
         case 0:
@@ -51,7 +55,7 @@ public:
             } else {
               n_bus_ticks = cast(long)ceil(100000.0 / BaseFreq / divisor);
             }
-            f_floor_Ceil != f_floor_Ceil;
+            f_floor_Ceil = !f_floor_Ceil;
           }
           break;
         case 1:
@@ -72,7 +76,7 @@ public:
   /**
    * What to do each clock tick (at 100 khz)
    */
-  void bus_clock_tick() {
+  override void bus_clock_tick() {
     if (f_hwi && divisor > 0) {
       if (n_bus_ticks > 0) {
         n_bus_ticks--;
@@ -83,11 +87,15 @@ public:
         } else {
           n_bus_ticks = cast(long)ceil(100000.0 / BaseFreq / divisor);
         }
-        f_floor_Ceil != f_floor_Ceil;
+        f_floor_Ceil = !f_floor_Ceil;
 
         // Send Interrupt to DCPU
-        if (int_msg > 0)
-          cpu.hardware_int(int_msg);
+        if (int_msg > 0) {
+          synchronized (cpu) {
+            //cpu.hardware_int(int_msg);
+          }
+        }
+        
       }
     }
   }

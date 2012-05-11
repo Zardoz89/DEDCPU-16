@@ -53,6 +53,16 @@ $(BUILD_PATH)$(PATH_SEP)disassembler.o: $(SRC_DIR)dcpu/disassembler.d
 	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
 	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
+$(BUILD_PATH)$(PATH_SEP)dedcpu.o: $(SRC_DIR)dedcpu.d
+	@$(MKDIR) build
+	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
+	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
+
+dedcpu: $(BUILD_PATH)$(PATH_SEP)dedcpu.o $(BUILD_PATH)$(PATH_SEP)dedcpu.o $(BUILD_PATH)$(PATH_SEP)machine.o $(BUILD_PATH)$(PATH_SEP)cpu.o $(BUILD_PATH)$(PATH_SEP)microcode.o $(BUILD_PATH)$(PATH_SEP)hardware.o $(BUILD_PATH)$(PATH_SEP)clock.o $(BUILD_PATH)$(PATH_SEP)ram_loader.o
+	@echo "$(niceMsgBeg2)Linking $< $@$(niceMsgEnd)"
+	$(DC) $^ $(OUTPUT)$@ $(DCFLAGS_LINK)
+	@echo "------------------ $(niceMsgBeg1)Creating $@ executable done$(niceMsgEnd)"
+
 $(BUILD_PATH)$(PATH_SEP)ddis.o: $(SRC_DIR)ddis.d
 	@$(MKDIR) build
 	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"

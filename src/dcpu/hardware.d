@@ -10,9 +10,9 @@ public import dcpu.machine, dcpu.cpu;
 
 class Hardware {
   protected:
-  shared Ram ram;
+  shared Machine m;
   shared DCpu cpu;
-
+  shared Ram ram;
 
   bool f_hwi; ///Has at least one time receive a hardware interrupt 
 
@@ -32,11 +32,12 @@ class Hardware {
     vendor = 0;
   }
 
-  /*this(ref shared DCpu cpu, ref shared Ram ram) {
-    this.cpu = cpu;
-    this.tam = ram;
+  protected this(ref Machine machine) {
+    m = cast(shared) machine;
+    cpu = cast(shared) m.cpu;
+    ram = m.ram;
     init();
-  }*/
+  }
 
   /**
    * What to do when it's loaded
