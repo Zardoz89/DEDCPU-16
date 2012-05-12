@@ -3,7 +3,7 @@
  */
 module dcpu.ram_loader;
 
-import std.c.stdlib, std.stdio, std.bitmanip, std.conv, std.array;
+import std.c.stdlib, std.stdio, std.bitmanip, std.conv, std.array, std.string;
 
 enum TypeHexFile {lraw, braw, ahex, hexd ,hex8}; /// Type of machine code file
 
@@ -45,12 +45,23 @@ in {
   } else if (type == TypeHexFile.hexd) { // plain ASCII hex dump file
     img.length = 0x10000;
     foreach ( line; f.byLine()) { // each line contains one or more words of 16 bit in hexadecimal
-      auto words = split(line);
-      ushort addr = parse!ushort(words[0][2..$], 16);
+      auto words = split(strip(line));
+      if (words.length < 2 || words[0].length < 4) {
+        throw new Exception("Bad format. Expected Addr: hexdata");
+      }
+      
+      if (words[0][0..2] == "0x" || words[0][0..2] == "0X")
+        words[0] = words[0][2..$];
+      ushort addr = parse!ushort(words[0], 16);
+      
       i=0;
       foreach (word; words[1..$]) {
+        auto tmp = addr + i++;
+        if (tmp >= 0x1000) // Out of bounds
+          throw new Exception("Bad format. Data out of bounds " ~ format("0x%04X", tmp));
+          
         if (word.length > 3) {
-          img[addr + i++] = parse!ushort(word, 16);
+          img[tmp] = parse!ushort(word, 16);
         }
       }
     }

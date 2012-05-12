@@ -47,12 +47,12 @@ int main (string[] args) {
   
   ushort[] data;
   if (file_fmt == TypeHexFile.lraw) {
-    data = load_ram!(TypeHexFile.lraw)(filename);
+    data = load_lraw(filename);
   } else if (file_fmt == TypeHexFile.braw) {
-    data = load_ram!(TypeHexFile.braw)(filename);
+    data = load_braw(filename);
   } else if (file_fmt == TypeHexFile.ahex){
     try {
-      data = load_ram!(TypeHexFile.ahex)(filename);
+      data = load_ahex(filename);
     } catch (ConvException e){
       stderr.writeln("Error: Bad file format\nCould be a binary file?");
       return -1;
