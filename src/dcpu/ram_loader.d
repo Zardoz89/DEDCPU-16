@@ -66,7 +66,7 @@ in {
           img.length = tmp +1;
         
         if (word.length > 3) {
-          img[tmp] = parse!ushort(word, 16);
+          img[tmp] = parse!ushort(word, 16);          
         }
       }
     }
