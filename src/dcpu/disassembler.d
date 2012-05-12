@@ -146,7 +146,7 @@ string disassamble(ushort[] words, out ushort n_words)
 in {
   assert(words.length >= 3, "Instructions can ben 3 words long");
 }body {
-  ubyte opcode = decode!"OpCode"(words[0]);
+  ubyte opcode = decode!"OpCode"(words[0]);  
   n_words = 1;
   string op_a = operand!"OpA"(words, n_words);
   if (opcode == OpCode.ExtOpCode) { // Non basic instruction
@@ -163,9 +163,11 @@ in {
     tmp ~= words[0];
     tmp ~= words[n_words];
     string op_b = operand!"OpB"(tmp, n_words);
-    foreach (s; __traits(allMembers, OpCode)) {
+    foreach (s; __traits(allMembers, OpCode)) {      
       if (opcode == mixin("OpCode." ~ s)) {
-        return s ~ " " ~ op_b ~ ", " ~ op_a;
+        //string str = s ~ " " ~ op_b ~ ", " ~ op_a;
+        //writeln(format("0x%04X", opcode), " ", str);
+        return s  ~ " " ~ op_b ~ ", " ~ op_a;
       }
     }
     return format("DAT 0x%04X", words[0]);//";Unknow Extended OpCode";
@@ -205,7 +207,8 @@ in {
       ushort[] tmp = slice[pos..$] ~ cast(ushort[])[0, 0];
       inst= disassamble(tmp, n_words);
     }
-
+    
+    
     if (tab) { // Appends a 16 wide space
       ret[cast(ushort)(pos + offset)] = "                 " ~ inst;
     } else {
@@ -213,10 +216,12 @@ in {
     }
     
     if (comment) { // Add coment  like: spaces ; [addr] - xxxx ....
-      for(auto i=0; i<(21- inst.length); i++)
+      for(long i=0; i<(29- inst.length); i++) {
         ret[cast(ushort)(pos + offset)] ~= " ";
+      }
       ret[cast(ushort)(pos + offset)] ~= ";" ~ format("[%04X] - %04X ", pos + offset, slice[pos]);
 
+        
       for (auto i=pos +1; i < pos + n_words && i < slice.length; i++) {
         ret[cast(ushort)(pos + offset)] ~= format("%04X ", slice[i]);
       }
