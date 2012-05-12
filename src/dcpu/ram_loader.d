@@ -43,7 +43,7 @@ in {
       i++;
     }
   } else if (type == TypeHexFile.hexd) { // plain ASCII hex dump file
-    img.length = 0x10000;
+    //img.length = 0x10000;
     foreach ( line; f.byLine()) { // each line contains one or more words of 16 bit in hexadecimal
       auto words = split(strip(line));
       if (words.length < 2 || words[0].length < 4) {
@@ -59,7 +59,10 @@ in {
         auto tmp = addr + i++;
         if (tmp >= 0x1000) // Out of bounds
           throw new Exception("Bad format. Data out of bounds " ~ format("0x%04X", tmp));
-          
+        
+        if (img.length <= tmp)
+          img.length = tmp +1;
+        
         if (word.length > 3) {
           img[tmp] = parse!ushort(word, 16);
         }
