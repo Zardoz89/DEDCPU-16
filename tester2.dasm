@@ -1,0 +1,54 @@
+; This is tester 2 for emulators (check clock, video and keyboard devices)
+
+; Other stuff
+hwn i
+ifl i, 3
+set pc, crash
+sub i, 1
+hwq i
+jsr store_clk_dev
+jsr store_key_dev
+jsr store_vid_dev
+sub i, 1
+hwq i
+jsr store_clk_dev
+jsr store_key_dev
+jsr store_vid_dev
+sub i, 1
+hwq i
+jsr store_clk_dev
+jsr store_key_dev
+jsr store_vid_dev
+; Get Dev number of Clock, Video and Keyboard
+
+
+set pc, crash ; The END
+
+:store_clk_dev
+ife a, 0xb402
+ife b, 0x12d0 ; Clock
+set [dev_clk], i
+set pc, pop
+
+:store_key_dev
+ife a, 0x7406
+ife b, 0x30cf ; Keyboard
+set [dev_key], i
+set pc, pop
+
+:store_vid_dev
+ife a, 0xf615
+ife b, 0x7349 ; LEM1802
+ife x, 0x8b36
+ife y, 0x1c6c ; NYA ELEKTRISKA
+set [dev_vid], i
+set pc, pop
+
+:crash
+set pc, crash
+
+org 0x300
+:str       dat "Hello world"
+:dev_vid   dat 0
+:dev_clk   dat 0
+:dev_key   dat 0
