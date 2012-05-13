@@ -48,18 +48,18 @@ asr z, 4      ; Z must be -32
 
 ; 32 bit add and sub
 set a, 0x0FFF ; MSB 1
-set b, 0x0F0F ; LSB 1
+set b, 0xFF0F ; LSB 1
 
 set x, 0x0111 ; MSB 2
 set y, 0x1111 ; LSB 1
 add b, y   ; add LSBs
 adx a, x   ; add MSBs + EX
-; B must be = 0x2020
-; A must be = 0x1110
+; B must be = 0x1020
+; A must be = 0x1111
 
 sub b, y
 sbx a, x
-; B must be 0x0F0F
+; B must be 0xFF0F
 ; A must be 0x0FFF
 
 ; STI and STD test
