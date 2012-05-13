@@ -28,7 +28,7 @@ final class DCpu {
    * Params:
    *  opt = Type of operator (OpA or OpB)
    */
-  class Operator(string opt) {
+  final class Operator(string opt) {
     static assert (opt == "OpA" || opt == "OpB", "Invalid operator");
 
   private:
@@ -248,7 +248,7 @@ final class DCpu {
   
   Machine machine;          /// Self-reference to the machine
   
-  ushort[255] int_queue;    /// Interrupt queue
+  ushort[] int_queue;    /// Interrupt queue
   bool read_queue = true;   /// FrontPop interrupt queue ?
   bool f_fire;              /// CPU on fire
   bool new_skip;            /// New value of skip
@@ -298,6 +298,20 @@ final class DCpu {
   bool step() {
     //writeln(to!string(state));
     if (state == CpuState.DECO) { // Feth [PC] and extract operands and opcodes
+      if (read_queue && !int_queue.empty) { // Try to do a int in the queue
+        if (ia != 0 ) {
+          read_queue = false;
+          machine.ram[--sp] = pc; // Push PC and A
+          machine.ram[--sp] = a;
+          pc = ia;
+          a = int_queue[0];
+          int_queue = int_queue[1..$];
+        } else {
+          // If IA is set to 0, a triggered interrupt does nothing. A queued interrupt is considered triggered when it leaves the queue, not when it enters it.
+          int_queue = int_queue[1..$];
+        }
+      }
+    
       synchronized (machine) {
         word = machine.ram[pc];
       }
@@ -608,22 +622,34 @@ private:
             cycles = 3;
             break;
 
-          case ExtOpCode.INT: // TODO Software Interruption
-            cycles = 4;
+          case ExtOpCode.HCF:
+            cycles = 9;
+            // TODO Here begin to swap random bits in the ram
             break;
 
-          case ExtOpCode.IAG:
+          case ExtOpCode.INT: // Software Interruption
+            cycles = 4;
+            // NOTE This implementations asumes that INTs bypass the queue
+            if (ia != 0) {
+              read_queue = false;
+              machine.ram[--sp] = cast(ushort)(pc +1); // Push PC and A
+              machine.ram[--sp] = a;
+              pc = cast(ushort)(ia -1);
+            }
+            break;
+
+          case ExtOpCode.IAG: // Get IA
             write_val = true;
             val = ia;
             cycles = 1;
             break;
 
-          case ExtOpCode.IAS:
+          case ExtOpCode.IAS: // Set IA
             ia = val_a.read;
             cycles = 1;
             break;
 
-          case ExtOpCode.RFI:
+          case ExtOpCode.RFI: // Return From Interrupt
             read_queue = true;
             synchronized (machine) {
               a  = machine.ram[sp++];
@@ -632,7 +658,7 @@ private:
             cycles = 3;
             break;
 
-          case ExtOpCode.IAQ:
+          case ExtOpCode.IAQ: // Enable pop front of interrupt queue
             read_queue = val_a.read == 0; // if val_a != 0 Not read the interrupt queue
             cycles = 2;
             break;
@@ -644,6 +670,16 @@ private:
 
           case ExtOpCode.HWQ: // TODO
             cycles = 4;
+            if (val_a.read < machine.dev.length) {
+              auto dev = machine.dev[val_a.read];
+              a = dev.id_lsb;
+              b = dev.id_msb;
+              c = dev.dev_ver;
+              x = dev.vendor_lsb;
+              y = dev.vendor_msb;
+            } else { // Unspecific behaviour
+              a = b = c = x = y = 0xFFFF;
+            }
             break;
 
           case ExtOpCode.HWI: // TODO

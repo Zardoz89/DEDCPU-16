@@ -41,6 +41,7 @@ enum OpCode: ubyte {
 /// Valid ExtendedOpCode
 enum ExtOpCode : ubyte {
   JSR=0x01,   /// Pushes the addres of the next isntruction to the stack, then sets PC to a
+  HCF=0x07,   /// Fire in the hole!
   INT=0x08,   /// Trigger a software interrupt with message A
   IAG,        /// sets a = IA
   IAS,        /// sets IA = a

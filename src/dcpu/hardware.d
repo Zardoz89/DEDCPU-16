@@ -30,6 +30,31 @@ class Hardware {
     vendor = 0;
   }
 
+  /// Returns the LSB from Device ID
+  static ushort id_lsb () @property {
+    return cast(ushort)(id & 0xFFFF);
+  }
+
+  /// Returns the MSB from Device ID
+  static ushort id_msb () @property {
+    return cast(ushort)(id >> 16);
+  }
+
+  /// Returns the LSB from Device Vendor
+  static ushort vendor_lsb () @property {
+    return cast(ushort)(vendor & 0xFFFF);
+  }
+
+  /// Returns the MSB from Device Vendor
+  static ushort vendor_msb () @property {
+    return cast(ushort)(vendor >> 16);
+  }
+
+  /// Returns the Device Version
+  static ushort dev_ver() @property {
+    return ver;
+  }
+
   protected this(ref Machine machine) {
     m = cast(shared) machine;
     init();
