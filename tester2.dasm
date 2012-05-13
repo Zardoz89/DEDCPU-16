@@ -1,6 +1,9 @@
 ; This is tester 2 for emulators (check clock, video and keyboard devices)
+; If Video are OK, should print on screen in white the whole LEM alphabet.
+; If clock works, it will make the screen blink at 10 hz
+; If keyboard works, it will write the last character read in the screen
 
-; Other stuff
+; Detect devices
 hwn i
 ifl i, 3
 set pc, crash
@@ -20,9 +23,18 @@ jsr store_clk_dev
 jsr store_key_dev
 jsr store_vid_dev
 ; Get Dev number of Clock, Video and Keyboard
+jsr video_init  ; Must write text with white colours
+ias int_handler
+iaq 0
+int 2           ; Must write text in cyan colours
+jsr clock_init
+jsr keyb_init
 
-
-set pc, crash ; The END
+:looper
+set a, a
+jsr do_video
+set pc, looper
+; The END
 
 :store_clk_dev
 ife a, 0xb402
@@ -44,11 +56,71 @@ ife y, 0x1c6c ; NYA ELEKTRISKA
 set [dev_vid], i
 set pc, pop
 
+; Test clock
+:clock_init
+ife [dev_clk], 0xFFFF
+    set pc,pop
+set a, 0
+set b, 10 ; Set to 6 hz
+hwi [dev_clk]
+set a, 2
+set b, 0xCAFE ; Activate interrupts with msg 0xCAFE
+hwi [dev_clk]
+set pc, pop
+
+; Test keyboard
+:keyb_init
+ife [dev_key], 0xFFFF
+    set pc,pop
+set a, 3
+set b, 0xBEBE
+hwi [dev_key]
+set pc, pop
+
+;Int handler
+:int_handler
+ife a, 0xCAFE
+    xor [togle_fx], 0xFF00
+ife a, 2
+    xor [togle_fx], 0xFF00
+ifn a, 0xBEBE
+    set pc, end_handler
+; read key presed
+set [0x501], 0xB000
+set a, 1
+hwi [dev_key]
+add [0x501], c
+
+:end_handler
+rfi 0
+
+:vid_hand
+jsr do_video
+set pc, end_handler
+
+; Test video subrutines
+:video_init
+ife [dev_vid], 0xFFFF
+  set pc,pop
+set a, 0 ; MEM_MAP_SCREEN mode
+set b, 0x400
+hwi [dev_vid]
+
+:do_video    ; Write all character set on screen
+SET i, 0x400 ; Where screen buffer wil lbe set
+SET j, [togle_fx]
+
+:setScreen
+STI [I], J
+ifl i, 0x500
+  SET pc, setScreen
+set pc, pop
+
 :crash
 set pc, crash
 
 org 0x300
-:str       dat "Hello world"
-:dev_vid   dat 0
-:dev_clk   dat 0
-:dev_key   dat 0
+:dev_vid   dat 0xFFFF
+:dev_clk   dat 0xFFFF
+:dev_key   dat 0xFFFF
+:togle_fx  dat 0xF000
