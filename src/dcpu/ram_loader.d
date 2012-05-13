@@ -44,13 +44,14 @@ in {
     }
   } else if (type == TypeHexFile.hexd) { // plain ASCII hex dump file
     foreach ( line; f.byLine()) { // each line contains one or more words of 16 bit in hexadecimal
-      auto words = split(strip(line));
+      if (line[0] == ';') {
+        continue; // Skip line, becasue it's a comment
+      }
+      
+      auto words = split(strip(line));      
       if (words.length < 2 || words[0].length < 4) {
         throw new Exception("Bad format. Expected Addr: hexdata");
       }
-
-      if (words[0][0] == ';')
-        continue; // Skip line, becasue it's a comment
       
       if (words[0][0..2] == "0x" || words[0][0..2] == "0X")
         words[0] = words[0][2..$];
