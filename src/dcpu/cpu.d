@@ -102,11 +102,11 @@ final class DCpu {
         case Operand.POP_PUSH: // a Pop [SP++] | b PUSH [--SP]
           static if (opt == "OpA") {
             synchronized (machine) { // To read the value
-              val =  machine.ram[sp++];
+              val =  machine.ram[cast(ushort)(sp++)];
             }
           } else { // TODO Need confirmation if this is correct
             synchronized (machine) {
-              val =  machine.ram[sp-1];
+              val =  machine.ram[cast(ushort)(sp-1)];
             }
           }
           break;
@@ -219,7 +219,7 @@ final class DCpu {
         case Operand.POP_PUSH: // a Pop [SP++] | b PUSH [--SP]
           static if (opt == "OpB") {
             synchronized (machine) { // To read the value
-              machine.ram[--sp] = v;
+              machine.ram[cast(ushort)(--sp)] = v;
             }
             break;
           } else {
@@ -474,7 +474,8 @@ private:
             break;
 
           case OpCode.ASR: // Arthmetic shift
-            uint tmp = val_b.read >> val_a.read;
+            // TODO Revisarlo otra vez
+            int tmp = val_b.read >> val_a.read;
             val = cast(ushort)(tmp & 0xFFFF);
             ex  = cast(ushort)(tmp << 16);
             cycles = 1;
@@ -543,6 +544,7 @@ private:
             break;
 
           case OpCode.SBX:
+            // TODO Revisar
             int tmp = val_b.read - val_a.read + ex;
             val = cast(ushort)(tmp & 0xFFFF);
             if ( val & 0x800 ) { // val < 0
