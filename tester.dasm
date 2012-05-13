@@ -1,4 +1,4 @@
-; This is tester for emulatros
+; This tester 1 for emulatros
 
 ; set and literals
 set a, 1
@@ -63,8 +63,8 @@ sbx a, x
 ; A must be 0x0FFF
 
 ; STI and STD test
-set i, 0x800
-set j, 0x801
+set i, datos
+set j, datos +1
 
 sti [j], [i]
 sti [j], [i]
@@ -112,7 +112,8 @@ set pc, crash
 ; Other stuff
 hwn a
 ifg a, 0
-hwq 1
+sub a, 1
+hwq a
 
 :crash
 set pc, crash
@@ -121,5 +122,6 @@ set pc, crash
 set z, 0xBEBE
 set pc, pop
 
-org 0x800
-dat 0xcafe
+org 0x300
+:str   dat "Hello world"
+:datos dat 0xcafe
