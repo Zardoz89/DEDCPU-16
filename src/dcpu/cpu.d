@@ -467,17 +467,18 @@ private:
             break;
 
           case OpCode.SHR: // Logical Shift
-            uint tmp = val_b.read >>> val_a.read;
-            val = cast(ushort)(tmp & 0xFFFF);
-            ex  = cast(ushort)(tmp << 16);
+            uint tmp  = val_b.read >>> val_a.read;
+            auto tmp2 = (val_b.read << 16) >> val_a.read;
+            val = cast(ushort)(tmp  & 0xFFFF);
+            ex  = cast(ushort)(tmp2 & 0xFFFF);
             cycles = 1;
             break;
 
           case OpCode.ASR: // Arthmetic shift
-            // TODO Revisarlo otra vez
-            int tmp = val_b.read >> val_a.read;
-            val = cast(ushort)(tmp & 0xFFFF);
-            ex  = cast(ushort)(tmp << 16);
+            int tmp2 = ((cast(short)val_b.read <<16) >>> cast(short)val_a.read);
+            auto tmp = cast(short)val_b.read >> cast(short)val_a.read;
+            val = cast(ushort)(tmp  & 0xFFFF);
+            ex  = cast(ushort)(tmp2 & 0xFFFF);
             cycles = 1;
             break;
 
@@ -544,7 +545,6 @@ private:
             break;
 
           case OpCode.SBX:
-            // TODO Revisar
             int tmp = val_b.read - val_a.read + ex;
             val = cast(ushort)(tmp & 0xFFFF);
             if ( val & 0x800 ) { // val < 0
@@ -608,7 +608,7 @@ private:
             cycles = 3;
             break;
 
-          case ExtOpCode.INT: // TODO Interrupcion software
+          case ExtOpCode.INT: // TODO Software Interruption
             cycles = 4;
             break;
 

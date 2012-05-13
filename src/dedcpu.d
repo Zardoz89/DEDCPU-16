@@ -59,10 +59,10 @@ int main (string[] args) {
   }
   m.ram[0..data.length] = cast(shared) data[0..$];
 
-  writeln("PC:", format("%04X",m.cpu.pc), " A:", m.cpu.a, " B:", m.cpu.b, " C:", m.cpu.c, " X:", m.cpu.x, " Y:", m.cpu.y, " Z:", m.cpu.z, " I:", m.cpu.i, " J:", m.cpu.j, " ex:", m.cpu.ex);
+  writeln("PC:", format("%04X",m.cpu.pc), " A:", m.cpu.a, " B:", m.cpu.b, " C:", m.cpu.c, " X:", m.cpu.x, " Y:", m.cpu.y, " Z:", m.cpu.z, " I:", m.cpu.i, " J:", m.cpu.j, " ex:", m.cpu.ex, " sp:", m.cpu.sp);
   foreach (linea; stdin.byLine()) {
     if (m.cpu.step()) {
-      writeln("PC:", format("%04X",m.cpu.pc), " A:", m.cpu.a, " B:", m.cpu.b, " C:", m.cpu.c, " X:", m.cpu.x, " Y:", m.cpu.y, " Z:", m.cpu.z, " I:", m.cpu.i, " J:", m.cpu.j, " ex:", m.cpu.ex);
+      writeln("PC:", format("%04X",m.cpu.pc), " A:", m.cpu.a, " B:", m.cpu.b, " C:", m.cpu.c, " X:", m.cpu.x, " Y:", m.cpu.y, " Z:", m.cpu.z, " I:", m.cpu.i, " J:", m.cpu.j, " ex:", m.cpu.ex, " sp:", m.cpu.sp);
     }
   }
 
