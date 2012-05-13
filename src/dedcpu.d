@@ -36,6 +36,8 @@ int main (string[] args) {
 
   Machine m = new Machine();
   m.init();
+  m.dev ~= new TimerClock(m);
+  m.dev[0].init();
 
   ushort[] data = void;
   if (file_fmt == TypeHexFile.lraw) {
