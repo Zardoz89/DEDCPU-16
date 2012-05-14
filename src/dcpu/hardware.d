@@ -10,7 +10,7 @@ public import dcpu.machine, dcpu.cpu;
 
 class Hardware {
   protected:
-  shared Machine m;
+  Machine m;
 
   bool f_hwi; ///Has at least one time receive a hardware interrupt 
 
@@ -56,7 +56,7 @@ class Hardware {
   }
 
   protected this(ref Machine machine) {
-    m = cast(shared) machine;
+    m = machine;
     init();
   }
 

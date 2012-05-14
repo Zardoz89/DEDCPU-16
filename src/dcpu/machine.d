@@ -23,12 +23,11 @@ final class Ram {
 
 final class Machine {
   DCpu cpu;
-  shared ushort[0x10000] ram;
+  ushort[0x10000] ram;
   Hardware[] dev;
 
   void init() {
     cpu = new DCpu(this);
-    
     
   }
 }

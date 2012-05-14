@@ -45,7 +45,7 @@ public:
    * What to do when a Hardware interrupt to this hardware, has receive
    */
   override void interrupt() {
-    synchronized (m) { //Accesing to CPU registers
+    //synchronized (m) { //Accesing to CPU registers
       switch (m.cpu.a) {
         case 0:
           divisor = m.cpu.b;
@@ -67,7 +67,7 @@ public:
         default:
           // Do nothing
       }
-    }
+    //}
     
     ticks = 0;
     f_hwi = true;
@@ -91,9 +91,9 @@ public:
 
         // Send Interrupt to DCPU
         if (int_msg > 0) {
-          synchronized (m.cpu) {
-            //cpu.hardware_int(int_msg);
-          }
+          //synchronized (m.cpu) {
+            m.cpu.hardware_int(int_msg);
+          //}
         }
         
       }

@@ -80,9 +80,9 @@ final class DCpu {
         case Operand.Iptr:
         case Operand.Jptr:
           ptr = registers[op- Operand.Aptr];
-          synchronized (machine) {
+          //synchronized (machine) {
             val = machine.ram[ptr];
-          }
+          //}
           break;
 
         case Operand.Aptr_word: // [Reg + next word litreal]
@@ -93,36 +93,36 @@ final class DCpu {
         case Operand.Zptr_word:
         case Operand.Iptr_word:
         case Operand.Jptr_word:
-          synchronized (machine) {
+          //synchronized (machine) {
             ptr = cast(ushort)(registers[op- Operand.Aptr_word] + machine.ram[pc +1]);
             val = machine.ram[ptr];
-          }
+          //}
           break;
 
         case Operand.POP_PUSH: // a Pop [SP++] | b PUSH [--SP]
           static if (opt == "OpA") {
-            synchronized (machine) { // To read the value
+            //synchronized (machine) { // To read the value
               val =  machine.ram[cast(ushort)(sp++)];
-            }
+            //}
           } else { // TODO Need confirmation if this is correct
-            synchronized (machine) {
+            //synchronized (machine) {
               val =  machine.ram[cast(ushort)(sp-1)];
-            }
+            //}
           }
           break;
 
         case Operand.PEEK: // [SP]
-          synchronized (machine) {
+          //synchronized (machine) {
             ptr = sp;
             val =  machine.ram[sp];
-          }
+          //}
           break;
 
         case Operand.PICK_word: // [SP + next word litreal]
-          synchronized (machine) {
+          //synchronized (machine) {
             ptr = cast(ushort)(sp + machine.ram[pc +1]);
             val = machine.ram[ptr];
-          }
+          //}
           break;
 
         case Operand.SP: // SP
@@ -138,17 +138,17 @@ final class DCpu {
           break;
 
         case Operand.NWord_ptr: // Ptr [next word literal ]
-          synchronized (machine) {
+          //synchronized (machine) {
             ptr = machine.ram[pc +1];
             val = machine.ram[ptr];
-          }
+          //}
           break;
 
         case Operand.NWord: // next word literal
-          synchronized (machine) {
+          //synchronized (machine) {
             ptr = cast(ushort)(pc +1);
             val = machine.ram[ptr];
-          }
+          //}
           break;
 
         default: // Literal
@@ -211,16 +211,16 @@ final class DCpu {
         case Operand.NWord_ptr: // Ptr [next word literal ]
         case Operand.PEEK:      // [SP]
         case Operand.PICK_word: // [SP + next word litreal]
-          synchronized (machine) {
+          //synchronized (machine) {
             machine.ram[ptr] = v;
-          }
+          //}
           break;
 
         case Operand.POP_PUSH: // a Pop [SP++] | b PUSH [--SP]
           static if (opt == "OpB") {
-            synchronized (machine) { // To read the value
+            //synchronized (machine) { // To read the value
               machine.ram[cast(ushort)(--sp)] = v;
-            }
+            //}
             break;
           } else {
             assert (false, "This code must never executed. OpA PUSH can be writted");
@@ -298,6 +298,9 @@ final class DCpu {
   bool step() {
     //writeln(to!string(state));
     if (state == CpuState.DECO) { // Feth [PC] and extract operands and opcodes
+      if (int_queue.length > 255) { // Catch fire
+        f_fire = true;
+      }
       if (read_queue && !int_queue.empty) { // Try to do a int in the queue
         if (ia != 0 ) {
           read_queue = false;
@@ -312,9 +315,9 @@ final class DCpu {
         }
       }
     
-      synchronized (machine) {
+      //synchronized (machine) {
         word = machine.ram[pc];
-      }
+      //}
       
       opcode = decode!"OpCode"(word);
       opa = decode!"OpA"(word);
@@ -371,8 +374,9 @@ final class DCpu {
    * Send to the CPU a hardware interrupt
    */
   void hardware_int(ushort msg) {
-    if (ia != 0) {
-      
+    // Asumes that when IA == 0, incoming hardware interrupts are ignored
+    if (ia != 0 ) {
+      int_queue ~= msg;
     }
   }
 
@@ -615,9 +619,9 @@ private:
       if (!skip) {
         switch (ext_opcode) {
           case ExtOpCode.JSR:
-            synchronized (machine) {
+            //synchronized (machine) {
               machine.ram[--sp] = cast(ushort)(pc +1);
-            }
+            //}
             pc = cast(ushort)(val_a.read -1); // Compesate later pc++
             cycles = 3;
             break;
@@ -651,10 +655,10 @@ private:
 
           case ExtOpCode.RFI: // Return From Interrupt
             read_queue = true;
-            synchronized (machine) {
+            //synchronized (machine) {
               a  = machine.ram[sp++];
               pc = machine.ram[sp++];
-            }
+            //}
             cycles = 3;
             break;
 
