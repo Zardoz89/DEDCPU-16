@@ -8,14 +8,6 @@ module dcpu.machine;
 
 public import dcpu.hardware, dcpu.cpu;
 
-/**
- * Machine RAM encasulated in a class to get synchronized protection when
- * accesing to ram
- */
-final class Ram {
-  ushort[] ram;
-}
-
 // It contains:
 //  -DCPU-16 CPU
 //  -0x10000 words of 16 bit of RAM
