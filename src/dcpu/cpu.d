@@ -668,7 +668,8 @@ private:
             break;
 
           case ExtOpCode.HWN: // Number od devices
-            a = cast(ushort)machine.dev.length;
+            write_val = true;
+            val = cast(ushort)machine.dev.length;
             cycles = 2;
             break;
 
