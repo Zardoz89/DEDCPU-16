@@ -3,10 +3,12 @@
 ; If clock works, it will make the screen blink at 10 hz
 ; If keyboard works, it will write the last character read in the screen
 
+; Thanks to Tuna (0x10cforum.com) for fixing the code that read a pressed key
+
 ; Detect devices
 hwn i
 ifl i, 3
-set pc, crash
+  set pc, crash
 sub i, 1
 hwq i
 jsr store_clk_dev
@@ -39,13 +41,13 @@ set pc, looper
 :store_clk_dev
 ife a, 0xb402
 ife b, 0x12d0 ; Clock
-set [dev_clk], i
+  set [dev_clk], i
 set pc, pop
 
 :store_key_dev
 ife a, 0x7406
 ife b, 0x30cf ; Keyboard
-set [dev_key], i
+  set [dev_key], i
 set pc, pop
 
 :store_vid_dev
@@ -59,7 +61,7 @@ set pc, pop
 ; Test clock
 :clock_init
 ife [dev_clk], 0xFFFF
-    set pc,pop
+  set pc,pop
 set a, 0
 set b, 10 ; Set to 6 hz
 hwi [dev_clk]
@@ -71,7 +73,7 @@ set pc, pop
 ; Test keyboard
 :keyb_init
 ife [dev_key], 0xFFFF
-    set pc,pop
+  set pc,pop
 set a, 3
 set b, 0xBEBE
 hwi [dev_key]
@@ -80,16 +82,18 @@ set pc, pop
 ;Int handler
 :int_handler
 ife a, 0xCAFE
-    xor [togle_fx], 0xFF00
+  xor [togle_fx], 0xFF00
 ife a, 2
-    xor [togle_fx], 0xFF00
+  xor [togle_fx], 0xFF00
 ifn a, 0xBEBE
-    set pc, end_handler
+  set pc, end_handler
 ; read key presed
-set [0x501], 0xB000
 set a, 1
 hwi [dev_key]
-add [0x501], c
+ife c, 0
+  set pc, end_handler
+set [0x466], 0xB000
+add [0x466], c
 
 :end_handler
 rfi 0
@@ -107,13 +111,13 @@ set b, 0x400
 hwi [dev_vid]
 
 :do_video    ; Write all character set on screen
-SET i, 0x400 ; Where screen buffer wil lbe set
-SET j, [togle_fx]
+set i, 0x400 ; Where screen buffer wil lbe set
+set j, [togle_fx]
 
 :setScreen
-STI [I], J
-ifl i, 0x500
-  SET pc, setScreen
+sti [I], J
+ifl i, 0x464
+  set pc, setScreen
 set pc, pop
 
 :crash
