@@ -9,26 +9,27 @@
 hwn i
 ifl i, 3
   set pc, crash
-sub i, 1
-hwq i
-jsr store_clk_dev
-jsr store_key_dev
-jsr store_vid_dev
-sub i, 1
-hwq i
-jsr store_clk_dev
-jsr store_key_dev
-jsr store_vid_dev
-sub i, 1
-hwq i
-jsr store_clk_dev
-jsr store_key_dev
-jsr store_vid_dev
 ; Get Dev number of Clock, Video and Keyboard
+sub i, 1
+hwq i
+jsr store_clk_dev
+jsr store_key_dev
+jsr store_vid_dev
+sub i, 1
+hwq i
+jsr store_clk_dev
+jsr store_key_dev
+jsr store_vid_dev
+sub i, 1
+hwq i
+jsr store_clk_dev
+jsr store_key_dev
+jsr store_vid_dev
+
 jsr video_init  ; Must write text with white colours
 ias int_handler
 iaq 0
-int 2           ; Must write text in cyan colours
+int 2           ; Must write text in inverse
 jsr clock_init
 jsr keyb_init
 
@@ -63,7 +64,7 @@ set pc, pop
 ife [dev_clk], 0xFFFF
   set pc,pop
 set a, 0
-set b, 10 ; Set to 6 hz
+set b, 60 ; Set to 6 hz
 hwi [dev_clk]
 set a, 2
 set b, 0xCAFE ; Activate interrupts with msg 0xCAFE
@@ -81,8 +82,8 @@ set pc, pop
 
 ;Int handler
 :int_handler
-ife a, 0xCAFE
-  xor [togle_fx], 0xFF00
+ife a, 0xCAFE               ; Clock interrupt
+  xor [togle_fx], 0xFF00 ; Inverse attributes
 ife a, 2
   xor [togle_fx], 0xFF00
 ifn a, 0xBEBE
@@ -92,8 +93,8 @@ set a, 1
 hwi [dev_key]
 ife c, 0
   set pc, end_handler
-set [0x466], 0xB000
-add [0x466], c
+set [0x482], 0xB000 ; Cyan text
+add [0x482], c
 
 :end_handler
 rfi 0
@@ -111,12 +112,12 @@ set b, 0x400
 hwi [dev_vid]
 
 :do_video    ; Write all character set on screen
-set i, 0x400 ; Where screen buffer wil lbe set
+set i, 0x400 ; Where screen buffer will be set
 set j, [togle_fx]
 
 :setScreen
 sti [I], J
-ifl i, 0x464
+ifl i, 0x480
   set pc, setScreen
 set pc, pop
 
@@ -127,4 +128,4 @@ org 0x300
 :dev_vid   dat 0xFFFF
 :dev_clk   dat 0xFFFF
 :dev_key   dat 0xFFFF
-:togle_fx  dat 0xF000
+:togle_fx  dat 0xF000 ; White text over black screen
