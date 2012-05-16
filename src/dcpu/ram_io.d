@@ -1,11 +1,18 @@
 /**
- * RAM dump loader
+ * RAM dump loader/saver
  */
 module dcpu.ram_io;
 
 import std.c.stdlib, std.stdio, std.bitmanip, std.conv, std.array, std.string;
 
-enum TypeHexFile {lraw, braw, ahex, hexd ,dat}; /// Type of machine code file
+/// Type of machine code file
+enum TypeHexFile {
+  lraw,   /// Little-endian raw binary file
+  braw,   /// Big-endian raw binary file
+  ahex,   /// Hexadecimal ASCII file
+  hexd,   /// Hexadecimal ASCII dump file
+  dat     /// Assembly DATs
+  }; 
 
 /**
  * Load a file with a image of a RAM
@@ -16,10 +23,9 @@ enum TypeHexFile {lraw, braw, ahex, hexd ,dat}; /// Type of machine code file
  */
 ushort[] load_ram(TypeHexFile type)(const string filename )
 in {
-  assert (filename.length >0);
+  assert (filename.length >0, "Invalid filename");
 } body {
   auto f = File(filename, "r");
-
   scope(exit) {f.close();}
 
   ushort[] img = new ushort[0];
@@ -106,3 +112,43 @@ alias load_ram!(TypeHexFile.lraw) load_lraw;
 alias load_ram!(TypeHexFile.braw) load_braw;
 alias load_ram!(TypeHexFile.ahex) load_ahex;
 alias load_ram!(TypeHexFile.hexd) load_hexd;
+
+void save_ram(TypeHexFile type)(const string filename , ushort[] img)
+in {
+  assert (filename.length >0, "Invalid filename");
+  assert (img.length < 0x10000, "Invalid ram image");
+} body {
+  auto f = File(filename, "w");
+  scope(exit) {f.close();}
+
+  static if (type == TypeHexFile.lraw || type == TypeHexFile.braw) { // RAW binary file
+    for(ind = 0; ind < img.length; ind += 2) {
+      ubyte[2] dword = [img[ind], 0];
+      if (ind +1 < img.length)
+         dword[1] = img[ind +1];
+         
+      static if (type == TypeHexFile.lraw) { // little-endian
+        dword = nativeToLittleEndian!ushort(dword);
+      } else {
+        dword = nativeToBigEndian!ushort(dword);
+      }
+      f.write(dword);
+    }
+  } else if (type == TypeHexFile.ahex) { // plain ASCII hex file
+    foreach ( word; img) { // each line only have a hex 16-bit word
+      f.writeln(format("%04X", word));
+    }
+  } else if (type == TypeHexFile.hexd) { // plain ASCII hex dump file
+    foreach (addr ,word; img) {
+      if ((addr % 8) == 0) {
+        f.write(format("0x%04X: ", addr));
+      }
+      f.write(format("%04X ", word));
+      if (addr != 0 && ((addr-1) % 8) == 0) {
+        f.writeln();
+      }
+    }
+  } else {
+    throw new Exception("Not implemented file type");
+  }
+}
