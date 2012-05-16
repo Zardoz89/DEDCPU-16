@@ -60,7 +60,7 @@ in {
       i=0;
       foreach (word; words[1..$]) {
         auto tmp = addr + i++;
-        if (tmp >= 0x1000) // Out of bounds
+        if (tmp >= 0x10000) // Out of bounds
           throw new Exception("Bad format. Data out of bounds " ~ format("0x%04X", tmp));
         
         if (img.length <= tmp)
@@ -74,21 +74,25 @@ in {
   } else if (type == TypeHexFile.dat) { // assembly file that contains dat lines with code. Only process DAT lines
     foreach ( line; f.byLine()) {
       line = strip(line);
-      if (line[0..3] != "dat" || line[0..3] != "DAT") {
+      // dat dddd or dat 0xhhhh
+      if (line.length < 5 || line[0..3] != "dat" && line[0..3] != "DAT") {
         continue; // Skip line
       }
       
-      auto words = split(strip(line[4..$]));      
+      auto words = split(line[4..$], ",");
       if (words.length < 1 ) {
         throw new Exception("Bad format. DAT without data");
       }
      
       foreach (word; words) {
-        if (img.length >= 0x1000) // Out of bounds
+        if (img.length >= 0x10000) // Out of bounds
           throw new Exception("Bad format. Data out of bounds " ~ format("0x%04X", img.length));
-                  
-        if (word.length > 3) {
+        word = strip(word);
+        if (word.length > 3 && (word[0..2] == "0x" || word[0..2] == "0X")) {
+          word = word[2..$];
           img ~= parse!ushort(word, 16);
+        } else if (word.length > 1) {
+          img ~= parse!ushort(word, 10);
         }
       }
     }
