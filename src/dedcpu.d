@@ -1,6 +1,6 @@
 import std.stdio, std.array, std.string, std.conv, std.getopt, std.format;
 
-import dcpu.ram_loader;
+import dcpu.ram_io;
 import dcpu.machine, dcpu.clock;
 
 void showhelp() {

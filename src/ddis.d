@@ -6,7 +6,7 @@ import std.stdio, std.getopt, std.algorithm, std.string, std.conv;
 import core.thread, std.c.stdlib;
 
 
-import dcpu.disassembler, dcpu.ram_loader;
+import dcpu.disassembler, dcpu.ram_io;
 
 void showhelp() {
   stderr.writeln(import("help_ddis.txt"));

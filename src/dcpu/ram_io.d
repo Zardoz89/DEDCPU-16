@@ -1,7 +1,7 @@
 /**
  * RAM dump loader
  */
-module dcpu.ram_loader;
+module dcpu.ram_io;
 
 import std.c.stdlib, std.stdio, std.bitmanip, std.conv, std.array, std.string;
 
