@@ -5,7 +5,7 @@ module dcpu.ram_io;
 
 import std.c.stdlib, std.stdio, std.bitmanip, std.conv, std.array, std.string;
 
-enum TypeHexFile {lraw, braw, ahex, hexd ,hex8}; /// Type of machine code file
+enum TypeHexFile {lraw, braw, ahex, hexd ,dat}; /// Type of machine code file
 
 /**
  * Load a file with a image of a RAM
@@ -71,6 +71,27 @@ in {
         }
       }
     }
+  } else if (type == TypeHexFile.dat) { // assembly file that contains dat lines with code. Only process DAT lines
+    foreach ( line; f.byLine()) {
+      line = strip(line);
+      if (line[0..3] != "dat" || line[0..3] != "DAT") {
+        continue; // Skip line
+      }
+      
+      auto words = split(strip(line[4..$]));      
+      if (words.length < 1 ) {
+        throw new Exception("Bad format. DAT without data");
+      }
+     
+      foreach (word; words) {
+        if (img.length >= 0x1000) // Out of bounds
+          throw new Exception("Bad format. Data out of bounds " ~ format("0x%04X", img.length));
+                  
+        if (word.length > 3) {
+          img ~= parse!ushort(word, 16);
+        }
+      }
+    }
   } else {
     throw new Exception("Not implemented file type");
   }
@@ -80,3 +101,4 @@ in {
 alias load_ram!(TypeHexFile.lraw) load_lraw;
 alias load_ram!(TypeHexFile.braw) load_braw;
 alias load_ram!(TypeHexFile.ahex) load_ahex;
+alias load_ram!(TypeHexFile.hexd) load_hexd;
