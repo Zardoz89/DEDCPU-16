@@ -50,20 +50,30 @@ int main (string[] args) {
     data = load_lraw(filename);
   } else if (file_fmt == TypeHexFile.braw) {
     data = load_braw(filename);
-  } else if (file_fmt == TypeHexFile.ahex){
+  } else if (file_fmt == TypeHexFile.ahex) {
     try {
       data = load_ahex(filename);
     } catch (ConvException e){
       stderr.writeln("Error: Bad file format\nCould be a binary file?");
       return -1;
     }
-  } else {
+  } else if (file_fmt == TypeHexFile.hexd) {
     try {
       data = load_ram!(TypeHexFile.hexd)(filename);
     } catch (ConvException e){
-      stderr.writeln("Error: Bad file format\nCould be a binary file?", e.msg);
+      stderr.writeln("Error: Bad file format\nCould be a binary file? ", e.msg);
       return -1;
     }
+  } else if (file_fmt == TypeHexFile.dat) {
+    try {
+      data = load_ram!(TypeHexFile.dat)(filename);
+    } catch (ConvException e){
+      stderr.writeln("Error: Bad file format\nCould be a binary file? ", e.msg);
+      return -1;
+    }
+  } else {
+    stderr.writeln("Error: Invalid input format");
+    return -1;
   }
 
   end = end < data.length ? end : data.length; // Clamp between 0 to 0xFFFF
