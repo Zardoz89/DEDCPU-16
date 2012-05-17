@@ -10,9 +10,20 @@
 *  __-b__*number*           Sets the absolute position were begin to disassembly the file. By default it's 0
 *  __-e__*number*           Sets the absolute position were end to disassembly the file. By default it's the end of the file.
 
-## Notes: ##
-File test2.bin it's a Big Endian raw binary file for test disassembling. Don't use it in a emulater because it's a imcoplete code. You can compare ddis output of these file with test2.dasm that it's the source code that generated test2.bin.
+# Binary file CONVersor for DCPU-16 (any version) #
 
+## Usage: ##
+  ./bconv input_filename output_filename [options]
+## Options: ##
+*  -h                   Show this message
+*  -i or --itype *type* Type of input file with memory map. lraw -> little endian raw binary ; braw -> big endian raw binary ; ahex -> ascii hexadecimal file ; hexd -> ascii hexadecimal dump file. By default bconv asumes little endian raw binary input file.
+*  -o or --otype *type* Type of output file with memory map. lraw -> little endian raw binary ; braw -> big endian raw binary ; ahex -> ascii hexadecimal file ; hexd -> ascii hexadecimal dump file. By default bconv asumes ascii hexadecimal dump output file.
+*  -b*number*           Sets the absolute position were begin to disassembly the file. By default it's 0
+*  -e*number*           Sets the absolute position were end to disassembly the file. By default it's the end of the file.
+
+
+# Notes: #
+Files tester.hex and tester2.hex are hexadecimal dump files for testing disassemblers and emulators. You have the original dcpu-16 assembly code in tester.dasm and tester2.dasm.
 
 # License: #
 This project is licensed under the BSD license.

@@ -5,7 +5,7 @@ Usage:
 Options:
   -h                   Show this message
   -i or --itype <type> Type of input file with memory map. lraw -> little endian raw binary ; braw -> big endian raw binary ; ahex -> ascii hexadecimal file ; hexd -> ascii hexadecimal dump file. By default bconv asumes little endian raw binary input file.
-  -o or --otype <type> Type of output file with memory map. lraw -> little endian raw binary ; braw -> big endian raw binary ; ahex -> ascii hexadecimal file ; hexd -> ascii hexadecimal dump file. By default bconv asumes little endian raw binary input file.
+  -o or --otype <type> Type of output file with memory map. lraw -> little endian raw binary ; braw -> big endian raw binary ; ahex -> ascii hexadecimal file ; hexd -> ascii hexadecimal dump file. By default bconv asumes ascii hexadecimal dump output file.
   -b<number>           Sets the absolute position were begin to disassembly the file. By default it's 0
   -e<number>           Sets the absolute position were end to disassembly the file. By default it's the end of the file.
 
