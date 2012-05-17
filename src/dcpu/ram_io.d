@@ -122,17 +122,14 @@ in {
   scope(exit) {f.close();}
 
   static if (type == TypeHexFile.lraw || type == TypeHexFile.braw) { // RAW binary file
-    for(ind = 0; ind < img.length; ind += 2) {
-      ubyte[2] dword = [img[ind], 0];
-      if (ind +1 < img.length)
-         dword[1] = img[ind +1];
-         
+    foreach (word; img) {
+      ubyte[2] dbyte = void;         
       static if (type == TypeHexFile.lraw) { // little-endian
-        dword = nativeToLittleEndian!ushort(dword);
+        dbyte = nativeToLittleEndian!ushort(word);
       } else {
-        dword = nativeToBigEndian!ushort(dword);
+        dbyte = nativeToBigEndian!ushort(word);
       }
-      f.write(dword);
+      f.rawWrite(dbyte);
     }
   } else if (type == TypeHexFile.ahex) { // plain ASCII hex file
     foreach ( word; img) { // each line only have a hex 16-bit word
