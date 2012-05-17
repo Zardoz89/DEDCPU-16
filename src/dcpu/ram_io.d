@@ -135,16 +135,18 @@ in {
     foreach ( word; img) { // each line only have a hex 16-bit word
       f.writeln(format("%04X", word));
     }
+    f.writeln();
   } else if (type == TypeHexFile.hexd) { // plain ASCII hex dump file
     foreach (addr ,word; img) {
       if ((addr % 8) == 0) {
         f.write(format("0x%04X: ", addr));
       }
       f.write(format("%04X ", word));
-      if (addr != 0 && ((addr-1) % 8) == 0) {
+      if (addr > 6 && ((addr+1) % 8) == 0) {
         f.writeln();
       }
     }
+    f.writeln();
   } else {
     throw new Exception("Not implemented file type");
   }
