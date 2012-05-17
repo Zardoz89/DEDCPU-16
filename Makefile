@@ -10,7 +10,7 @@ SRC_DIR             = $(ROOT_SOURCE_DIR)
 # include some commands
 include command.Make
 
-all: ddis
+all: ddis bconv
 
 # .PHONY : doc
 # .PHONY : ddoc
@@ -73,6 +73,16 @@ ddis: $(BUILD_PATH)$(PATH_SEP)ddis.o $(BUILD_PATH)$(PATH_SEP)disassembler.o $(BU
 	$(DC) $^ $(OUTPUT)$@ $(DCFLAGS_LINK)
 	@echo "------------------ $(niceMsgBeg1)Creating $@ executable done$(niceMsgEnd)"
 
+$(BUILD_PATH)$(PATH_SEP)bconv.o: $(SRC_DIR)bconv.d
+	@$(MKDIR) build
+	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
+	$(DC) $(DCFLAGS) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
+
+bconv: $(BUILD_PATH)$(PATH_SEP)bconv.o $(BUILD_PATH)$(PATH_SEP)ram_io.o
+	@echo "$(niceMsgBeg2)Linking $< $@$(niceMsgEnd)"
+	$(DC) $^ $(OUTPUT)$@ $(DCFLAGS_LINK)
+	@echo "------------------ $(niceMsgBeg1)Creating $@ executable done$(niceMsgEnd)"
+
 # Do executable files
 # $(EXE_NAME): $(OBJECTS_MAIN) $(OBJECTS) dcpu/disassembler.o dcpu/cpu.o
 # 	$(DC) $< $(OBJECTS) dcpu/disassembler.o dcpu/cpu.o $(OUTPUT)$@
@@ -121,6 +131,7 @@ clean-objects:
 
 clean-executable:
 	$(RM) ddis
+	$(RM) bconv
 
 clean-doc:
 	$(RM) $(DOCUMENTATIONS)
