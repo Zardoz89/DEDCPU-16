@@ -21,7 +21,7 @@ int main (string[] args) {
   bool help; // Show help
   size_t start; size_t end = ushort.max;
   TypeHexFile ifile_fmt; // Input file format
-  TypeHexFile ofile_fmt; // Output file format
+  TypeHexFile ofile_fmt = TypeHexFile.hexd; // Output file format
   
   // Process arguements 
   getopt(
