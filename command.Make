@@ -275,8 +275,8 @@ DDOC_PATH           = ./ddoc
 BUILD_PATH          = ./build
 BIN_PATH            = ./bin
 
-DCFLAGS            += -I$(ROOT_SOURCE_DIR)
-DCFLAGS_IMPORT      = -J$(ROOT_SOURCE_DIR) -w
+DCFLAGS            += -I$(ROOT_SOURCE_DIR) -J$(ROOT_SOURCE_DIR) -w
+DCFLAGS_IMPORT      = 
 DCFLAGS_LINK        = $(LDCFLAGS)
 
 STATIC_LIBNAME      = lib$(PROJECT_NAME)-$(COMPILER)$(STATIC_LIB_EXT)

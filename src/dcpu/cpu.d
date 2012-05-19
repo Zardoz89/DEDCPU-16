@@ -330,9 +330,11 @@ final class DCpu {
     } else if (state == CpuState.OPA) { // Get Operand A
       if (do_inmediate) {
         val_a = new Operator!"OpA"(opa);
-        if (val_a.next_word) { // Take a extra cycle
+        if (val_a.next_word && !skip) { // Take a extra cycle
           do_inmediate = false;
           return false;
+        } else if (val_a.next_word) {
+          pc++;
         }
       } else {
         do_inmediate = true;
@@ -351,9 +353,11 @@ final class DCpu {
     } else if (state == CpuState.OPB) { // Get Operand B
       if (do_inmediate) {
         val_b = new Operator!"OpB"(opb);
-        if (val_b.next_word) { // Take a extra cycle
+        if (val_b.next_word && !skip) { // Take a extra cycle
           do_inmediate = false;
           return false;
+        } else if (val_b.next_word) {
+          pc++;
         }
       } else {
         do_inmediate = true;
@@ -375,7 +379,7 @@ final class DCpu {
    */
   void hardware_int(ushort msg) {
     // Asumes that when IA == 0, incoming hardware interrupts are ignored
-    if (ia != 0 ) {
+    if (ia != 0 && int_queue.length < 256) {
       int_queue ~= msg;
     }
   }
@@ -689,6 +693,9 @@ private:
 
           case ExtOpCode.HWI: // TODO
             cycles = 4; // Or more
+            if (val_a.read < machine.dev.length) {
+              machine.dev[val_a.read].interrupt();
+            }
             break;
 
           default: // Unknow OpCode

@@ -38,12 +38,6 @@ int main (string[] args) {
   m.init();
   m.dev ~= new TimerClock(m);
   m.dev[0].init();
-  m.dev ~= new TimerClock(m);
-  m.dev[1].init();
-  m.dev ~= new TimerClock(m);
-  m.dev[2].init();
-  m.dev ~= new TimerClock(m);
-  m.dev[3].init();
 
   ushort[] data = void;
   if (file_fmt == TypeHexFile.lraw) {
@@ -66,12 +60,23 @@ int main (string[] args) {
     }
   }
   m.ram[0..data.length] = data[0..$];
-
-  writeln("PC:", format("%04X",m.cpu.pc), " A:", m.cpu.a, " B:", m.cpu.b, " C:", m.cpu.c, " X:", m.cpu.x, " Y:", m.cpu.y, " Z:", m.cpu.z, " I:", m.cpu.i, " J:", m.cpu.j, " ex:", m.cpu.ex, " sp:", m.cpu.sp);
+  long i, n;
+  writeln("i:", i," PC:", format("%04X",m.cpu.pc), " A:", m.cpu.a, " B:", m.cpu.b, " C:", m.cpu.c, " X:", m.cpu.x, " Y:", m.cpu.y, " Z:", m.cpu.z, " I:", m.cpu.i, " J:", m.cpu.j, " ex:", m.cpu.ex, " sp:", m.cpu.sp);
   foreach (linea; stdin.byLine()) {
-    if (m.cpu.step()) {
-      writeln("PC:", format("%04X",m.cpu.pc), " A:", m.cpu.a, " B:", m.cpu.b, " C:", m.cpu.c, " X:", m.cpu.x, " Y:", m.cpu.y, " Z:", m.cpu.z, " I:", m.cpu.i, " J:", m.cpu.j, " ex:", m.cpu.ex, " sp:", m.cpu.sp);
-      writeln("0x301: ", format("%04X", m.ram[0x301]), " 0x303: ", format("%04X", m.ram[0x303]));
+    if (linea.length >=2 && linea[0] == 'r') {
+      n = parse!long(linea[1..$], 10);
+    } else {
+      n = 1;
+    }
+    for(; n> 0; n--) {
+      foreach(dev; m.dev) {
+        dev.bus_clock_tick();
+      }
+      if (m.cpu.step()) {
+        writeln("i:", i," PC:", format("%04X",m.cpu.pc), " A:", m.cpu.a, " B:", m.cpu.b, " C:", m.cpu.c, " X:", m.cpu.x, " Y:", m.cpu.y, " Z:", m.cpu.z, " I:", m.cpu.i, " J:", m.cpu.j, " ex:", m.cpu.ex, " sp:", m.cpu.sp);
+        writeln("0x301: ", format("%04X", m.ram[0x301]), " 0x303: ", format("%04X", m.ram[0x303]));
+      }
+      i++;
     }
   }
 

@@ -9,6 +9,8 @@ module dcpu.clock;
 import std.math;
 import dcpu.hardware;
 
+import std.stdio;
+
 class TimerClock: Hardware {
 
 protected:
@@ -16,6 +18,7 @@ protected:
   ushort divisor;     /// Clock divider
   ushort int_msg;     /// Interrupt mesg to send to the CPU
   long n_bus_ticks;   /// Number of bus clock ticks ot do a clock tick
+  long count;
   bool f_floor_Ceil;  /// do floor or ceil to calc n_bus_ticks
   
   static enum BaseFreq = 60; // Max frecuency
@@ -78,17 +81,12 @@ public:
    */
   override void bus_clock_tick() {
     if (f_hwi && divisor > 0) {
-      if (n_bus_ticks > 0) {
-        n_bus_ticks--;
+      stderr.writeln("\tbus tick: ", count, " to: ",n_bus_ticks, " ticks: ", ticks);
+      if (count < n_bus_ticks) {
+        count++;
       } else { // Do tick
         ticks++;
-        if (f_floor_Ceil) { // swaps from floor or ceil to try be more acurrated clock
-          n_bus_ticks = cast(long)floor(100000.0 / BaseFreq / divisor);
-        } else {
-          n_bus_ticks = cast(long)ceil(100000.0 / BaseFreq / divisor);
-        }
-        f_floor_Ceil = !f_floor_Ceil;
-
+        count = 0;
         // Send Interrupt to DCPU
         if (int_msg > 0) {
           //synchronized (m.cpu) {
