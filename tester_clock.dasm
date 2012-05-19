@@ -1,0 +1,56 @@
+; This is a tester for emulators that checks generic clock device
+; If clock works, it will invert J value at 60Hz
+
+            ; Detect devices
+            hwn i
+            ife i, 0
+              set pc, crash
+            ; Try to get Dev number of Clock
+:loop_device_search
+            sub i, 1
+            hwq i
+            jsr store_clk_dev
+            ifg i, 0
+              set pc, loop_device_search
+
+            ife [dev_clk], 0xFFFF
+              set pc, crash
+            
+            ias int_handler
+            iaq 0
+            jsr clock_init
+            set a, 0  ; Cleans a value
+
+            ; Loop doing a++ and nothing more. A caouldbe used to check how many cycles
+:looper
+            add a, 1
+            set pc, looper
+
+            ; Checks Clock device and stores his dev number
+            :store_clk_dev
+            ife a, 0xb402
+            ife b, 0x12d0 ; Clock
+              set [dev_clk], i
+            set pc, pop
+
+            ; Set clock configuration
+            :clock_init
+            ife [dev_clk], 0xFFFF
+              set pc,pop
+            set a, 0
+            set b, 1        ; Set to 60 hz
+            hwi [dev_clk]
+            set a, 2
+            set b, 0xCAFE   ; Activate interrupts with msg 0xCAFE
+            hwi [dev_clk]
+            set pc, pop
+
+:int_handler    ; Int handler
+            ife a, 0xCAFE   ; Clock interrupt
+              xor j, 0xFFFF ; Inverse
+            rfi 0
+
+:crash
+            set pc, crash ; Something get wrong if you reach this
+
+:dev_clk    dat 0xFFFF

@@ -1,0 +1,8 @@
+; This is a tester for emulators that checks generic clock device
+; If clock works, it will invert J value at 60Hz
+0x0000: 1a00 84d2 7f81 002c 88c3 1a20 d420 84d4
+0x0008: 9781 83d2 002e 7f81 002c 7d40 0028 8580
+0x0010: f020 8401 8802 cf81 7c12 b402 7c32 12d0
+0x0018: 1bc1 002e 6381 83d2 002e 6381 8401 8821
+0x0020: 7a40 002e 8c01 7c21 cafe 7a40 002e 6381
+0x0028: 7c12 cafe 80ec 8560 7f81 002c ffff 
