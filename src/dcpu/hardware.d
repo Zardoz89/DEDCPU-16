@@ -61,7 +61,7 @@ class Hardware {
   }
 
   /**
-   * What to do when it's loaded
+   * What to do when it's loaded in the dcpu machine
    */
   abstract void init();
 
