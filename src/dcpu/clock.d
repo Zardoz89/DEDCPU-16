@@ -35,7 +35,7 @@ public:
   }
 
   /**
-   * What to do when it's loaded
+   * What to do when it's loaded in the dcpu machine
    */
   override void init() {
     f_hwi = false;
