@@ -6,8 +6,8 @@
  */
 module dcpu.cpu;
 
-import std.array;
-import std.string, std.conv, std.stdio;
+import std.array, std.random;
+//import std.string, std.conv, std.stdio;
 import dcpu.microcode, dcpu.machine, dcpu.hardware;
 
 /**
@@ -48,7 +48,7 @@ struct CpuInfo {
 
 final class DCpu {
   private:
-  
+  Random gen;       // Used when get fire
   /**
    * Operator
    * Params:
@@ -296,6 +296,7 @@ final class DCpu {
 
   this(ref Machine machine) {
     this.machine = machine;
+    gen = Random(unpredictableSeed);
   }
 
   /**
@@ -319,6 +320,13 @@ final class DCpu {
    */
   bool step() {
     //writeln(to!string(state));
+    if (info.f_fire) { // Swap a random bit of a random address
+      enum bits = [ 1, 2^^1, 2^^2, 2^^3, 2^^4, 2^^5, 2^^6, 2^^7, 2^^8, 2^^9, 2^^10, 2^^11, 2^^12, 2^^13, 2^^14, 2^^15 ];
+      auto rbit = randomCover(bits, gen);
+      ushort pos = cast(ushort)uniform(0, ushort.max, gen);
+      machine.ram[pos] = cast(ushort)(machine.ram[pos] ^ rbit.front);
+    }
+
     if (info.state == CpuState.DECO) { // Feth [PC] and extract operands and opcodes
       if (int_queue.length > 255) { // Catch fire
         info.f_fire = true;
@@ -654,7 +662,7 @@ private:
 
           case ExtOpCode.HCF:
             info.cycles = 9;
-            // TODO Here begin to swap random bits in the ram
+            info.f_fire = true;
             break;
 
           case ExtOpCode.INT: // Software Interruption
@@ -693,13 +701,13 @@ private:
             info.cycles = 2;
             break;
 
-          case ExtOpCode.HWN: // Number od devices
+          case ExtOpCode.HWN: // Number of devices
             write_val = true;
             val = cast(ushort)machine.dev.length;
             info.cycles = 2;
             break;
 
-          case ExtOpCode.HWQ: // TODO
+          case ExtOpCode.HWQ: // Get Hardware IDs
             info.cycles = 4;
             if (val_a.read in machine.dev) {
               auto dev = machine.dev[val_a.read];
@@ -713,7 +721,7 @@ private:
             }
             break;
 
-          case ExtOpCode.HWI: // TODO
+          case ExtOpCode.HWI: // Send a hardware interrupt to device A
             info.cycles = 4; // Or more
             if (val_a.read in machine.dev) {
               machine.dev[val_a.read].interrupt(info, machine.ram);
