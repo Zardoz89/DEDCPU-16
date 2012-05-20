@@ -132,6 +132,7 @@ clean-objects:
 clean-executable:
 	$(RM) ddis
 	$(RM) bconv
+	$(RM) dedcpu
 
 clean-doc:
 	$(RM) $(DOCUMENTATIONS)
