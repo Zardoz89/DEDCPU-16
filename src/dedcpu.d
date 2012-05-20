@@ -60,6 +60,7 @@ int main (string[] args) {
     }
   }
   m.ram[0..data.length] = data[0..$];
+
   long i, n;
   auto state = m.cpu_info;
   writeln("i:", i," PC:", format("%04X",state.pc), " A:", state.a, " B:", state.b, " C:", state.c, " X:", state.x, " Y:", state.y, " Z:", state.z, " I:", state.i, " J:", state.j, " ex:", state.ex, " sp:", state.sp);
@@ -77,7 +78,6 @@ int main (string[] args) {
     }
   }
 
-  
   
   return 0;
 }
