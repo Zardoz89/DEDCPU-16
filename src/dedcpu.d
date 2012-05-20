@@ -61,7 +61,8 @@ int main (string[] args) {
   }
   m.ram[0..data.length] = data[0..$];
   long i, n;
-  writeln("i:", i," PC:", format("%04X",m.cpu.pc), " A:", m.cpu.a, " B:", m.cpu.b, " C:", m.cpu.c, " X:", m.cpu.x, " Y:", m.cpu.y, " Z:", m.cpu.z, " I:", m.cpu.i, " J:", m.cpu.j, " ex:", m.cpu.ex, " sp:", m.cpu.sp);
+  auto state = m.cpu_info;
+  writeln("i:", i," PC:", format("%04X",state.pc), " A:", state.a, " B:", state.b, " C:", state.c, " X:", state.x, " Y:", state.y, " Z:", state.z, " I:", state.i, " J:", state.j, " ex:", state.ex, " sp:", state.sp);
   foreach (linea; stdin.byLine()) {
     if (linea.length >=2 && linea[0] == 'r') {
       n = parse!long(linea[1..$], 10);
@@ -69,9 +70,9 @@ int main (string[] args) {
       n = 1;
     }
     for(; n> 0; n--) {
-      while(!m.tick){}
-      
-      writeln("i:", i," PC:", format("%04X",m.cpu.pc), " A:", m.cpu.a, " B:", m.cpu.b, " C:", m.cpu.c, " X:", m.cpu.x, " Y:", m.cpu.y, " Z:", m.cpu.z, " I:", m.cpu.i, " J:", m.cpu.j, " ex:", m.cpu.ex, " sp:", m.cpu.sp);
+      while(!m.tick){}      // Executes a instrucction
+      state = m.cpu_info;   // Get updated state of CPU
+      writeln("i:", i," PC:", format("%04X",state.pc), " A:", state.a, " B:", state.b, " C:", state.c, " X:", state.x, " Y:", state.y, " Z:", state.z, " I:", state.i, " J:", state.j, " ex:", state.ex, " sp:", state.sp);
       i++;
     }
   }

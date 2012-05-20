@@ -7,13 +7,12 @@
 module dcpu.machine;
 
 public import dcpu.hardware, dcpu.cpu;
-import std.range;
+import std.range, std.parallelism;
 
 // It contains:
 //  -DCPU-16 CPU
 //  -0x10000 words of 16 bit of RAM
 //  -Some quanty of hardware attached
-
 final class Machine {
   ushort[0x10000] ram;
   DCpu cpu;
@@ -27,10 +26,11 @@ public:
    */
   void init() {
     cpu = new DCpu(this);
-    foreach(ref d; dev)
+    foreach(ref d; dev) // taskPool.parallel(dev)
       d.init();
   }
 
+  // Emulation running *********************************************************
   /**
    * Do a clock tick to the whole machine
    * Returns TRUE if a instruccion has executed
@@ -42,6 +42,14 @@ public:
     return cpu.step();
   }
 
+  /**
+   * Returns the actual status of cpu registers
+   */
+  @property CpuInfo cpu_info() {
+    return cpu.info;
+  }
+
+  // Device handling ***********************************************************
   /**
    * Returns the device number I
    */
@@ -63,5 +71,6 @@ public:
     return dev.length;
   }
 
+  
   
 }

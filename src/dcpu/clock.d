@@ -49,9 +49,9 @@ public:
    */
   override void interrupt() {
     //synchronized (m) { //Accesing to CPU registers
-      switch (m.cpu.a) {
+      switch (m.cpu.info.a) {
         case 0:
-          divisor = m.cpu.b;
+          divisor = m.cpu.info.b;
           if (divisor > 0) {
             if (f_floor_Ceil) { //
               n_bus_ticks = cast(long)floor(100000.0 / BaseFreq / divisor);
@@ -62,10 +62,10 @@ public:
           }
           break;
         case 1:
-          m.cpu.c = ticks;
+          m.cpu.info.c = ticks;
           break;
         case 2:
-          int_msg = m.cpu.b;
+          int_msg = m.cpu.info.b;
           break;
         default:
           // Do nothing
