@@ -716,7 +716,7 @@ private:
           case ExtOpCode.HWI: // TODO
             info.cycles = 4; // Or more
             if (val_a.read in machine.dev) {
-              machine.dev[val_a.read].interrupt(info);
+              machine.dev[val_a.read].interrupt(info, machine.ram);
             }
             break;
 

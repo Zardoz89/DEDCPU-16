@@ -30,10 +30,6 @@ public:
     vendor = 0; // Not yet
   }
 
-  this(ref Machine machine) {
-    super(machine);
-  }
-
   /**
    * What to do when it's loaded in the dcpu machine
    */
@@ -48,8 +44,9 @@ public:
    * What to do when a Hardware interrupt to this hardware, has receive
    * Params:
    *  state   = CPU editable actual state
+   *  ram     = RAM of the machine
    */
-  override void interrupt (ref CpuInfo state) {
+  override void interrupt(ref CpuInfo state, ref ushort[0x10000] ram) {
     //synchronized (m) { //Accesing to CPU registers
       switch (state.a) {
         case 0:
@@ -82,8 +79,10 @@ public:
    * What to do each clock tick (at 100 khz)
    * Params:
    *  state   = CPU editable actual state
+   *  cpu     = CPU
+   *  ram     = RAM of the machine
    */
-  override void bus_clock_tick (ref CpuInfo state) {
+  override void bus_clock_tick (ref CpuInfo state, ref DCpu cpu, ref ushort[0x10000] ram) {
     if (f_hwi && divisor > 0) {
       stderr.writeln("\tbus tick: ", count, " to: ",n_bus_ticks, " ticks: ", ticks);
       if (count < n_bus_ticks) {
@@ -93,8 +92,8 @@ public:
         count = 0;
         // Send Interrupt to DCPU
         if (int_msg > 0) {
-          //synchronized (m.cpu) {
-            m.cpu.hardware_int(int_msg);
+          //synchronized (cpu) {
+            cpu.hardware_int(int_msg);
           //}
         }
         

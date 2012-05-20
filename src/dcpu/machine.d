@@ -37,7 +37,7 @@ public:
    */
   bool tick() {
     foreach(ref d; dev) {
-      d.bus_clock_tick(cpu.state);
+      d.bus_clock_tick(cpu.state, cpu, ram);
     }
     return cpu.step();
   }

@@ -35,7 +35,7 @@ int main (string[] args) {
   }
 
   Machine m = new Machine();
-  m[0]= new TimerClock(m);
+  m[0]= new TimerClock();
   m.init();
   //m[0].init();
 

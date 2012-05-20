@@ -9,8 +9,6 @@ module dcpu.hardware;
 public import dcpu.machine, dcpu.cpu;
 
 class Hardware {
-  protected:
-  Machine m;
 
   bool f_hwi; ///Has at least one time receive a hardware interrupt 
 
@@ -55,11 +53,6 @@ class Hardware {
     return ver;
   }
 
-  protected this(ref Machine machine) {
-    m = machine;
-    init();
-  }
-
   /**
    * What to do when it's loaded in the dcpu machine
    */
@@ -69,13 +62,16 @@ class Hardware {
    * What to do when a Hardware interrupt to this hardware, has receive
    * Params:
    *  state   = CPU editable actual state
+   *  ram     = RAM of the machine
    */
-  abstract void interrupt(ref CpuInfo state);
+  abstract void interrupt(ref CpuInfo state, ref ushort[0x10000] ram);
 
   /**
    * What to do each clock tick (at 100 khz)
    * Params:
    *  state   = CPU editable actual state
+   *  cpu     = CPU
+   *  ram     = RAM of the machine
    */
-  abstract void bus_clock_tick(ref CpuInfo state);
+  abstract void bus_clock_tick(ref CpuInfo state, ref DCpu cpu, ref ushort[0x10000] ram);
 }
