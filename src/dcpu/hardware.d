@@ -67,11 +67,15 @@ class Hardware {
 
   /**
    * What to do when a Hardware interrupt to this hardware, has receive
+   * Params:
+   *  state   = CPU editable actual state
    */
-  abstract void interrupt();
+  abstract void interrupt(ref CpuInfo state);
 
   /**
    * What to do each clock tick (at 100 khz)
+   * Params:
+   *  state   = CPU editable actual state
    */
-  abstract void bus_clock_tick();
+  abstract void bus_clock_tick(ref CpuInfo state);
 }

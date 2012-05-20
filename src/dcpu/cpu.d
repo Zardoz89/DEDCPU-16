@@ -299,6 +299,20 @@ final class DCpu {
   }
 
   /**
+   * Returns CPU actual modificable estate
+   */
+  package ref CpuInfo state() @property {
+    return info;
+  }
+
+  /**
+   * Returns a copy of CPU actual estate
+   */
+  /*auto info() @property {
+    return info.idup;
+  }*/
+
+  /**
    * Steps one cycle
    * Returns: True if executed an instrucction. False if not ended the execution of a instrucction
    */
@@ -701,7 +715,7 @@ private:
           case ExtOpCode.HWI: // TODO
             info.cycles = 4; // Or more
             if (val_a.read in machine.dev) {
-              machine.dev[val_a.read].interrupt();
+              machine.dev[val_a.read].interrupt(info);
             }
             break;
 

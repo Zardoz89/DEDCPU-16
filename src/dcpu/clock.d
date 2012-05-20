@@ -46,12 +46,14 @@ public:
 
   /**
    * What to do when a Hardware interrupt to this hardware, has receive
+   * Params:
+   *  state   = CPU editable actual state
    */
-  override void interrupt() {
+  override void interrupt (ref CpuInfo state) {
     //synchronized (m) { //Accesing to CPU registers
-      switch (m.cpu.info.a) {
+      switch (state.a) {
         case 0:
-          divisor = m.cpu.info.b;
+          divisor = state.b;
           if (divisor > 0) {
             if (f_floor_Ceil) { //
               n_bus_ticks = cast(long)floor(100000.0 / BaseFreq / divisor);
@@ -62,10 +64,10 @@ public:
           }
           break;
         case 1:
-          m.cpu.info.c = ticks;
+          state.c = ticks;
           break;
         case 2:
-          int_msg = m.cpu.info.b;
+          int_msg = state.b;
           break;
         default:
           // Do nothing
@@ -78,8 +80,10 @@ public:
 
   /**
    * What to do each clock tick (at 100 khz)
+   * Params:
+   *  state   = CPU editable actual state
    */
-  override void bus_clock_tick() {
+  override void bus_clock_tick (ref CpuInfo state) {
     if (f_hwi && divisor > 0) {
       stderr.writeln("\tbus tick: ", count, " to: ",n_bus_ticks, " ticks: ", ticks);
       if (count < n_bus_ticks) {
