@@ -35,7 +35,7 @@ struct CpuInfo {
   ushort ia;                /// Interrupt Address register
 
   bool read_queue = true;   /// FrontPop interrupt queue ?
-  bool wait_hwd;            /// Waiting because to end a Interrup to Hardware
+  bool wait_hwd;            /// Waiting because to end an Interrup to Hardware
 
   bool f_fire;              /// CPU cath fire
   
@@ -290,27 +290,28 @@ final class DCpu {
   ushort val;               /// Result of an operation
   bool write_val;           /// Must write val to a register or ram
   
-  
+  CpuInfo info;             /// CPU actual state
+
   public:
-  CpuInfo info;             /// public CPU actual state
 
   this(ref Machine machine) {
     this.machine = machine;
   }
 
   /**
-   * Returns CPU actual modificable estate
+   * Returns CPU actual mutable state (used by hardware to alter CPU registers and state)
    */
   package ref CpuInfo state() @property {
     return info;
   }
 
   /**
-   * Returns a copy of CPU actual estate
+   * Returns a no muttable copy of CPU actual state
    */
-  /*auto info() @property {
-    return info.idup;
-  }*/
+  auto actual_state() @property {
+    immutable(CpuInfo) i = info;
+    return i;
+  }
 
   /**
    * Steps one cycle
@@ -682,7 +683,7 @@ private:
             info.read_queue = true;
             //synchronized (machine) {
               info.a  = machine.ram[info.sp++];
-              info.pc = machine.ram[info.sp++];
+              info.pc = cast(ushort)(machine.ram[info.sp++] -1);
             //}
             info.cycles = 3;
             break;

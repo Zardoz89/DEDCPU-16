@@ -45,8 +45,8 @@ public:
   /**
    * Returns the actual status of cpu registers
    */
-  @property CpuInfo cpu_info() {
-    return cpu.info;
+  @property auto cpu_info() {
+    return cpu.actual_state;
   }
 
   // Device handling ***********************************************************

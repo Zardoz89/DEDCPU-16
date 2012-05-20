@@ -71,7 +71,7 @@ int main (string[] args) {
     }
     for(; n> 0; n--) {
       while(!m.tick){}      // Executes a instrucction
-      state = m.cpu_info;   // Get updated state of CPU
+      auto state = m.cpu_info;   // Get updated state of CPU
       writeln("i:", i," PC:", format("%04X",state.pc), " A:", state.a, " B:", state.b, " C:", state.c, " X:", state.x, " Y:", state.y, " Z:", state.z, " I:", state.i, " J:", state.j, " ex:", state.ex, " sp:", state.sp);
       i++;
     }
