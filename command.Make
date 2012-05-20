@@ -276,8 +276,10 @@ BUILD_PATH          = ./build
 BIN_PATH            = ./bin
 
 DCFLAGS            += -I$(ROOT_SOURCE_DIR) -J$(ROOT_SOURCE_DIR) -w
+DCFLAGS_DEDCPU      = $(DCFLAGS) `pkg-config --cflags gtkd`
 DCFLAGS_IMPORT      = 
 DCFLAGS_LINK        = $(LDCFLAGS)
+DCFLAGS_LINK_DEDCPU = $(DCFLAGS_LINK) `pkg-config --libs gtkd`
 
 STATIC_LIBNAME      = lib$(PROJECT_NAME)-$(COMPILER)$(STATIC_LIB_EXT)
 SHARED_LIBNAME      = lib$(PROJECT_NAME)-$(COMPILER)$(DYNAMIC_LIB_EXT)
@@ -301,8 +303,10 @@ export DATA_DIR
 export DC
 export DF
 export DCFLAGS
+export DCFLAGS_DEDCPU
 export DCFLAGS_IMPORT
 export DCFLAGS_LINK
+export DCFLAGS_LINK_DEDCPU
 export DESTDIR
 export DLIB_PATH
 export DOC_PATH
