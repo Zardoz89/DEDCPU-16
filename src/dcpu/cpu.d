@@ -679,7 +679,7 @@ private:
 
           case ExtOpCode.HWQ: // TODO
             cycles = 4;
-            if (val_a.read < machine.dev.length) {
+            if (val_a.read in machine.dev) {
               auto dev = machine.dev[val_a.read];
               a = dev.id_lsb;
               b = dev.id_msb;
@@ -693,7 +693,7 @@ private:
 
           case ExtOpCode.HWI: // TODO
             cycles = 4; // Or more
-            if (val_a.read < machine.dev.length) {
+            if (val_a.read in machine.dev) {
               machine.dev[val_a.read].interrupt();
             }
             break;

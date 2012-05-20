@@ -7,6 +7,7 @@
 module dcpu.machine;
 
 public import dcpu.hardware, dcpu.cpu;
+import std.range;
 
 // It contains:
 //  -DCPU-16 CPU
@@ -14,12 +15,53 @@ public import dcpu.hardware, dcpu.cpu;
 //  -Some quanty of hardware attached
 
 final class Machine {
-  DCpu cpu;
   ushort[0x10000] ram;
-  Hardware[] dev;
+  DCpu cpu;
 
+package:
+  Hardware[ushort] dev;
+
+public:
+  /**
+   * Inits the DCPU machine
+   */
   void init() {
     cpu = new DCpu(this);
-    
+    foreach(ref d; dev)
+      d.init();
   }
+
+  /**
+   * Do a clock tick to the whole machine
+   * Returns TRUE if a instruccion has executed
+   */
+  bool tick() {
+    foreach(ref d; dev) {
+      d.bus_clock_tick();
+    }
+    return cpu.step();
+  }
+
+  /**
+   * Returns the device number I
+   */
+  ref Hardware opIndex (size_t index) {
+    return dev[cast(ushort)index];
+  }
+
+  /**
+   * Asigns the device number I
+   */
+  void opIndexAssign (Hardware val, size_t index) {
+    dev[cast(ushort)index] = val;
+  }
+
+  /**
+   * How many devices are inside the machine
+   */
+  @property size_t length() {
+    return dev.length;
+  }
+
+  
 }
