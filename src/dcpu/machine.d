@@ -15,10 +15,10 @@ import std.range, std.parallelism;
 //  -Some quanty of hardware attached
 final class Machine {
   ushort[0x10000] ram;
-  DCpu cpu;
 
 package:
   Hardware[ushort] dev;
+  DCpu cpu;
 
 public:
   /**
