@@ -4,6 +4,8 @@ DDis and DEDCPU are made with D2 language, so you need a D2 compiler:
   Instead I recomend to use the official D compiler at
   http://dlang.org/download.html for older versions of Ubuntu or for Windows and
   Mac.
+  Also, if you are using and Debian derivated distro, you can use the APT
+  Repository for D at: https://code.google.com/p/d-apt/wiki/APT_Repository
 
 To compile:
   You only need to simple run:
