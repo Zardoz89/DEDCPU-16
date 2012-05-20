@@ -30,7 +30,7 @@ public:
       d.init();
   }
 
-  // Emulation running *********************************************************
+  // Emulation *****************************************************************
   /**
    * Do a clock tick to the whole machine
    * Returns TRUE if a instruccion has executed
@@ -47,6 +47,28 @@ public:
    */
   @property auto cpu_info() {
     return cpu.actual_state;
+  }
+
+  /**
+   * Set a breakpoint in an address
+   * Params:
+   *    addr    = Address where set a breakpoint
+   * Returns if previusly these adress had a breakpoint
+   */
+  bool set_breakpoint (ushort addr) {
+    // TODO
+    return false;
+  }
+
+  /**
+   * There is a breakpoint in an address
+   * Params:
+   *    addr    = Address where see if there is a breakpoint
+   * Returns TRUE if there is a breakpoint in addr
+   */
+  bool is_breakpoint (ushort addr) {
+    // TODO
+    return false;
   }
 
   // Device handling ***********************************************************
