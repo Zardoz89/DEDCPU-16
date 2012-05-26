@@ -79,12 +79,16 @@ in {
       }
     }
   } else if (type == TypeHexFile.b2) { // plain ASCII list of numbers in base 2 (0bxxxxxxxx_xxxxxxxx)
+    import std.algorithm;
     foreach ( line; f.byLine()) { // each line contains one or more words of 16 bit in hexadecimal
       // Keep alone the number in base 2
-      line = chomp(chompPrefix(chompPrefix(strip(line), "0B"), "0b"), "_,");
-      if (line.length < 16) {
+      line = chompPrefix(chompPrefix(strip(line), "0B"), "0b");      
+      if (line.length < 16 ) {
         continue; // Skip line because it's a bad line (ushort -> 16 bits)
       }
+      auto r = findSplit(line, ['_']);
+      line = r[0] ~ r[2]; // Skips '_'
+      
       img ~= parse!ushort(line, 2);
     }
   } else if (type == TypeHexFile.dat) { // assembly file that contains dat lines with code. Only process DAT lines
