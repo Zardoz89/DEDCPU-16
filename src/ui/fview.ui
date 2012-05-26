@@ -65,7 +65,7 @@ THIS SOFTWARE IS PROVIDED BY ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, IN
   <object class="GtkWindow" id="win_fontview">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">LEM1802 Font Viewer</property>
-    <signal name="destroy" handler="on_win_fontview_destroy" swapped="no"/>
+    <signal name="destroy" handler="on_close" swapped="no"/>
     <signal name="check-resize" handler="on_win_fontview_check_resize" swapped="no"/>
     <child>
       <object class="GtkVBox" id="vbox1">
@@ -96,6 +96,7 @@ THIS SOFTWARE IS PROVIDED BY ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, IN
                         <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <signal name="activate" handler="on_mnu_open_activate" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -113,6 +114,7 @@ THIS SOFTWARE IS PROVIDED BY ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, IN
                         <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <signal name="activate" handler="on_close" swapped="no"/>
                       </object>
                     </child>
                   </object>

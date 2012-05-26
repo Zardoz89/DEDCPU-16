@@ -1,18 +1,13 @@
 module ui.file_chooser;
 
 import gtk.Main, gtk.Builder, gtk.Widget, gtk.Window, gdk.Event, gtk.Container;
-import gtk.MainWindow, gtk.AboutDialog, gtk.FileChooserDialog;
 import gtk.FileFilter, gtk.Expander, gtk.RadioButton, gtk.ToggleButton;
-import gtk.Button, gtk.Label, gtk.MenuBar, gtk.MenuItem;
-import gtkc.gtktypes;
+import gtk.Button;
 
 import std.conv;
 
-public import dcpu.ram_io : TypeHexFile;;
-
-debug {
-  import std.stdio;
-}
+public import gtkc.gtktypes, gtk.FileChooserDialog;
+import dcpu.ram_io;
 
 /**
  * Custom FileChooserDialog that select a file for open or save data for FCPU-16
@@ -25,6 +20,7 @@ private:
 
   RadioButton rbut_hexdump; /// Radio button Hexdecimal Dump file
   RadioButton rbut_dat;     /// Radio button Assembler DATs file
+  RadioButton rbut_base2;   /// Radio button for list of base 2 numbers
   RadioButton rbut_raw;     /// Radio buttion Binary RAW file
 
   RadioButton rbut_big;     /// Radio button for RAW big endian file
@@ -89,6 +85,10 @@ public:
     if (rbut_dat is null) {
       throw new Exception("Can't find rbut_dat widget");
     }
+    rbut_base2 = cast(RadioButton) builder.getObject ("rbut_base2");
+    if (rbut_base2 is null) {
+      throw new Exception("Can't find rbut_base2 widget");
+    }    
     rbut_raw = cast(RadioButton) builder.getObject ("rbut_raw");
     if (rbut_raw is null) {
       throw new Exception("Can't find rbut_raw widget");
@@ -122,16 +122,21 @@ public:
       }
     });
 
-    rbut_raw.addOnToggled( (ToggleButton rbut) {
+    rbut_dat.addOnToggled( (ToggleButton rbut) {
       if(rbut.getActive()) {
-        rbut_big.setSensitive(true);
-        rbut_little.setSensitive(true);
+        rbut_big.setSensitive(false);
+        rbut_little.setSensitive(false);
+        this.setFilter(filters[1]);
+        type = TypeHexFile.dat;
+      }
+    });
+    
+    rbut_base2.addOnToggled( (ToggleButton rbut) {
+      if(rbut.getActive()) {
+        rbut_big.setSensitive(false);
+        rbut_little.setSensitive(false);
         this.setFilter(filters[0]);
-        if (rbut_big.getActive()) {
-          type = TypeHexFile.braw;
-        } else {
-          type = TypeHexFile.lraw;
-        }
+        type = TypeHexFile.b2;
       }
     });
 
