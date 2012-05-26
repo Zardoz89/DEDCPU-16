@@ -11,6 +11,7 @@ enum TypeHexFile {
   braw,   /// Big-endian raw binary file
   ahex,   /// Hexadecimal ASCII file
   hexd,   /// Hexadecimal ASCII dump file
+  b2,     /// Base 2 binary data (0bxxxxxxxx_xxxxxxxx)
   dat     /// Assembly DATs
   }; 
 
@@ -77,6 +78,15 @@ in {
         }
       }
     }
+  } else if (type == TypeHexFile.b2) { // plain ASCII list of numbers in base 2 (0bxxxxxxxx_xxxxxxxx)
+    foreach ( line; f.byLine()) { // each line contains one or more words of 16 bit in hexadecimal
+      // Keep alone the number in base 2
+      line = chomp(chompPrefix(chompPrefix(strip(line), "0B"), "0b"), "_,");
+      if (line.length < 16) {
+        continue; // Skip line because it's a bad line (ushort -> 16 bits)
+      }
+      img ~= parse!ushort(line, 2);
+    }
   } else if (type == TypeHexFile.dat) { // assembly file that contains dat lines with code. Only process DAT lines
     foreach ( line; f.byLine()) {
       line = strip(line);
@@ -112,6 +122,7 @@ alias load_ram!(TypeHexFile.lraw) load_lraw;
 alias load_ram!(TypeHexFile.braw) load_braw;
 alias load_ram!(TypeHexFile.ahex) load_ahex;
 alias load_ram!(TypeHexFile.hexd) load_hexd;
+alias load_ram!(TypeHexFile.dat)  load_dat;
 
 void save_ram(TypeHexFile type)(const string filename , ushort[] img)
 in {
