@@ -56,13 +56,28 @@ $(BUILD_PATH)$(PATH_SEP)disassembler.o: $(SRC_DIR)dcpu/disassembler.d
 $(BUILD_PATH)$(PATH_SEP)dedcpu.o: $(SRC_DIR)dedcpu.d
 	@$(MKDIR) build
 	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
-	$(DC) $(DCFLAGS_DEDCPU) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
+	$(DC) $(DCFLAGS_GUI) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-dedcpu: $(BUILD_PATH)$(PATH_SEP)dedcpu.o $(BUILD_PATH)$(PATH_SEP)dedcpu.o $(BUILD_PATH)$(PATH_SEP)machine.o $(BUILD_PATH)$(PATH_SEP)cpu.o $(BUILD_PATH)$(PATH_SEP)microcode.o $(BUILD_PATH)$(PATH_SEP)hardware.o $(BUILD_PATH)$(PATH_SEP)clock.o $(BUILD_PATH)$(PATH_SEP)ram_io.o
+dedcpu: $(BUILD_PATH)$(PATH_SEP)dedcpu.o $(BUILD_PATH)$(PATH_SEP)machine.o $(BUILD_PATH)$(PATH_SEP)cpu.o $(BUILD_PATH)$(PATH_SEP)microcode.o $(BUILD_PATH)$(PATH_SEP)hardware.o $(BUILD_PATH)$(PATH_SEP)clock.o $(BUILD_PATH)$(PATH_SEP)ram_io.o
 	@echo "$(niceMsgBeg2)Linking $< $@$(niceMsgEnd)"
-	$(DC) $^ $(OUTPUT)$@ $(DCFLAGS_LINK_DEDCPU)
+	$(DC) $^ $(OUTPUT)$@ $(DCFLAGS_LINK_GUI)
 	@echo "------------------ $(niceMsgBeg1)Creating $@ executable done$(niceMsgEnd)"
 
+$(BUILD_PATH)$(PATH_SEP)file_chooser.o: $(SRC_DIR)ui/file_chooser.d
+	@$(MKDIR) build
+	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
+	$(DC) $(DCFLAGS_GUI) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
+	
+$(BUILD_PATH)$(PATH_SEP)lem1802_fontview.o: $(SRC_DIR)lem1802_fontview.d
+	@$(MKDIR) build
+	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
+	$(DC) $(DCFLAGS_GUI) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
+
+lem1802_fontview: $(BUILD_PATH)$(PATH_SEP)lem1802_fontview.o $(BUILD_PATH)$(PATH_SEP)file_chooser.o $(BUILD_PATH)$(PATH_SEP)ram_io.o
+	@echo "$(niceMsgBeg2)Linking $< $@$(niceMsgEnd)"
+	$(DC) $^ $(OUTPUT)$@ $(DCFLAGS_LINK_GUI)
+	@echo "------------------ $(niceMsgBeg1)Creating $@ executable done$(niceMsgEnd)"
+	
 $(BUILD_PATH)$(PATH_SEP)ddis.o: $(SRC_DIR)ddis.d
 	@$(MKDIR) build
 	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
@@ -133,6 +148,7 @@ clean-executable:
 	$(RM) ddis
 	$(RM) bconv
 	$(RM) dedcpu
+	$(RM) lem1802_fontview
 
 clean-doc:
 	$(RM) $(DOCUMENTATIONS)
