@@ -1,13 +1,21 @@
-DDis and DEDCPU are made with D2 language, so you need a D2 compiler:
-  If you have Ubuntu 12.xx You can install gdc (for language version 2).
-  If have a more older version of Ubuntu, DON'T USE GDC FROM UBUNTU REPOSITORY.
-  Instead I recomend to use the official D compiler at
-  http://dlang.org/download.html for older versions of Ubuntu or for Windows and
-  Mac.
-  Also, if you are using and Debian derivated distro, you can use the APT
-  Repository for D at: https://code.google.com/p/d-apt/wiki/APT_Repository
+DEDCPU toolkit uses D2 language, plus the GUI tools like LEM1802 font viewer
+  uses gtkd to bind to gtk+ 2 graphic toolkit.
+  If you are using a Debian derivated distribution, like Ubuntu of Mint, you can
+  use APT with the D repository that contains gtkd library plus D official
+  compiler. Repository for D at: https://code.google.com/p/d-apt/wiki/APT_Repository
 
+  If you have Ubuntu 12.xx You can install directly gdc (for language version 2).
+  If have a more older version of Ubuntu, DON'T USE GDC FROM UBUNTU REPOSITORY.
+  For Windows and Mac I recomend to use the official D compiler from
+  http://dlang.org/download.html
+  And you can download gtkd from http://www.dsource.org/projects/gtkd
+  
+  
 To compile:
   You only need to simple run:
     make
-  It will generate executable file in a /bin directory
+  It will generate executable file in the same directory
+  If you not need the Ggrpahic tools, you can compile console utils with
+    make cli
+  also you can compile only the graphic tools with
+    make gui

@@ -1,8 +1,20 @@
-# D DISassembler for DCPU-16 v1.7 #
+# DEDCPU Toolkit #
 
-## Usage: ##
+This toolkit consists in a series of small tools related to the development around Notch's DCPU-16 computer.
+The toolkit it's actually incresing it's functionality and usefullnes adding some itneresting tools, like a conversor between binary formats, a disassemblers or LEM1802 font viewer.
+
+## Font viewer for LEM1802 screen ##
+
+It's a graphic tool to load and view fonts for LEM1802 screen. It allow edit and view each glyph and show each glyph in binary, hexadecimal and decimal representations plus a graphic representation of it. Actually can't save the edited font, but this feature it's comming soon.
+
+### Usage: ###
+  ./lem1802_fontview
+
+## D DISassembler for DCPU-16 v1.7 ##
+
+### Usage: ###
   ./ddis filename [options]
-## Options: ##
+### Options: ###
 * __-h__                   Show this message
 * __-t__ or __--type__ *type*  Type of file with memory map. __lraw__ -> little endian raw binary ; __braw__ -> big endian raw binary ; __ahex__ -> ascii hexadecimal file ; __dat__ -> Read DATs from a dasm file. By default ddis asumes little endian raw binary input file
 * __-c__                   Add comments to all lines of the style [address] xxxx ....   where xxxx its the hexadecimal representation of these instruction.
@@ -10,11 +22,11 @@
 * __-b__*number*           Sets the absolute position were begin to disassembly the file. By default it's 0
 * __-e__*number*           Sets the absolute position were end to disassembly the file. By default it's the end of the file.
 
-# Binary file CONVersor for DCPU-16 (any version) #
+## Binary file CONVersor for DCPU-16 (any version) ##
 
-## Usage: ##
+### Usage: ###
   ./bconv input_filename output_filename [options]
-## Options: ##
+### Options: ###
 * __-h__                   Show this message
 * __-i__ or __--itype__ *type* Type of input file with memory map. __lraw__ -> little endian raw binary ; __braw__ -> big endian raw binary ; __ahex__ -> ascii hexadecimal file ; __hexd__ -> ascii hexadecimal dump file. By default bconv asumes little endian raw binary input file.
 * __-o__ or __--otype__ *type* Type of output file with memory map. __lraw__ -> little endian raw binary ; __braw__ -> big endian raw binary ; __ahex__ -> ascii hexadecimal file ; __hexd__ -> ascii hexadecimal dump file. By default bconv asumes ascii hexadecimal dump output file.
@@ -22,10 +34,10 @@
 * __-e__*number*           Sets the absolute position were end to convert the file. By default it's the end of the file.
 
 
-# Notes: #
+## Notes: ##
 Files tester.hex and tester2.hex are hexadecimal dump files for testing disassemblers and emulators. You have the original dcpu-16 assembly code in tester.dasm and tester2.dasm.
 
-# License: #
+## License: ##
 This project is licensed under the BSD license.
 
 Copyright (c) 2012, Luis Panadero Guardeño
