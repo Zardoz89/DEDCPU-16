@@ -10,10 +10,17 @@ SRC_DIR             = $(ROOT_SOURCE_DIR)
 # include some commands
 include command.Make
 
-all: ddis bconv
+all: gui cli
+
+gui: lem1802_fontview
+
+cli: ddis bconv
 
 # .PHONY : doc
 # .PHONY : ddoc
+.PHONY : all
+.PHONY : gui
+.PHONY : cli
 .PHONY : clean
 
 ############# Compiling ################
