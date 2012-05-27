@@ -25,6 +25,9 @@ enum double min_width = 4*4*32+30;  // Min width of drawing widget
 enum double min_height = 8*4*4+3;   // Min height of drawing widget
 
 Label lbl_pos;              // Label with selected glyph position
+Label lbl_bin;              // Label with binary representation of selected glyph
+Label lbl_hex;              // Label with hex representation of selected glyph
+Label lbl_dec;              // Label with decimal representation of selected glyph
 
 bool updating;              // Updating data form out to the editor ?
 ToggleButton[16][2] editor; // Editor toggle buttons
@@ -42,7 +45,7 @@ extern (C) void on_close (Event event, Widget widget) {
 extern (C) void on_but_prev_clicked (Event event, Widget widget) {
   selected = (selected -1) % 128;
   lbl_pos.setLabel(to!string(selected));
-  updated_editor();
+  update_editor();
   dwa.queueDraw();
 }
 
@@ -52,7 +55,7 @@ extern (C) void on_but_prev_clicked (Event event, Widget widget) {
 extern (C) void on_but_next_clicked (Event event, Widget widget) {
   selected = (selected +1) % 128;
   lbl_pos.setLabel(to!string(selected));
-  updated_editor();
+  update_editor();
   dwa.queueDraw();
 }
 
@@ -99,7 +102,7 @@ extern (C) void on_mnu_open_activate (Event event, Widget widget) {
       }
       // Updates GUI
       selected = 0;
-      updated_editor();
+      update_editor();
       dwa.queueDraw();
     }
   }
@@ -110,7 +113,7 @@ extern (C) void on_mnu_open_activate (Event event, Widget widget) {
 /**
  * Update the state of the editor buttons
  */
-void updated_editor() {
+void update_editor() {
   for (int x; x < 2; x++) {
     for (int y; y < 16; y++) {
       updating = true;
@@ -118,6 +121,17 @@ void updated_editor() {
       updating = false;
     }
   }
+  update_glyph_lbl(); // Update labels at same time
+}
+
+/**
+ * Updates binary, hex and decimal representation of selected glyph
+ */
+void update_glyph_lbl() {
+  import std.string;
+  lbl_bin.setLabel("0b"~format("%016b",font[selected])~"\n"~ "0b"~format("%016b",font[selected+1]));
+  lbl_hex.setLabel("0x"~format("%04X",font[selected])~"\n"~ "0x"~format("%04X",font[selected+1]));
+  lbl_dec.setLabel(to!string(font[selected])~"\n"~to!string(font[selected+1]));
 }
 
 /**
@@ -157,7 +171,7 @@ string add_on_toggled() {
       } else {
         r ~= "  font[selected*2 +1] = font[selected*2 +1] ^ "~to!string(pos)~";";
       }
-      r ~= " dwa.queueDraw();";
+      r ~= " dwa.queueDraw(); update_glyph_lbl;";
       r ~= " }";
       r ~= "});";
     }
@@ -192,9 +206,22 @@ void main(string[] args) {
     exit(1);
   }
   
-  auto glyph_editor = cast(Widget) builder.getObject ("glyph_editor");
-  if (glyph_editor !is null) {
-    glyph_editor.modifyFg(GtkStateType.NORMAL, Color.black);
+  lbl_bin = cast(Label) builder.getObject ("lbl_bin");
+  if (lbl_bin is null) {
+    writefln("Can't find lbl_bin widget");
+    exit(1);
+  }
+
+  lbl_hex = cast(Label) builder.getObject ("lbl_hex");
+  if (lbl_hex is null) {
+    writefln("Can't find lbl_hex widget");
+    exit(1);
+  }
+
+  lbl_dec = cast(Label) builder.getObject ("lbl_dec");
+  if (lbl_dec is null) {
+    writefln("Can't find lbl_dec widget");
+    exit(1);
   }
   
   dwa.modifyBg(GtkStateType.NORMAL, Color.black);
@@ -217,7 +244,7 @@ void main(string[] args) {
 
       lbl_pos.setLabel(to!string(selected));
       dwa.queueDraw();
-      updated_editor();
+      update_editor();
       
       return true;
     }
