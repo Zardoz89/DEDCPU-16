@@ -27,7 +27,7 @@ enum double min_height = 8*4*4+3;
 Label lbl_pos;            // Label with slected character position
 
 /**
- * Cierra la App cuando se cierra la ventanta o se selecciona salir en el menu
+ * Close the App when it's clicked the close byutton or menu exit option
  */
 extern (C) void on_close (Event event, Widget widget) {
   Main.exit(0);
@@ -99,6 +99,9 @@ extern (C) void on_mnu_open_activate (Event event, Widget widget) {
   opener.destroy();
 }
 
+void updated_editor() {
+  
+}
 
 void main(string[] args) {
   int old_w, old_h;
@@ -237,7 +240,7 @@ void main(string[] args) {
 
       cr.restore();
 
-      // Draw rectangle around selected gryph
+      // Draw rectangle around selected glyph
       cr.save();
         cr.setSourceRgb(0, 1.0, 0);
         cr.setLineWidth(1.5);
@@ -250,7 +253,11 @@ void main(string[] args) {
     }
     return false;
   });
-  
+
+  auto glyph_editor = cast(Widget) builder.getObject ("glyph_editor");
+  if (glyph_editor !is null) {
+    glyph_editor.modifyBg(GtkStateType.NORMAL, Color.black);
+  }
   dwa.modifyBg(GtkStateType.NORMAL, Color.black);
   mainwin.show ();
   
