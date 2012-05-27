@@ -18,8 +18,13 @@ TypeHexFile type;         // Type of file
 Window mainwin;           // Main window
 
 ushort[255] font;         // Font data
+size_t selected;          // Selected gryph
 
-DrawingArea dwa;  // Drawing widget
+DrawingArea dwa;          // Drawing widget
+enum double min_width = 4*4*32+30;
+enum double min_height = 8*4*4+3;
+
+Label lbl_pos;            // Label with slected character position
 
 /**
  * Cierra la App cuando se cierra la ventanta o se selecciona salir en el menu
@@ -29,9 +34,27 @@ extern (C) void on_close (Event event, Widget widget) {
 }
 
 /**
+ * Click over Previus button
+ */
+extern (C) void on_but_prev_clicked (Event event, Widget widget) {
+  selected = (selected -1) % 255;
+  lbl_pos.setLabel(to!string(selected));
+  dwa.queueDraw();
+}
+
+/**
+ * Click over Previus button
+ */
+extern (C) void on_but_next_clicked (Event event, Widget widget) {
+  selected = (selected +1) % 255;
+  lbl_pos.setLabel(to!string(selected));
+  dwa.queueDraw();
+}
+
+/**
  * Muestra la ventanta de selecionar un fichero y lo abre
  */
-extern (C) void on_mnu_open_activate  (Event event, Widget widget) {
+extern (C) void on_mnu_open_activate (Event event, Widget widget) {
   auto opener = new FileOpener(mainwin);
   auto response = opener.run();
   if (response == ResponseType.GTK_RESPONSE_ACCEPT) {
@@ -98,9 +121,36 @@ void main(string[] args) {
     writefln("Can't find dwa_general widget");
     exit(1);
   }
+  lbl_pos = cast(Label) builder.getObject("lbl_pos");
+  if (lbl_pos is null) {
+    writefln("Can't find lbl_pos widget");
+    exit(1);
+  }
   
   builder.connectSignals (null);
 
+  dwa.addOnButtonPress ( (GdkEventButton *event, Widget widget) {
+    if (event !is null) {
+      Drawable dr = dwa.getWindow();
+      int width;
+      int height;
+      dr.getSize(width, height);
+    
+      double x = event.x *(min_width / width);   // Scales coords to be the same
+      double y = event.y *(min_height / height); // always with diferent geometry
+
+      x = floor(x / (4.0*4.0 +1));
+      y = floor(y / (8.0*4.0 +1));
+      selected = to!size_t(x+ y*32);
+
+      lbl_pos.setLabel(to!string(selected));
+      dwa.queueDraw();
+      
+      return true;
+    }
+    return false;
+  });
+  
   dwa.addOnExpose( (GdkEventExpose* event, Widget widget) {
     Drawable dr = dwa.getWindow();
 
@@ -109,9 +159,7 @@ void main(string[] args) {
 
     dr.getSize(width, height);
 
-    // Calcs sizes ans factor scale
-    double min_width = 4*4*32+30;
-    double min_height = 8*4*4+3;
+    // Calcs sizes ans factor scale    
     double scale_x = width / min_width;
     double scale_y = height / min_height;
     
@@ -173,7 +221,7 @@ void main(string[] args) {
       }
       cr.restore();
 
-      // Draw lines around letters
+      // Draw lines around gryphs
       cr.save();
         cr.setSourceRgb(1.0, 0, 0);
         cr.setLineWidth(1.0);
@@ -185,6 +233,17 @@ void main(string[] args) {
           cr.moveTo(x, 0);
           cr.lineTo(x, min_height);
         }
+        cr.stroke();
+
+      cr.restore();
+
+      // Draw rectangle around selected gryph
+      cr.save();
+        cr.setSourceRgb(0, 1.0, 0);
+        cr.setLineWidth(1.5);
+        double x = (selected%32)*16 + (selected%32);
+        double y = floor(selected / 32.0)*33;
+        cr.rectangle(x, y, 4*4, 8*4);
         cr.stroke();
 
       cr.restore();
