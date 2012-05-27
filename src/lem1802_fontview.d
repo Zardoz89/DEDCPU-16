@@ -2,7 +2,7 @@ module lem1802_fontview;
 import gtk.Main, gtk.Builder, gtk.Widget, gtk.Window, gdk.Event, gtk.Container;
 import gtk.MainWindow, gtk.AboutDialog;
 import gtk.Button, gtk.Label, gtk.MenuBar, gtk.MenuItem, gtk.ToggleButton;
-import gtkc.gtktypes;
+import gtkc.gtktypes, glib.ListG;
 
 import gtk.DrawingArea, gdk.Drawable;
 import gdk.Color;
@@ -13,18 +13,20 @@ import std.c.process, std.stdio, std.conv, std.math;
 import ui.file_chooser;
 import dcpu.ram_io;
 
-string filename;          // Open file
-TypeHexFile type;         // Type of file
-Window mainwin;           // Main window
+string filename;            // Open file
+TypeHexFile type;           // Type of file
+Window mainwin;             // Main window
 
-ushort[255] font;         // Font data
-size_t selected;          // Selected gryph
+ushort[256] font;           // Font data
+size_t selected;            // Selected gryph
 
-DrawingArea dwa;          // Drawing widget
-enum double min_width = 4*4*32+30;
-enum double min_height = 8*4*4+3;
+DrawingArea dwa;            // Drawing widget
+enum double min_width = 4*4*32+30;  // Min width of drawing widget
+enum double min_height = 8*4*4+3;   // Min height of drawing widget
 
-Label lbl_pos;            // Label with slected character position
+Label lbl_pos;              // Label with selected glyph position
+
+ToggleButton[16][2] editor; // Editor toggle buttons
 
 /**
  * Close the App when it's clicked the close byutton or menu exit option
@@ -37,8 +39,9 @@ extern (C) void on_close (Event event, Widget widget) {
  * Click over Previus button
  */
 extern (C) void on_but_prev_clicked (Event event, Widget widget) {
-  selected = (selected -1) % 255;
+  selected = (selected -1) % 128;
   lbl_pos.setLabel(to!string(selected));
+  updated_editor();
   dwa.queueDraw();
 }
 
@@ -46,8 +49,9 @@ extern (C) void on_but_prev_clicked (Event event, Widget widget) {
  * Click over Previus button
  */
 extern (C) void on_but_next_clicked (Event event, Widget widget) {
-  selected = (selected +1) % 255;
+  selected = (selected +1) % 128;
   lbl_pos.setLabel(to!string(selected));
+  updated_editor();
   dwa.queueDraw();
 }
 
@@ -92,6 +96,9 @@ extern (C) void on_mnu_open_activate (Event event, Widget widget) {
         font[0..tmp.length] = tmp[0..tmp.length];
         font[tmp.length..$] = 0;
       }
+      // Updates GUI
+      selected = 0;
+      updated_editor();
       dwa.queueDraw();
     }
   }
@@ -99,8 +106,36 @@ extern (C) void on_mnu_open_activate (Event event, Widget widget) {
   opener.destroy();
 }
 
+/**
+ * Update the state of the editor buttons
+ */
 void updated_editor() {
-  
+  for (int x; x < 2; x++) {
+    for (int y; y < 16; y++) {
+      editor[x][y].setActive(( font[selected*2+x] & (1<<y)) != 0);
+    }
+  }
+}
+
+/**
+ * Meta-function that gets all glyph editor buttons
+ */
+string get_editor_buttons() {
+  string r;
+  for (int x; x < 2; x++) {
+    for (int y; y <16; y++) {
+      r ~= "editor[" ~ to!string(x) ~"][" ~ to!string(y) ~"] = ";
+      r ~= "cast(ToggleButton)  builder.getObject(\"p";
+      if (x == 0) {
+        r ~= "l"~ to!string(y);
+      } else {
+        r ~= "u"~ to!string(y);
+      }
+      r ~= "\"); ";
+    }
+  }
+
+  return r;
 }
 
 void main(string[] args) {
@@ -130,7 +165,14 @@ void main(string[] args) {
     exit(1);
   }
   
-  builder.connectSignals (null);
+  auto glyph_editor = cast(Widget) builder.getObject ("glyph_editor");
+  if (glyph_editor !is null) {
+    glyph_editor.modifyFg(GtkStateType.NORMAL, Color.black);
+  }
+  
+  dwa.modifyBg(GtkStateType.NORMAL, Color.black);
+  
+  mixin(get_editor_buttons()); // Get all editor buttons
 
   dwa.addOnButtonPress ( (GdkEventButton *event, Widget widget) {
     if (event !is null) {
@@ -144,15 +186,19 @@ void main(string[] args) {
 
       x = floor(x / (4.0*4.0 +1));
       y = floor(y / (8.0*4.0 +1));
-      selected = to!size_t(x+ y*32);
+      selected = (to!size_t(x+ y*32)%128);
 
+      writeln(selected);
       lbl_pos.setLabel(to!string(selected));
       dwa.queueDraw();
+      updated_editor();
       
       return true;
     }
     return false;
   });
+
+  // TODO Add a event for each editor button that updates array element data
   
   dwa.addOnExpose( (GdkEventExpose* event, Widget widget) {
     Drawable dr = dwa.getWindow();
@@ -210,7 +256,7 @@ void main(string[] args) {
       // Draw font
       cr.save();
       for (size_t i; i< font.length; i++) {
-        for (ushort p; p < 16; p++) { // Y lops each pixel of a glyph
+        for (ushort p; p < 16; p++) { // Y loops each pixel of a glyph
           if(( font[i] & (1<<p)) != 0) {
             double x = (1.0 - floor(p / 8.0))*4.0;
             x += (i%64)*8 + floor((i%64) / 2.0);
@@ -254,11 +300,7 @@ void main(string[] args) {
     return false;
   });
 
-  auto glyph_editor = cast(Widget) builder.getObject ("glyph_editor");
-  if (glyph_editor !is null) {
-    glyph_editor.modifyBg(GtkStateType.NORMAL, Color.black);
-  }
-  dwa.modifyBg(GtkStateType.NORMAL, Color.black);
+  builder.connectSignals (null);
   mainwin.show ();
   
   Main.run();
