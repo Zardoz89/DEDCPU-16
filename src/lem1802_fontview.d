@@ -26,6 +26,7 @@ enum double min_height = 8*4*4+3;   // Min height of drawing widget
 
 Label lbl_pos;              // Label with selected glyph position
 
+bool updating;              // Updating data form out to the editor ?
 ToggleButton[16][2] editor; // Editor toggle buttons
 
 /**
@@ -112,7 +113,9 @@ extern (C) void on_mnu_open_activate (Event event, Widget widget) {
 void updated_editor() {
   for (int x; x < 2; x++) {
     for (int y; y < 16; y++) {
+      updating = true;
       editor[x][y].setActive(( font[selected*2+x] & (1<<y)) != 0);
+      updating = false;
     }
   }
 }
@@ -134,7 +137,31 @@ string get_editor_buttons() {
       r ~= "\"); ";
     }
   }
+  return r;
+}
 
+/**
+ * Meta-function that add a event to all glyph editor buttons to update the
+ * glyph in array
+ */
+string add_on_toggled() {
+  string r;
+  for (int x; x < 2; x++) {
+    for (int y; y <16; y++) {
+      auto pos = 1<<y;
+      r ~= "editor["~to!string(x)~"]["~to!string(y)~"]";
+      r ~= ".addOnClicked( (Button b) {";
+      r ~= " if (!updating) {";
+      if (x != 1) {
+        r ~= "  font[selected*2] = font[selected*2] ^ "~to!string(pos)~";";
+      } else {
+        r ~= "  font[selected*2 +1] = font[selected*2 +1] ^ "~to!string(pos)~";";
+      }
+      r ~= " dwa.queueDraw();";
+      r ~= " }";
+      r ~= "});";
+    }
+  }
   return r;
 }
 
@@ -188,7 +215,6 @@ void main(string[] args) {
       y = floor(y / (8.0*4.0 +1));
       selected = (to!size_t(x+ y*32)%128);
 
-      writeln(selected);
       lbl_pos.setLabel(to!string(selected));
       dwa.queueDraw();
       updated_editor();
@@ -198,7 +224,7 @@ void main(string[] args) {
     return false;
   });
 
-  // TODO Add a event for each editor button that updates array element data
+  mixin(add_on_toggled());  // Add a event to all editor buttons
   
   dwa.addOnExpose( (GdkEventExpose* event, Widget widget) {
     Drawable dr = dwa.getWindow();
