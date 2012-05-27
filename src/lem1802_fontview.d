@@ -8,7 +8,7 @@ import gtk.DrawingArea, gdk.Drawable;
 import gdk.Color;
 import cairo.Context, cairo.Surface;
 
-import std.c.process, std.stdio, std.conv;
+import std.c.process, std.stdio, std.conv, std.math;
 
 import ui.file_chooser;
 import dcpu.ram_io;
@@ -69,7 +69,7 @@ extern (C) void on_mnu_open_activate  (Event event, Widget widget) {
         font[0..tmp.length] = tmp[0..tmp.length];
         font[tmp.length..$] = 0;
       }
-      writeln(font);
+      dwa.queueDraw();
     }
   }
   opener.hide();
@@ -117,80 +117,78 @@ void main(string[] args) {
     
     auto cr = new Context (dr);
 
-    if (event) {
+    if (event !is null) {
       // clip to the area indicated by the expose event so that we only redraw
       // the portion of the window that needs to be redrawn
       cr.rectangle(event.area.x, event.area.y,
         event.area.width, event.area.height);
       cr.clip();
-    }
     
-    cr.scale(scale_x, scale_y);
-    cr.translate(0, 0);
+    
+      cr.scale(scale_x, scale_y);
+      cr.translate(0, 0);
 
-    // Draw lines around letters
-    cr.save();
-      cr.setSourceRgb(1.0, 0, 0);
-      cr.setLineWidth(1.0);
-      for (auto y = 33.0; y< 33*4; y+=33) {
-        cr.moveTo(0, y);
-        cr.lineTo(min_width, y);
+      debug { // Test Pattern
+        cr.rectangle(0, 0, 4, 4);
+        cr.setSourceRgb(1.0, 1.0, 1.0);
+        cr.fill();
+        cr.rectangle(4, 4, 4, 4);
+        cr.setSourceRgb(1.0, 1.0, 1.0);
+        cr.fill();
+        cr.rectangle(8, 8, 4, 4);
+        cr.setSourceRgb(1.0, 1.0, 1.0);
+        cr.fill();
+        cr.rectangle(12, 12, 4, 4);
+        cr.setSourceRgb(1.0, 1.0, 1.0);
+        cr.fill();
+
+        cr.rectangle(17, 16, 4, 4);
+        cr.setSourceRgb(1.0, 1.0, 1.0);
+        cr.fill();
+        cr.rectangle(21, 20, 4, 4);
+        cr.setSourceRgb(1.0, 1.0, 1.0);
+        cr.fill();
+        cr.rectangle(25, 24, 4, 4);
+        cr.setSourceRgb(1.0, 1.0, 1.0);
+        cr.fill();
+        cr.rectangle(29, 28, 4, 4);
+        cr.setSourceRgb(1.0, 1.0, 1.0);
+        cr.fill();
       }
-      for (auto x = 17.0; x< 17*32; x+=17) {
-        cr.moveTo(x, 0);
-        cr.lineTo(x, min_height);
-      }
-      cr.stroke();
 
-    cr.restore();
-    
-    
-    debug { // Test Pattern
-      cr.rectangle(0, 0, 4, 4);
-      cr.setSourceRgb(1.0, 1.0, 1.0);
-      cr.fill();
-      cr.rectangle(4, 4, 4, 4);
-      cr.setSourceRgb(1.0, 1.0, 1.0);
-      cr.fill();
-      cr.rectangle(8, 8, 4, 4);
-      cr.setSourceRgb(1.0, 1.0, 1.0);
-      cr.fill();
-      cr.rectangle(12, 12, 4, 4);
-      cr.setSourceRgb(1.0, 1.0, 1.0);
-      cr.fill();
-
-      cr.rectangle(17, 16, 4, 4);
-      cr.setSourceRgb(1.0, 1.0, 1.0);
-      cr.fill();
-      cr.rectangle(21, 20, 4, 4);
-      cr.setSourceRgb(1.0, 1.0, 1.0);
-      cr.fill();
-      cr.rectangle(25, 24, 4, 4);
-      cr.setSourceRgb(1.0, 1.0, 1.0);
-      cr.fill();
-      cr.rectangle(29, 28, 4, 4);
-      cr.setSourceRgb(1.0, 1.0, 1.0);
-      cr.fill();
-    }
-
-    // Draw font
-    foreach (i, ch; font) { // TODO REvisar como calcular la posicion de cada "pixel"
-      for (auto x = 0; x < 2; x++) {
-        for (auto y = 0; y < 8; y++) {
-          if ((ch & (2>>y)) != 0) { // Draw pixel
-            if (i % 2 == 0 ) { // Column 0 and 1
-              cr.rectangle(x+ i*17, y+ i*32, 4, 4);
-              cr.setSourceRgb(1.0, 1.0, 1.0);
-              cr.fill();
-            } else { // Column 2 and 3
-
-            }
+      // Draw font
+      cr.save();
+      for (size_t i; i< font.length; i++) {
+        for (ushort p; p < 16; p++) { // Y lops each pixel of a glyph
+          if(( font[i] & (1<<p)) != 0) {
+            double x = (1.0 - floor(p / 8.0))*4.0;
+            x += (i%64)*8 + floor((i%64) / 2.0);
+            double y = (p % 8)*4.0;
+            y += floor(i / 64.0)*33;
+            cr.rectangle(x, y, 4, 4);
+            cr.setSourceRgb(1.0, 1.0, 1.0);
+            cr.fill();
           }
-
         }
       }
-    }
+      cr.restore();
 
+      // Draw lines around letters
+      cr.save();
+        cr.setSourceRgb(1.0, 0, 0);
+        cr.setLineWidth(1.0);
+        for (auto y = 33.0; y< 33*4; y+=33) {
+          cr.moveTo(0, y);
+          cr.lineTo(min_width, y);
+        }
+        for (auto x = 17.0; x< 17*32; x+=17) {
+          cr.moveTo(x, 0);
+          cr.lineTo(x, min_height);
+        }
+        cr.stroke();
+
+      cr.restore();
+    }
     return false;
   });
   
