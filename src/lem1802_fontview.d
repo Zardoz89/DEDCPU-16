@@ -3,7 +3,7 @@ import gtk.Main, gtk.Builder, gtk.Widget, gtk.Window, gdk.Event, gtk.Container;
 import gtk.MainWindow, gtk.Dialog, gtk.AboutDialog;
 import gtk.Button, gtk.Label, gtk.MenuBar, gtk.MenuItem, gtk.ToggleButton;
 import gtk.SpinButton, gtk.Adjustment;
-import gtkc.gtktypes, glib.ListG;
+import gtkc.gtktypes, gtk.AccelGroup;
 
 import gtk.DrawingArea, gdk.Drawable;
 import gdk.Color;
@@ -77,6 +77,17 @@ extern (C) void on_but_prev_clicked (Event event, Widget widget) {
 extern (C) void on_but_next_clicked (Event event, Widget widget) {
   selected = (selected +1) % 128;
   lbl_pos.setLabel(to!string(selected));
+  update_editor();
+  dwa.queueDraw();
+}
+
+/**
+ * Reset all data (new font)
+ */
+extern (C) void on_mnu_new_activate (Event event, Widget widget) {
+  filename = "";
+  selected = 0;
+  font[] = 0;
   update_editor();
   dwa.queueDraw();
 }
@@ -242,34 +253,40 @@ void main(string[] args) {
     writefln("Can't find win_fontview widget");
     exit(1); 
   }
+  auto accelgroup = cast(AccelGroup) builder.getObject ("accelgroup1");
+  if (accelgroup is null) {
+    writefln("Can't find accelgroup1 widget");
+    exit(1);
+  }
+  mainwin.addAccelGroup(accelgroup);
+  
   win_about = cast(AboutDialog) builder.getObject ("win_about");
   if (mainwin is null) {
     writefln("Can't find win_about widget");
     exit(1);
   }
+  
   dwa = cast(DrawingArea) builder.getObject("dwa_general");
   if (dwa is null) {
     writefln("Can't find dwa_general widget");
     exit(1);
   }
+  
   lbl_pos = cast(Label) builder.getObject("lbl_pos");
   if (lbl_pos is null) {
     writefln("Can't find lbl_pos widget");
     exit(1);
-  }
-  
+  }  
   lbl_bin = cast(Label) builder.getObject ("lbl_bin");
   if (lbl_bin is null) {
     writefln("Can't find lbl_bin widget");
     exit(1);
   }
-
   lbl_hex = cast(Label) builder.getObject ("lbl_hex");
   if (lbl_hex is null) {
     writefln("Can't find lbl_hex widget");
     exit(1);
   }
-
   lbl_dec = cast(Label) builder.getObject ("lbl_dec");
   if (lbl_dec is null) {
     writefln("Can't find lbl_dec widget");
