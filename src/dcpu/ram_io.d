@@ -51,7 +51,7 @@ in {
     }
   } else if (type == TypeHexFile.hexd) { // plain ASCII hex dump file
     foreach ( line; f.byLine()) { // each line contains one or more words of 16 bit in hexadecimal
-      if (line[0] == ';') {
+      if (line.length < 1 || line[0] == ';') {
         continue; // Skip line, becasue it's a comment
       }
       
@@ -74,7 +74,7 @@ in {
           img.length = tmp +1;
         
         if (word.length > 3) {
-          img[tmp] = parse!ushort(word, 16);          
+          img[tmp] = parse!ushort(word, 16);
         }
       }
     }
@@ -151,7 +151,6 @@ in {
     foreach ( word; img) { // each line only have a hex 16-bit word
       f.writeln(format("%04X", word));
     }
-    f.writeln();
   } else if (type == TypeHexFile.hexd) { // plain ASCII hex dump file
     foreach (addr ,word; img) {
       if ((addr % 8) == 0) {
@@ -162,7 +161,6 @@ in {
         f.writeln();
       }
     }
-    f.writeln();
   } else if (type == TypeHexFile.b2) { // plain ASCII list of numbers in base 2 (0bxxxxxxxx_xxxxxxxx)
     foreach (word; img) {
       f.writeln(format("0b%b, ", word));
