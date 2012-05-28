@@ -5,7 +5,7 @@ The tool-kit it's actually increasing it's functionality and usefulness adding s
 
 ## Font viewer for LEM1802 screen ##
 
-It's a graphic tool to load and view fonts for LEM1802 screen. It allow edit and view each glyph and show each glyph in binary, hexadecimal and decimal representations plus a graphic representation of it. Actually can't save the edited font, but this feature it's coming soon.
+It's a graphic tool to load and view fonts for LEM1802 screen. It allow edit and view each glyph and show each glyph in binary, hexadecimal and decimal representations plus a graphic representation of it.
 
 ### Usage: ###
   ./lem1802_fontview

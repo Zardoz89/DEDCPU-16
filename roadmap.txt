@@ -1,4 +1,3 @@
-* Add save functionality to LEM1802 font viewer
 * Add help information to LEM1802 font viewer
 * Add localization functionality to LEM1802 font viewer
 * End the new graphic emulator compilant with DCPU-16 v1.7
