@@ -32,11 +32,18 @@ Label lbl_dec;              // Label with decimal representation of selected gly
 bool updating;              // Updating data form out to the editor ?
 ToggleButton[16][2] editor; // Editor toggle buttons
 
+AboutDialog win_about;      // About dialog
+
 /**
  * Close the App when it's clicked the close byutton or menu exit option
  */
 extern (C) void on_close (Event event, Widget widget) {
   Main.exit(0);
+}
+
+extern (C) void on_mnu_about_activate (Event event, Widget widget) {
+  win_about.run();
+  win_about.hide();
 }
 
 /**
@@ -194,6 +201,11 @@ void main(string[] args) {
   if (mainwin is null) {
     writefln("Can't find win_fontview widget");
     exit(1); 
+  }
+  win_about = cast(AboutDialog) builder.getObject ("win_about");
+  if (mainwin is null) {
+    writefln("Can't find win_about widget");
+    exit(1);
   }
   dwa = cast(DrawingArea) builder.getObject("dwa_general");
   if (dwa is null) {

@@ -151,6 +151,7 @@ THIS SOFTWARE IS PROVIDED BY ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, IN
                         <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <signal name="activate" handler="on_mnu_about_activate" swapped="no"/>
                       </object>
                     </child>
                   </object>
