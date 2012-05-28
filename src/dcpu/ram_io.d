@@ -12,7 +12,7 @@ enum TypeHexFile {
   ahex,   /// Hexadecimal ASCII file
   hexd,   /// Hexadecimal ASCII dump file
   b2,     /// Base 2 binary data (0bxxxxxxxx_xxxxxxxx)
-  dat     /// Assembly DATs
+  dat     /// Assembly DATs (DAT 0x0000)
   }; 
 
 /**
@@ -126,6 +126,7 @@ alias load_ram!(TypeHexFile.lraw) load_lraw;
 alias load_ram!(TypeHexFile.braw) load_braw;
 alias load_ram!(TypeHexFile.ahex) load_ahex;
 alias load_ram!(TypeHexFile.hexd) load_hexd;
+alias load_ram!(TypeHexFile.b2)   load_b2;
 alias load_ram!(TypeHexFile.dat)  load_dat;
 
 void save_ram(TypeHexFile type)(const string filename , ushort[] img)
@@ -162,7 +163,22 @@ in {
       }
     }
     f.writeln();
+  } else if (type == TypeHexFile.b2) { // plain ASCII list of numbers in base 2 (0bxxxxxxxx_xxxxxxxx)
+    foreach (word; img) {
+      f.writeln(format("0b%b, ", word));
+    }
+  } else if (type == TypeHexFile.dat) { // assembly file that contains dat lines with code. Only process DAT lines
+    foreach (word; img) {
+      f.writeln(format("DAT %04X ", word));
+    }
   } else {
     throw new Exception("Not implemented file type");
   }
 }
+
+alias save_ram!(TypeHexFile.lraw) save_lraw;
+alias save_ram!(TypeHexFile.braw) save_braw;
+alias save_ram!(TypeHexFile.ahex) save_ahex;
+alias save_ram!(TypeHexFile.hexd) save_hexd;
+alias save_ram!(TypeHexFile.b2)   save_b2;
+alias save_ram!(TypeHexFile.dat)  save_dat;

@@ -70,6 +70,13 @@ int main (string[] args) {
       stderr.writeln("Error: Bad file format\nCould be a binary file? ", e.msg);
       return -1;
     }
+  } else if (ifile_fmt == TypeHexFile.b2) {
+    try {
+      data = load_b2(ifilename);
+    } catch (ConvException e){
+      stderr.writeln("Error: Bad file format\nCould be a binary file? ", e.msg);
+      return -1;
+    }
   } else {
     stderr.writeln("Error: Invalid input format");
     return -1;
@@ -94,6 +101,10 @@ int main (string[] args) {
       save_ram!(TypeHexFile.ahex)(ofilename, data);
     } else if (ofile_fmt == TypeHexFile.hexd) {
       save_ram!(TypeHexFile.hexd)(ofilename, data);
+    } else if (ofile_fmt == TypeHexFile.b2) {
+      save_ram!(TypeHexFile.b2)(ofilename, data);
+    } else if (ofile_fmt == TypeHexFile.dat) {
+      save_ram!(TypeHexFile.dat)(ofilename, data);
     } else {
       stderr.writeln("Error: Invalid output format");
       return -1;
