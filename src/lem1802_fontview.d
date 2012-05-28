@@ -103,31 +103,36 @@ extern (C) void on_mnu_open_activate (Event event, Widget widget) {
     type = opener.type;
 
     ushort[] tmp;
-    if (filename !is null && filename.length > 0){
-      switch (type) {
-        case TypeHexFile.lraw:
-          tmp = load_lraw(filename);
-          break;
+    if (filename !is null && filename.length > 0){      
+      try {
+        switch (type) {
+          case TypeHexFile.lraw:
+            tmp = load_lraw(filename);
+            break;
 
-        case TypeHexFile.braw:
-          tmp = load_braw(filename);
-          break;
-          
-        case TypeHexFile.dat:
-          tmp = load_dat(filename);
-          break;
+          case TypeHexFile.braw:
+            tmp = load_braw(filename);
+            break;
 
-        case TypeHexFile.b2:
-          tmp = load_ram!(TypeHexFile.b2)(filename);
-          break;
-          
-        case TypeHexFile.hexd:
-        default:
-          tmp = load_hexd(filename);
-          //break;
+          case TypeHexFile.dat:
+            tmp = load_dat(filename);
+            break;
+
+          case TypeHexFile.b2:
+            tmp = load_ram!(TypeHexFile.b2)(filename);
+            break;
+
+          case TypeHexFile.hexd:
+          default:
+            tmp = load_hexd(filename);
+            //break;
+        }
+      } catch (Exception e) {
+        stderr.writeln("Error: Couldn't open file\n", e.msg);
       }
-
-      if (tmp.length > 255) { // Contains something more taht a LEM1802 font
+      
+      if (tmp.length > 256) { // Contains something more that a LEM1802 font
+        writeln("caca");
         file_size = tmp.length;
         spin_begin.setValue(0);
         spin_end.setValue(255);
@@ -145,7 +150,6 @@ extern (C) void on_mnu_open_activate (Event event, Widget widget) {
           size_t e = cast(size_t)ajust_end_addr.getValue();
           e++;
 
-          writeln((e-b+1)%2, " ", e);
           if (((e-b+1)%2) != 0 && (e-b > 2)) {
             e--; // Clamp the last half glyph selected
             slice--;
@@ -164,6 +168,38 @@ extern (C) void on_mnu_open_activate (Event event, Widget widget) {
       dwa.queueDraw();
     }
   }
+  opener.hide();
+  opener.destroy();
+}
+
+extern (C) void on_mnu_saveas_activate (Event event, Widget widget) {
+  auto opener = new FileOpener(mainwin, false);
+  auto response = opener.run();
+  if (response == ResponseType.GTK_RESPONSE_ACCEPT) {
+    filename = opener.getFilename();
+    type = opener.type;
+    // Save data
+    try {
+      if (type == TypeHexFile.lraw) {
+        save_lraw(filename, font);
+      } else if (type == TypeHexFile.braw) {
+        save_braw(filename, font);
+      } else if (type == TypeHexFile.ahex) {
+        save_ahex(filename, font);
+      } else if (type == TypeHexFile.hexd) {
+        save_hexd(filename, font);
+      } else if (type == TypeHexFile.b2) {
+        save_b2(filename, font);
+      } else if (type == TypeHexFile.dat) {
+        save_dat(filename, font);
+      } else {
+        stderr.writeln("Error: Invalid output format");
+      }
+    } catch (Exception e) {
+      stderr.writeln("Error: Couldn't save data\n", e.msg);
+    }
+  }
+
   opener.hide();
   opener.destroy();
 }

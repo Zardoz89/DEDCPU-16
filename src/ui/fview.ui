@@ -343,12 +343,12 @@ You must select the range of data tht you desire to load like a font.</property>
                       <object class="GtkImageMenuItem" id="mnu_saveas">
                         <property name="label">gtk-save-as</property>
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
                         <property name="use_action_appearance">False</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <property name="accel_group">accelgroup1</property>
+                        <signal name="activate" handler="on_mnu_saveas_activate" swapped="no"/>
                       </object>
                     </child>
                     <child>
