@@ -91,20 +91,20 @@ int main (string[] args) {
   }
   data = data[start..end]; // Slice
 
-  // Dave data
+  // Save data
   try {
     if (ofile_fmt == TypeHexFile.lraw) {
-      save_ram!(TypeHexFile.lraw)(ofilename, data);
+      save_lraw(ofilename, data);
     } else if (ofile_fmt == TypeHexFile.braw) {
-      save_ram!(TypeHexFile.braw)(ofilename, data);
+      save_braw(ofilename, data);
     } else if (ofile_fmt == TypeHexFile.ahex) {
-      save_ram!(TypeHexFile.ahex)(ofilename, data);
+      save_ahex(ofilename, data);
     } else if (ofile_fmt == TypeHexFile.hexd) {
-      save_ram!(TypeHexFile.hexd)(ofilename, data);
+      save_hexd(ofilename, data);
     } else if (ofile_fmt == TypeHexFile.b2) {
-      save_ram!(TypeHexFile.b2)(ofilename, data);
+      save_b2(ofilename, data);
     } else if (ofile_fmt == TypeHexFile.dat) {
-      save_ram!(TypeHexFile.dat)(ofilename, data);
+      save_dat(ofilename, data);
     } else {
       stderr.writeln("Error: Invalid output format");
       return -1;
