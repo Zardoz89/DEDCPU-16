@@ -1,7 +1,8 @@
 module lem1802_fontview;
 import gtk.Main, gtk.Builder, gtk.Widget, gtk.Window, gdk.Event, gtk.Container;
-import gtk.MainWindow, gtk.AboutDialog;
+import gtk.MainWindow, gtk.Dialog, gtk.AboutDialog;
 import gtk.Button, gtk.Label, gtk.MenuBar, gtk.MenuItem, gtk.ToggleButton;
+import gtk.SpinButton, gtk.Adjustment;
 import gtkc.gtktypes, glib.ListG;
 
 import gtk.DrawingArea, gdk.Drawable;
@@ -34,6 +35,17 @@ ToggleButton[16][2] editor; // Editor toggle buttons
 
 AboutDialog win_about;      // About dialog
 
+Dialog win_bigfile;         // Dialog asking for a slice of data to read from a file
+Label lbl_maxsize;          // Max address, aka size of the file
+Label lbl_size;             // Size of the slice
+SpinButton spin_begin;      // Spin button selecting the begin address of a slice
+SpinButton spin_end;        // Spin button selecting the end address of a slice
+
+size_t file_size;           // Original File size
+Adjustment ajust_beg_addr;  // Spin button begin adjuster
+Adjustment ajust_end_addr;  // Spin button end adjuster
+
+
 /**
  * Close the App when it's clicked the close byutton or menu exit option
  */
@@ -41,6 +53,9 @@ extern (C) void on_close (Event event, Widget widget) {
   Main.exit(0);
 }
 
+/**
+ * Show About dialog
+ */
 extern (C) void on_mnu_about_activate (Event event, Widget widget) {
   win_about.run();
   win_about.hide();
@@ -100,9 +115,27 @@ extern (C) void on_mnu_open_activate (Event event, Widget widget) {
           tmp = load_hexd(filename);
           //break;
       }
-      
-      if (tmp.length >= 255) {
-        font[0..$] = tmp[0..255];
+
+      if (tmp.length > 255) { // Contains something more taht a LEM1802 font
+        file_size = tmp.length;
+        spin_begin.setValue(0);
+        spin_end.setValue(255);
+        lbl_maxsize.setLabel(to!string(tmp.length) ~ " words");
+        lbl_size.setLabel("256 words - 128 glyphs");
+        ajust_beg_addr.setUpper(254);
+        ajust_end_addr.setLower(1);
+        ajust_end_addr.setUpper(255);
+
+        auto r = win_bigfile.run();
+        win_bigfile.hide();
+        if (r == -3) {
+          size_t slice = cast(size_t)(ajust_end_addr.getValue() - ajust_beg_addr.getValue() +1);
+          size_t b = cast(size_t)ajust_beg_addr.getValue();
+          size_t e = cast(size_t)ajust_end_addr.getValue();
+          e++;
+          font[0..slice] = tmp[b..e];
+          font[slice..$] = 0;
+        }
       } else {
         font[0..tmp.length] = tmp[0..tmp.length];
         font[tmp.length..$] = 0;
@@ -236,6 +269,43 @@ void main(string[] args) {
     exit(1);
   }
   
+  win_bigfile = cast(Dialog) builder.getObject ("win_bigfile");
+  if (win_bigfile is null) {
+    writefln("Can't find win_bigfile widget");
+    exit(1);
+  }
+  spin_begin = cast(SpinButton) builder.getObject ("spin_begin");
+  if (spin_begin is null) {
+    writefln("Can't find spin_begin widget");
+    exit(1);
+  }
+  spin_end = cast(SpinButton) builder.getObject ("spin_end");
+  if (spin_end is null) {
+    writefln("Can't find spin_end widget");
+    exit(1);
+  }
+  lbl_maxsize = cast(Label) builder.getObject ("lbl_maxsize");
+  if (lbl_maxsize is null) {
+    writefln("Can't find lbl_maxsize widget");
+    exit(1);
+  }
+  lbl_size = cast(Label) builder.getObject ("lbl_size");
+  if (lbl_size is null) {
+    writefln("Can't find lbl_size widget");
+    exit(1);
+  }
+  ajust_beg_addr = cast(Adjustment) builder.getObject ("ajust_beg_addr");
+  if (ajust_beg_addr is null) {
+    writefln("Can't find ajust_beg_addr widget");
+    exit(1);
+  }
+  ajust_end_addr = cast(Adjustment) builder.getObject ("ajust_end_addr");
+  if (ajust_end_addr is null) {
+    writefln("Can't find ajust_end_addr widget");
+    exit(1);
+  }
+
+  
   dwa.modifyBg(GtkStateType.NORMAL, Color.black);
   
   mixin(get_editor_buttons()); // Get all editor buttons
@@ -365,6 +435,32 @@ void main(string[] args) {
     return false;
   });
 
+  // Begin of slice being edited
+  ajust_beg_addr.addOnValueChanged( (Adjustment ad) {
+    import std.algorithm;
+    ajust_end_addr.setLower(min(ad.getValue() +1, file_size));
+    ajust_end_addr.setUpper(min(ad.getValue() +255, file_size));
+    if (ajust_end_addr.getValue() < (ad.getValue() +1)) {
+      ajust_end_addr.setValue(ad.getValue() +1);
+    }
+    auto s = ajust_end_addr.getValue() - ajust_beg_addr.getValue() +1;
+    lbl_size.setLabel(to!string(s)~" words"
+       ~ " - "~to!string(floor(s/2))~" glyphs");
+  });
+
+  // End of slice being edited
+  ajust_end_addr.addOnValueChanged( (Adjustment ad) {
+    import std.algorithm;
+    ajust_end_addr.setLower(ajust_beg_addr.getValue() +1);
+    ajust_beg_addr.setUpper(max(ad.getValue() -1, 0));
+    if (ajust_beg_addr.getValue() > (ad.getValue() -1)) {
+      ajust_beg_addr.setValue(ad.getValue() -1);
+    }
+    auto s = ajust_end_addr.getValue() - ajust_beg_addr.getValue() +1;
+    lbl_size.setLabel(to!string(s)~" words"
+       ~ " - "~to!string(floor(s/2))~" glyphs");
+  });
+  
   builder.connectSignals (null);
   mainwin.show ();
   
