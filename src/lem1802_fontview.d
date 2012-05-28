@@ -176,9 +176,9 @@ void update_editor() {
  */
 void update_glyph_lbl() {
   import std.string;
-  lbl_bin.setLabel("0b"~format("%016b",font[selected])~"\n"~ "0b"~format("%016b",font[selected+1]));
-  lbl_hex.setLabel("0x"~format("%04X",font[selected])~"\n"~ "0x"~format("%04X",font[selected+1]));
-  lbl_dec.setLabel(to!string(font[selected])~"\n"~to!string(font[selected+1]));
+  lbl_bin.setLabel("0b"~format("%016b",font[selected*2])~"\n"~ "0b"~format("%016b",font[selected*2+1]));
+  lbl_hex.setLabel("0x"~format("%04X",font[selected*2])~"\n"~ "0x"~format("%04X",font[selected*2+1]));
+  lbl_dec.setLabel(to!string(font[selected*2])~"\n"~to!string(font[selected*2+1]));
 }
 
 /**
