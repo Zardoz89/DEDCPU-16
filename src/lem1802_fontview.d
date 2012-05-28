@@ -133,6 +133,13 @@ extern (C) void on_mnu_open_activate (Event event, Widget widget) {
           size_t b = cast(size_t)ajust_beg_addr.getValue();
           size_t e = cast(size_t)ajust_end_addr.getValue();
           e++;
+
+          writeln((e-b+1)%2, " ", e);
+          if (((e-b+1)%2) != 0 && (e-b > 2)) {
+            e--; // Clamp the last half glyph selected
+            slice--;
+          }
+
           font[0..slice] = tmp[b..e];
           font[slice..$] = 0;
         }
