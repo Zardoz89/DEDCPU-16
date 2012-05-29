@@ -30,8 +30,9 @@ Label lbl_bin;              // Label with binary representation of selected glyp
 Label lbl_hex;              // Label with hex representation of selected glyph
 Label lbl_dec;              // Label with decimal representation of selected glyph
 
-bool updating;              // Updating data form out to the editor ?
-ToggleButton[16][2] editor; // Editor toggle buttons
+//bool updating;              // Updating data form out to the editor ?
+DrawingArea glyph_editor;   // Glyph editor
+//ToggleButton[16][2] editor; // Editor toggle buttons
 
 AboutDialog win_about;      // About dialog
 
@@ -208,13 +209,7 @@ extern (C) void on_mnu_saveas_activate (Event event, Widget widget) {
  * Update the state of the editor buttons
  */
 void update_editor() {
-  for (int x; x < 2; x++) {
-    for (int y; y < 16; y++) {
-      updating = true;
-      editor[x][y].setActive(( font[selected*2+x] & (1<<y)) != 0);
-      updating = false;
-    }
-  }
+  glyph_editor.queueDraw();
   update_glyph_lbl(); // Update labels at same time
 }
 
@@ -228,51 +223,6 @@ void update_glyph_lbl() {
   lbl_dec.setLabel(to!string(font[selected*2])~"\n"~to!string(font[selected*2+1]));
 }
 
-/**
- * Meta-function that gets all glyph editor buttons
- */
-string get_editor_buttons() {
-  string r;
-  for (int x; x < 2; x++) {
-    for (int y; y <16; y++) {
-      r ~= "editor[" ~ to!string(x) ~"][" ~ to!string(y) ~"] = ";
-      r ~= "cast(ToggleButton)  builder.getObject(\"p";
-      if (x == 0) {
-        r ~= "l"~ to!string(y);
-      } else {
-        r ~= "u"~ to!string(y);
-      }
-      r ~= "\"); ";
-    }
-  }
-  return r;
-}
-
-/**
- * Meta-function that add a event to all glyph editor buttons to update the
- * glyph in array
- */
-string add_on_toggled() {
-  string r;
-  for (int x; x < 2; x++) {
-    for (int y; y <16; y++) {
-      auto pos = 1<<y;
-      r ~= "editor["~to!string(x)~"]["~to!string(y)~"]";
-      r ~= ".addOnClicked( (Button b) {";
-      r ~= " if (!updating) {";
-      if (x != 1) {
-        r ~= "  font[selected*2] = font[selected*2] ^ "~to!string(pos)~";";
-      } else {
-        r ~= "  font[selected*2 +1] = font[selected*2 +1] ^ "~to!string(pos)~";";
-      }
-      r ~= " dwa.queueDraw(); update_glyph_lbl;";
-      r ~= " }";
-      r ~= "});";
-    }
-  }
-  return r;
-}
-
 void main(string[] args) {
   int old_w, old_h;
   Main.init(args);
@@ -283,7 +233,8 @@ void main(string[] args) {
     writefln("Oops, could not create Builder object, check your builder file ;)");
     exit(1); 
   }
-  
+
+  // Get reference to Objects
   mainwin = cast(Window) builder.getObject ("win_fontview");
   if (mainwin is null) {
     writefln("Can't find win_fontview widget");
@@ -365,11 +316,17 @@ void main(string[] args) {
     exit(1);
   }
 
+  glyph_editor = cast(DrawingArea) builder.getObject ("glyph_editor");
+  if (glyph_editor is null) {
+    writefln("Can't find glyph_editor widget");
+    exit(1);
+  }
   
   dwa.modifyBg(GtkStateType.NORMAL, Color.black);
-  
-  mixin(get_editor_buttons()); // Get all editor buttons
+  glyph_editor.modifyBg(GtkStateType.NORMAL, Color.black);
+  // Connect Signals to events
 
+  // Select a Glyph
   dwa.addOnButtonPress ( (GdkEventButton *event, Widget widget) {
     if (event !is null) {
       Drawable dr = dwa.getWindow();
@@ -393,8 +350,7 @@ void main(string[] args) {
     return false;
   });
 
-  mixin(add_on_toggled());  // Add a event to all editor buttons
-  
+  // Draws Glyphs viewer
   dwa.addOnExpose( (GdkEventExpose* event, Widget widget) {
     Drawable dr = dwa.getWindow();
 
@@ -495,6 +451,101 @@ void main(string[] args) {
     return false;
   });
 
+  // Draws Glyph editor
+  glyph_editor.addOnExpose( (GdkEventExpose* event, Widget widget) {
+    Drawable dr = glyph_editor.getWindow();
+
+    int width;
+    int height;
+
+    dr.getSize(width, height);
+    auto cr = new Context (dr);
+
+    
+    if (event !is null) {
+      // clip to the area indicated by the expose event so that we only redraw
+      // the portion of the window that needs to be redrawn
+      cr.rectangle(event.area.x, event.area.y,
+        event.area.width, event.area.height);
+      cr.clip();
+
+      //cr.scale(scale_x, scale_y);
+      cr.translate(0, 0);
+
+      
+      // Draw lines around gryphs
+      cr.save();
+        cr.setSourceRgb(0.5, 0.5, 0.5);
+        cr.setLineWidth(1.0);
+        for (auto y = 20.0; y< 21*8; y+=21) {
+          cr.moveTo(0, y);
+          cr.lineTo(width, y);
+        }
+        for (auto x = 20.0; x< 21*4; x+=21) {
+          cr.moveTo(x, 0);
+          cr.lineTo(x, height);
+        }
+        cr.stroke();
+      cr.restore();
+      
+      // Paints selected Glyph
+      cr.save();
+      for (int x; x < 2; x++) {
+        for (int y; y < 16; y++) {
+          if (( font[selected*2+x] & (1<<y)) != 0) {
+            auto pos_x = (x*2 + 1 - floor(y/8) ) * 21;
+            cr.rectangle(pos_x, (y%8)*21, 20, 20);
+            cr.setSourceRgb(1.0, 1.0, 1.0);
+            cr.fill();
+          }
+        }
+      }
+      cr.restore();
+    }
+
+    return false;
+  });
+
+  // Update the changes of edited glyph
+  glyph_editor.addOnButtonPress( (GdkEventButton *event, Widget widget) {
+    if (event !is null) {
+      auto x = cast(ushort) floor(event.x / (20.0 +1));
+      auto y = cast(ushort) floor(event.y / (20.0 +1));
+      
+      if ( x < 1) { // First column
+        font[selected*2] = font[selected*2] ^ cast(ushort)(1<<(y+8));
+      } else if ( x < 2) { // Second column
+        font[selected*2] = font[selected*2] ^ cast(ushort)(1<<y);
+      } else if ( x < 3) { // Third column
+        font[selected*2 +1] = font[selected*2 +1] ^ cast(ushort)(1<<(y+8));
+      } else if ( x < 4) { // Fourth column
+        font[selected*2 +1] = font[selected*2 +1] ^ cast(ushort)(1<<y);
+      }
+
+      dwa.queueDraw();
+      update_editor();
+
+      return true;
+    }
+    return false;
+    /*for (int x; x < 2; x++) {
+      for (int y; y <16; y++) {
+        auto pos = 1<<y;
+        r ~= "editor["~to!string(x)~"]["~to!string(y)~"]";
+        r ~= ".addOnClicked( (Button b) {";
+        r ~= " if (!updating) {";
+        if (x != 1) {
+          r ~= "  font[selected*2] = font[selected*2] ^ "~to!string(pos)~";";
+        } else {
+          r ~= "  font[selected*2 +1] = font[selected*2 +1] ^ "~to!string(pos)~";";
+        }
+        r ~= " dwa.queueDraw(); update_glyph_lbl;";
+        r ~= " }";
+        r ~= "});";
+      }
+    }*/
+  });
+
   // Begin of slice being edited
   ajust_beg_addr.addOnValueChanged( (Adjustment ad) {
     import std.algorithm;
@@ -507,7 +558,7 @@ void main(string[] args) {
     lbl_size.setLabel(to!string(s)~" words"
        ~ " - "~to!string(floor(s/2))~" glyphs");
   });
-
+  
   // End of slice being edited
   ajust_end_addr.addOnValueChanged( (Adjustment ad) {
     import std.algorithm;
