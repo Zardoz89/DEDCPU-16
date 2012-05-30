@@ -71,10 +71,10 @@ in {
           throw new Exception("Bad format. Data out of bounds " ~ format("0x%04X", tmp));
         
         if (img.length <= tmp)
-          img.length = tmp +1;
+          img.length = cast(size_t)(tmp +1);
         
         if (word.length > 3) {
-          img[tmp] = parse!ushort(word, 16);
+          img[cast(size_t)(tmp)] = parse!ushort(word, 16);
         }
       }
     }
