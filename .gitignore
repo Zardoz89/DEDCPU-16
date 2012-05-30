@@ -1,3 +1,6 @@
 *.o
 *~
+*.exe
+bconv
+ddis
 dedcpu
