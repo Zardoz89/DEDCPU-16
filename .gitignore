@@ -1,6 +1,8 @@
 *.o
 *~
 *.exe
+*.deps
 bconv
 ddis
 dedcpu
+lem1802_fontview
