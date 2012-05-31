@@ -50,22 +50,48 @@ Adjustment ajust_end_addr;  // Spin button end adjuster
 /**
  * Close the App when it's clicked the close byutton or menu exit option
  */
-extern (C) void on_close (Event event, Widget widget) {
+version(Windows) {
+  extern (Windows) void on_close (Event event, Widget widget) {
+    ev_on_close(event, widget);
+  }
+} else {
+  extern (C) void on_close (Event event, Widget widget) {
+    ev_on_close(event, widget);
+  }
+}
+void ev_on_close (Event event, Widget widget) {
   Main.exit(0);
 }
 
 /**
  * Show About dialog
  */
-extern (C) void on_mnu_about_activate (Event event, Widget widget) {
+version(Windows) {
+  extern (Windows) void on_mnu_about_activate (Event event, Widget widget) {
+    ev_on_mnu_about_activate(event, widget);
+  }
+} else {
+  extern (C) void on_mnu_about_activate (Event event, Widget widget) {
+    ev_on_mnu_about_activate(event, widget);
+  }
+}
+void ev_on_mnu_about_activate (Event event, Widget widget) {
   win_about.run();
   win_about.hide();
 }
-
 /**
  * Click over Previus button
  */
-extern (C) void on_but_prev_clicked (Event event, Widget widget) {
+version(Windows) {
+  extern (Windows) void on_but_prev_clicked (Event event, Widget widget) {
+    ev_on_but_prev_clicked(event, widget);
+  }
+} else {
+  extern (C) void on_but_prev_clicked (Event event, Widget widget) {
+    ev_on_but_prev_clicked(event, widget);
+  }
+}
+void ev_on_but_prev_clicked (Event event, Widget widget) {
   selected = (selected -1) % 128;
   lbl_pos.setLabel(to!string(selected));
   update_editor();
@@ -75,7 +101,16 @@ extern (C) void on_but_prev_clicked (Event event, Widget widget) {
 /**
  * Click over Previus button
  */
-extern (C) void on_but_next_clicked (Event event, Widget widget) {
+version(Windows) {
+  extern (Windows) void on_but_next_clicked (Event event, Widget widget) {
+    ev_on_but_next_clicked(event, widget);
+  }
+} else {
+  extern (C) void on_but_next_clicked (Event event, Widget widget) {
+    ev_on_but_next_clicked(event, widget);
+  }
+}
+void ev_on_but_next_clicked (Event event, Widget widget) {
   selected = (selected +1) % 128;
   lbl_pos.setLabel(to!string(selected));
   update_editor();
@@ -85,7 +120,16 @@ extern (C) void on_but_next_clicked (Event event, Widget widget) {
 /**
  * Reset all data (new font)
  */
-extern (C) void on_mnu_new_activate (Event event, Widget widget) {
+version(Windows) {
+  extern (Windows) void on_mnu_new_activate (Event event, Widget widget) {
+    ev_on_mnu_new_activate(event, widget);
+  }
+} else {
+  extern (C) void on_mnu_new_activate (Event event, Widget widget) {
+    ev_on_mnu_new_activate(event, widget);
+  }
+}
+void ev_on_mnu_new_activate (Event event, Widget widget) {
   filename = "";
   selected = 0;
   font[] = 0;
@@ -94,9 +138,18 @@ extern (C) void on_mnu_new_activate (Event event, Widget widget) {
 }
 
 /**
- * Muestra la ventanta de selecionar un fichero y lo abre
+ * Show the Open file Dialog and try to load it
  */
-extern (C) void on_mnu_open_activate (Event event, Widget widget) {
+version(Windows) {
+  extern (Windows) void on_mnu_open_activate (Event event, Widget widget) {
+    ev_on_mnu_open_activate(event, widget);
+  }
+} else {
+  extern (C) void on_mnu_open_activate (Event event, Widget widget) {
+    ev_on_mnu_open_activate(event, widget);
+  }
+}
+void ev_on_mnu_open_activate (Event event, Widget widget) {
   auto opener = new FileOpener(mainwin);
   auto response = opener.run();
   if (response == ResponseType.GTK_RESPONSE_ACCEPT) {
@@ -173,7 +226,19 @@ extern (C) void on_mnu_open_activate (Event event, Widget widget) {
   opener.destroy();
 }
 
-extern (C) void on_mnu_saveas_activate (Event event, Widget widget) {
+/**
+ * Show the Save file Dialog and try to save it
+ */
+version(Windows) {
+  extern (Windows) void on_mnu_saveas_activate (Event event, Widget widget) {
+    ev_on_mnu_saveas_activate(event, widget);
+  }
+} else {
+  extern (C) void on_mnu_saveas_activate (Event event, Widget widget) {
+    ev_on_mnu_saveas_activate(event, widget);
+  }
+}
+void ev_on_mnu_saveas_activate (Event event, Widget widget) {
   auto opener = new FileOpener(mainwin, false);
   auto response = opener.run();
   if (response == ResponseType.GTK_RESPONSE_ACCEPT) {
