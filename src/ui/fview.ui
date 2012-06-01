@@ -367,7 +367,7 @@ You must select the range of data tht you desire to load like a font.</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <property name="accel_group">accelgroup1</property>
-                        <signal name="activate" handler="on_close" swapped="no"/>
+                        <signal name="activate" handler="on_mnu_exit_activate" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -483,13 +483,13 @@ You must select the range of data tht you desire to load like a font.</property>
                     <property name="layout_style">spread</property>
                     <child>
                       <object class="GtkButton" id="but_next">
-                        <property name="label" translatable="yes">_Next</property>
+                        <property name="label">gtk-go-forward</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="use_action_appearance">False</property>
-                        <property name="image">image3</property>
                         <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
                         <property name="image_position">right</property>
                         <signal name="clicked" handler="on_but_next_clicked" swapped="no"/>
                       </object>
@@ -501,13 +501,13 @@ You must select the range of data tht you desire to load like a font.</property>
                     </child>
                     <child>
                       <object class="GtkButton" id="but_prev">
-                        <property name="label" translatable="yes">_Back</property>
+                        <property name="label">gtk-go-back</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="use_action_appearance">False</property>
-                        <property name="image">image4</property>
                         <property name="use_underline">True</property>
+                        <property name="use_stock">True</property>
                         <property name="image_position">right</property>
                         <signal name="clicked" handler="on_but_prev_clicked" swapped="no"/>
                       </object>
@@ -549,24 +549,6 @@ You must select the range of data tht you desire to load like a font.</property>
                 <property name="n_rows">3</property>
                 <property name="n_columns">3</property>
                 <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
                   <object class="GtkDrawingArea" id="glyph_editor">
                     <property name="width_request">83</property>
                     <property name="height_request">166</property>
@@ -599,6 +581,24 @@ You must select the range of data tht you desire to load like a font.</property>
                     <property name="top_attach">2</property>
                     <property name="bottom_attach">3</property>
                   </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
                 </child>
               </object>
               <packing>
