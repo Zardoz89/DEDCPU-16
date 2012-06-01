@@ -285,7 +285,6 @@ You must select the range of data tht you desire to load like a font.</property>
     <property name="title" translatable="yes">LEM1802 Font Viewer</property>
     <property name="window_position">center</property>
     <property name="startup_id">LEM1802-fonteditor</property>
-    <signal name="destroy" handler="on_close" swapped="no"/>
     <child>
       <object class="GtkVBox" id="vbox1">
         <property name="visible">True</property>

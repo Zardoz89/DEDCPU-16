@@ -1,5 +1,5 @@
 module lem1802_fontview;
-import gtk.Main, gtk.Builder, gtk.Widget, gtk.Window, gdk.Event, gtk.Container;
+import gtk.ObjectGtk, gtk.Main, gtk.Builder, gtk.Widget, gtk.Window, gdk.Event, gtk.Container;
 import gtk.MainWindow, gtk.Dialog, gtk.AboutDialog;
 import gtk.Button, gtk.Label, gtk.MenuBar, gtk.MenuItem, gtk.ToggleButton;
 import gtk.SpinButton, gtk.Adjustment;
@@ -48,12 +48,8 @@ Adjustment ajust_end_addr;  // Spin button end adjuster
 
 
 /**
- * Close the App when it's clicked the close byutton or menu exit option
+ * Close the App when it's clicked menu exit option
  */
-extern (C) export void on_close (Event event, Widget widget) {
-  Main.exit(0);
-}
-
 extern (C) export void on_mnu_exit_activate (Event event, Widget widget) {
   Main.exit(0);
 }
@@ -332,6 +328,11 @@ void main(string[] args) {
   dwa.modifyBg(GtkStateType.NORMAL, Color.black);
   glyph_editor.modifyBg(GtkStateType.NORMAL, Color.black);
   // Connect Signals to events
+
+  // Closing the window ends the program
+  mainwin.addOnDestroy ( (ObjectGtk ob) {
+    Main.exit(0);
+  });
 
   // Select a Glyph
   dwa.addOnButtonPress ( (GdkEventButton *event, Widget widget) {
