@@ -54,6 +54,10 @@ extern (C) export void on_close (Event event, Widget widget) {
   Main.exit(0);
 }
 
+extern (C) export void on_mnu_exit_activate (Event event, Widget widget) {
+  Main.exit(0);
+}
+
 /**
  * Show About dialog
  */
