@@ -48,6 +48,8 @@ public:
     // Adds the text label
     lbl_text = new Label(text);
     this.getContentArea().packStart(lbl_text, false, true, 10);
+    lbl_text.setPadding(5, 0);
+    lbl_text.setAlignment(0, 0.5);
     lbl_text.show();
 
     // Load widgets from file

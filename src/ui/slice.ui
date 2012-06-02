@@ -14,6 +14,7 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="xalign">0</property>
+        <property name="xpad">5</property>
         <property name="label" translatable="yes">Begin address:</property>
       </object>
       <packing>
@@ -26,6 +27,7 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="xalign">0</property>
+        <property name="xpad">5</property>
         <property name="label" translatable="yes">End address:</property>
       </object>
       <packing>
@@ -78,6 +80,7 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="xalign">0</property>
+        <property name="xpad">5</property>
         <property name="label" translatable="yes">Top address:</property>
       </object>
     </child>
@@ -97,6 +100,7 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="xalign">0</property>
+        <property name="xpad">5</property>
         <property name="label" translatable="yes">Selected size:</property>
       </object>
       <packing>
