@@ -448,6 +448,7 @@ You must select the range of data tht you desire to load like a font.</property>
                       <object class="GtkLabel" id="label4">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="xalign">0</property>
                         <property name="label" translatable="yes">Chracter:</property>
                       </object>
                       <packing>
@@ -627,6 +628,7 @@ You must select the range of data tht you desire to load like a font.</property>
                   <object class="GtkLabel" id="label1">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">Binary:</property>
                     <property name="single_line_mode">True</property>
                   </object>
@@ -635,6 +637,7 @@ You must select the range of data tht you desire to load like a font.</property>
                   <object class="GtkLabel" id="label2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">Hexadecimal:</property>
                     <property name="single_line_mode">True</property>
                   </object>
@@ -648,6 +651,7 @@ You must select the range of data tht you desire to load like a font.</property>
                     <property name="width_request">0</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">Decimal:</property>
                     <property name="single_line_mode">True</property>
                   </object>
@@ -660,6 +664,7 @@ You must select the range of data tht you desire to load like a font.</property>
                   <object class="GtkLabel" id="lbl_bin">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">0b0000000000000000
 0b0000000000000000</property>
                   </object>
@@ -672,6 +677,7 @@ You must select the range of data tht you desire to load like a font.</property>
                   <object class="GtkLabel" id="lbl_hex">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">0x0000
 0x0000</property>
                   </object>
@@ -686,6 +692,7 @@ You must select the range of data tht you desire to load like a font.</property>
                   <object class="GtkLabel" id="lbl_dec">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">0
 0</property>
                   </object>
