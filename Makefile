@@ -74,13 +74,18 @@ $(BUILD_PATH)$(PATH_SEP)file_chooser.o: $(SRC_DIR)ui/file_chooser.d
 	@$(MKDIR) build
 	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
 	$(DC) $(DCFLAGS_GUI) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
+
+$(BUILD_PATH)$(PATH_SEP)dialog_slice.o: $(SRC_DIR)ui/dialog_slice.d
+	@$(MKDIR) build
+	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
+	$(DC) $(DCFLAGS_GUI) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 	
 $(BUILD_PATH)$(PATH_SEP)lem1802_fontview.o: $(SRC_DIR)lem1802_fontview.d
 	@$(MKDIR) build
 	@echo "$(niceMsgBeg2)Compiling $< $@$(niceMsgEnd)"
 	$(DC) $(DCFLAGS_GUI) $(DCFLAGS_IMPORT) -c $< $(OUTPUT)$@
 
-lem1802_fontview: $(BUILD_PATH)$(PATH_SEP)lem1802_fontview.o $(BUILD_PATH)$(PATH_SEP)file_chooser.o $(BUILD_PATH)$(PATH_SEP)ram_io.o
+lem1802_fontview: $(BUILD_PATH)$(PATH_SEP)lem1802_fontview.o $(BUILD_PATH)$(PATH_SEP)file_chooser.o $(BUILD_PATH)$(PATH_SEP)dialog_slice.o $(BUILD_PATH)$(PATH_SEP)ram_io.o
 	@echo "$(niceMsgBeg2)Linking $< $@$(niceMsgEnd)"
 	$(DC) $^ $(OUTPUT)$@ $(DCFLAGS_LINK_GUI)
 	@echo "------------------ $(niceMsgBeg1)Creating $@ executable done$(niceMsgEnd)"
