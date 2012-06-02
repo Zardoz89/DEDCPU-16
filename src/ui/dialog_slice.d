@@ -1,10 +1,10 @@
 module ui.dialog_slice;
 
-import gtk.Main, gtk.Builder, gtk.Widget, gtk.Window, gdk.Event;
+import gtk.Builder, gtk.Widget, gtk.Window, gdk.Event;
 import gtk.Container, gtk.Table;
-import gtk.Label, gtk.Button, gtk.SpinButton;
+import gtk.Label, gtk.Adjustment, gtk.SpinButton;
 
-import std.conv, std.algorithm;
+import std.conv, std.algorithm, std.math;
 
 public import gtkc.gtktypes, gtk.Dialog;
 
@@ -23,25 +23,32 @@ private:
   SpinButton spin_end;        /// Spin button selecting the end address of a slice
 
   size_t max_dif;             /// Max diference between adresses
-  Adjustment adjust_beg_addr;  /// Controls begin address spin button
-  Adjustment adjust_end_addr;  /// Controls end address spin button
+  size_t top;                 /// Top address
+  bool sbyte;                 /// Show number of bytes or number of glyphs
+  Adjustment adjust_beg_addr; /// Controls begin address spin button
+  Adjustment adjust_end_addr; /// Controls end address spin button
 
 public:
 
   /**
    * See: gtk.Dialog;
    * Params:
-   *  text    = Texto to be showed over the controls describing what the user are to do
-   *  size    = Max size of the slice selection
+   *  text      = Texto to be showed over the controls describing what the user are to do
+   *  size      = Top address
+   *  max_size  = Max size of the slice selection
+   *  sbyte     = If it's TRUE, show number of bytes, else show number of glyphs
    */
-  this (string title, Window parent, GtkDialogFlags flags, string text, size = 255 ) {
-    this(title, parent, flags, [StockID.OK, StockID.Cancel], [ResponseType.GTK_RESPONSE_ACCEPT, ResponseType.GTK_RESPONSE_CANCEL]);
+  this (string title, Window parent, GtkDialogFlags flags, string text, size_t top = 0xFFFF , size_t max_size = 255, bool sbyte = true) {
+    super(title, parent, flags, [StockID.OK, StockID.CANCEL], [ResponseType.GTK_RESPONSE_ACCEPT, ResponseType.GTK_RESPONSE_CANCEL]);
 
-    max_dif = size;
+    this.top = top;
+    this.max_dif = max_size;
+    this.sbyte = sbyte;
     
     // Adds the text label
     lbl_text = new Label(text);
-    this.getContentArea().packStart(lbl_text, false, true, 0);
+    this.getContentArea().packStart(lbl_text, false, true, 10);
+    lbl_text.show();
 
     // Load widgets from file
     builder = new Builder ();
@@ -78,30 +85,41 @@ public:
     // Set and assigns attributes of each widget *******************************
     // Attach table container to the Dialog
     table.reparent(this);
-    his.getContentArea().packEnd(table, false, true, 0);
-
-    // Show max size and actual size
-    lbl_maxsize.setText(to!string(max_dif));
-    lbl_size.setText(to!string(max_dif) ~ words ~ " - "~to!string(floor(max_dif/2))~" glyphs");
+    this.getContentArea().packEnd(table, false, true, 10);
 
     // Create the adjusment objects and assign it to the spin buttons
-    adjust_beg_addr = new Adjustment(0, 0, size -1, 1 , 10, 0);
-    adjust_end_addr = new Adjustment(1, 1, size , 1 , 10, 0);
+    adjust_beg_addr = new Adjustment(0, 0, max_dif -1, 1 , 10, 0);
+    adjust_end_addr = new Adjustment(max_dif, 1, max_dif , 1 , 10, 0);
 
     spin_begin.configure(adjust_beg_addr, 0, 0);
     spin_end.configure(adjust_end_addr, 0, 0);
 
+    // Show max size and actual size
+    auto s = adjust_end_addr.getValue() - adjust_beg_addr.getValue() +1;
+    if (!sbyte) {
+      lbl_size.setText(to!string(s) ~  " words" ~ " - "
+                      ~ to!string(floor(max_dif/2)) ~ " glyphs ");
+    } else {
+      lbl_size.setText(to!string(s) ~  " words" ~ " - "
+                      ~ to!string(s*2) ~ " bytes ");
+    }
+
     // Signal handlers *********************************************************
     // Begin of slice being edited
     adjust_beg_addr.addOnValueChanged( (Adjustment ad) {
-      adjust_end_addr.setLower(min(ad.getValue() +1, max_dif));
-      adjust_end_addr.setUpper(min(ad.getValue() +255, max_dif));
+      adjust_end_addr.setLower(min(ad.getValue() +1, top));
+      adjust_end_addr.setUpper(min(ad.getValue() +255, top));
       if (adjust_end_addr.getValue() < (ad.getValue() +1)) {
         adjust_end_addr.setValue(ad.getValue() +1);
       }
       auto s = adjust_end_addr.getValue() - adjust_beg_addr.getValue() +1;
-      lbl_size.setLabel(to!string(s)~" words"
-         ~ " - "~to!string(floor(s/2))~" glyphs");
+      if (!sbyte) {
+        lbl_size.setText(to!string(s) ~  " words" ~ " - "
+                        ~ to!string(floor(max_dif/2)) ~ " glyphs ");
+      } else {
+        lbl_size.setText(to!string(s) ~  " words" ~ " - "
+                        ~ to!string(s*2) ~ " bytes ");
+      }
     });
 
     // End of slice being edited
@@ -112,9 +130,43 @@ public:
         adjust_beg_addr.setValue(ad.getValue() -1);
       }
       auto s = adjust_end_addr.getValue() - adjust_beg_addr.getValue() +1;
-      lbl_size.setLabel(to!string(s)~" words"
-         ~ " - "~to!string(floor(s/2))~" glyphs");
+      if (!sbyte) {
+        lbl_size.setText(to!string(s) ~  " words" ~ " - "
+                        ~ to!string(floor(max_dif/2)) ~ " glyphs ");
+      } else {
+        lbl_size.setText(to!string(s) ~  " words" ~ " - "
+                        ~ to!string(s*2) ~ " bytes ");
+      }
     });
     
   }
+
+  /// Return the selected bottom address
+  auto bottom_address() @property {
+    return adjust_beg_addr.getValue();
+  }
+
+  /// Return the selected top address
+  auto top_address() @property {
+    return adjust_end_addr.getValue();
+  }
+
+  /// Return the size of the selected slice (including the last address)
+  auto size() @property {
+    return adjust_end_addr.getValue() - adjust_beg_addr.getValue() +1;
+  }
+}
+
+unittest {
+  import std.stdio, gtk.Main;
+
+  Main.init([""]);
+
+  auto d = new dialog_slice("test", null, GtkDialogFlags.MODAL, "This is a test", 1024);
+
+  writeln(d.run());
+  writeln("Begin: ", d.bottom_address);
+  writeln("End: ", d.top_address);
+  writeln("Size (including end address): ", d.size);
+  
 }
