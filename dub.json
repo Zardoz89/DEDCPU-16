@@ -1,0 +1,7 @@
+{
+  "name": "DEDCPU-16",
+  "authors": ["Luis Panadero Guardeño"],
+  "dependencies": {
+    "gtk-d": "~1.7.4"
+  }
+}

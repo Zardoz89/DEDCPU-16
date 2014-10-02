@@ -6,6 +6,7 @@
  */
 module dcpu.cpu;
 
+/+
 import std.array, std.random;
 //import std.string, std.conv, std.stdio;
 import dcpu.microcode, dcpu.machine, dcpu.hardware;
@@ -760,4 +761,5 @@ private:
     return false;
   }
 }
++/
 

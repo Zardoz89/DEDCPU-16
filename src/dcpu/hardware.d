@@ -6,6 +6,7 @@
  */
 module dcpu.hardware;
 
+/+
 public import dcpu.machine, dcpu.cpu;
 
 abstract class Hardware {
@@ -125,3 +126,5 @@ public:
 
   
 }
++/
+

@@ -37,9 +37,9 @@ public:
    */
   this (Window father, bool open = true) {
     if (open) {
-      super("Open file", father, FileChooserAction.OPEN, ["Open", "Cancel"], [ResponseType.GTK_RESPONSE_ACCEPT, ResponseType.GTK_RESPONSE_CANCEL]);
+      super("Open file", father, FileChooserAction.OPEN, ["Open", "Cancel"], [ResponseType.ACCEPT, ResponseType.CANCEL]);
     } else {
-      super("Save file", father, FileChooserAction.SAVE, ["Save", "Cancel"], [ResponseType.GTK_RESPONSE_ACCEPT, ResponseType.GTK_RESPONSE_CANCEL]);
+      super("Save file", father, FileChooserAction.SAVE, ["Save", "Cancel"], [ResponseType.ACCEPT, ResponseType.CANCEL]);
     }
 
     builder = new Builder ();

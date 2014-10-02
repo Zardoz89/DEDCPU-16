@@ -39,7 +39,7 @@ public:
    *  sbyte     = If it's TRUE, show number of bytes, else show number of glyphs
    */
   this (string title, Window parent, GtkDialogFlags flags, string text, size_t top = 0xFFFF , size_t max_size = 255, bool sbyte = true) {
-    super(title, parent, flags, [StockID.OK, StockID.CANCEL], [ResponseType.GTK_RESPONSE_ACCEPT, ResponseType.GTK_RESPONSE_CANCEL]);
+    super(title, parent, flags, [StockID.OK, StockID.CANCEL], [ResponseType.ACCEPT, ResponseType.CANCEL]);
 
     this.top = top;
     this.max_dif = max_size;

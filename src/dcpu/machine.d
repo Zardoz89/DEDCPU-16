@@ -6,6 +6,7 @@
  */
 module dcpu.machine;
 
+/+
 public import dcpu.hardware, dcpu.cpu;
 import std.range, std.parallelism;
 
@@ -96,3 +97,6 @@ public:
   
   
 }
+
++/
+

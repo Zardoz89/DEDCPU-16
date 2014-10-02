@@ -62,7 +62,7 @@ in {
       case Operand.Aptr_word: // Register pointer with added word
     n_words++;
     return format("[A+ 0x%04X]", words[1]);
-    
+
       case Operand.Bptr_word:
     n_words++;
     return format("[B+ 0x%04X]", words[1]);
@@ -71,26 +71,26 @@ in {
     n_words++;
     return format("[C+ 0x%04X]", words[1]);
 
-    
+
       case Operand.Xptr_word:
     n_words++;
     return format("[X+ 0x%04X]", words[1]);
 
-    
+
       case Operand.Yptr_word:
     n_words++;
     return format("[Y+ 0x%04X]", words[1]);
 
-    
+
       case Operand.Zptr_word:
     n_words++;
     return format("[Z+ 0x%04X]", words[1]);
-    
+
       case Operand.Iptr_word:
     n_words++;
     return format("[I+ 0x%04X]", words[1]);
 
-    
+
       case Operand.Jptr_word:
     n_words++;
     return format("[J+ 0x%04X]", words[1]);
@@ -105,12 +105,12 @@ in {
 
       case Operand.PEEK:
     return "PEEK";
-    
+
       case Operand.PICK_word:
     n_words++;
     return format("[SP+ 0x%04X]", words[1]);
 
-    
+
       case Operand.SP: // SP
     return "SP";
 
@@ -132,7 +132,7 @@ in {
     return format("0x%04X", cast(ushort)(operand - Operand.Literal -1)); // -1 to 30
   }
 }
-  
+
 public:
 
 /**
@@ -146,7 +146,7 @@ string disassamble(ushort[] words, out ushort n_words)
 in {
   assert(words.length >= 3, "Instructions can ben 3 words long");
 }body {
-  ubyte opcode = decode!"OpCode"(words[0]);  
+  ubyte opcode = decode!"OpCode"(words[0]);
   n_words = 1;
   string op_a = operand!"OpA"(words, n_words);
   if (opcode == OpCode.ExtOpCode) { // Non basic instruction
@@ -163,7 +163,7 @@ in {
     tmp ~= words[0];
     tmp ~= words[n_words];
     string op_b = operand!"OpB"(tmp, n_words);
-    foreach (s; __traits(allMembers, OpCode)) {      
+    foreach (s; __traits(allMembers, OpCode)) {
       if (opcode == mixin("OpCode." ~ s)) {
         //string str = s ~ " " ~ op_b ~ ", " ~ op_a;
         //writeln(format("0x%04X", opcode), " ", str);
@@ -207,27 +207,27 @@ in {
       ushort[] tmp = slice[pos..$] ~ cast(ushort[])[0, 0];
       inst= disassamble(tmp, n_words);
     }
-    
-    
+
+
     if (tab) { // Appends a 16 wide space
       ret[cast(ushort)(pos + offset)] = "                 " ~ inst;
     } else {
       ret[cast(ushort)(pos + offset)] = inst;
     }
-    
+
     if (comment) { // Add coment  like: spaces ; [addr] - xxxx ....
       for(long i=0; i<(29- inst.length); i++) {
         ret[cast(ushort)(pos + offset)] ~= " ";
       }
       ret[cast(ushort)(pos + offset)] ~= ";" ~ format("[%04X] - %04X ", pos + offset, slice[pos]);
 
-        
+
       for (auto i=pos +1; i < pos + n_words && i < slice.length; i++) {
         ret[cast(ushort)(pos + offset)] ~= format("%04X ", slice[i]);
       }
     }
   }
-  
+
   return ret;
 }
 
@@ -242,7 +242,8 @@ ref string[ushort] auto_label(ref string[ushort] code) {
   foreach (key, ref line ;code) {
     auto m = match(line, reg);
     if (! m.empty && m.pre.length > 6 ) {
-      ushort jmp = parse!ushort(m.post[], 16); // Get jump address
+      string post = m.post;
+      auto jmp = parse!ushort(post, cast(uint)16); // Get jump address
       if (m.post.length > 7) { // has comments
         line = m.pre ~ m.hit[0..$-2] ~ format("lb%04X ", jmp) ~ m.post[5..$];
       } else {

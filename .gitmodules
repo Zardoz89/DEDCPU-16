@@ -1,3 +1,0 @@
-[submodule "GtkD"]
-	path = GtkD
-	url = git://github.com/gtkd-developers/GtkD.git

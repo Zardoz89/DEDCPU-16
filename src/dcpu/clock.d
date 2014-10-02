@@ -6,6 +6,7 @@
  */
 module dcpu.clock;
 
+/+
 import dcpu.hardware;
 
 class TimerClock: Hardware {
@@ -84,3 +85,5 @@ public:
   }
   
 }
++/
+

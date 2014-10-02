@@ -13,7 +13,7 @@ enum TypeHexFile {
   hexd,   /// Hexadecimal ASCII dump file
   b2,     /// Base 2 binary data (0bxxxxxxxx_xxxxxxxx)
   dat     /// Assembly DATs (DAT 0x0000)
-  }; 
+  };
 
 /**
  * Load a file with a image of a RAM
@@ -54,25 +54,25 @@ in {
       if (line.length < 1 || line[0] == ';') {
         continue; // Skip line, becasue it's a comment
       }
-      
-      auto words = split(strip(line));      
+
+      auto words = split(strip(line));
       if (words.length < 2 || words[0].length < 4) {
         throw new Exception("Bad format. Expected Addr: hexdata");
       }
-      
+
       if (words[0][0..2] == "0x" || words[0][0..2] == "0X")
         words[0] = words[0][2..$];
       ushort addr = parse!ushort(words[0], 16);
-      
+
       i=0;
       foreach (word; words[1..$]) {
         auto tmp = addr + i++;
         if (tmp >= 0x10000) // Out of bounds
           throw new Exception("Bad format. Data out of bounds " ~ format("0x%04X", tmp));
-        
+
         if (img.length <= tmp)
           img.length = cast(size_t)(tmp +1);
-        
+
         if (word.length > 3) {
           img[cast(size_t)(tmp)] = parse!ushort(word, 16);
         }
@@ -82,13 +82,13 @@ in {
     import std.algorithm;
     foreach ( line; f.byLine()) { // each line contains one or more words of 16 bit in hexadecimal
       // Keep alone the number in base 2
-      line = chompPrefix(chompPrefix(strip(line), "0B"), "0b");      
+      line = chompPrefix(chompPrefix(line.strip(' '), "0B"), "0b");
       if (line.length < 16 ) {
         continue; // Skip line because it's a bad line (ushort -> 16 bits)
       }
       auto r = findSplit(line, ['_']);
       line = r[0] ~ r[2]; // Skips '_'
-      
+
       img ~= parse!ushort(line, 2);
     }
   } else if (type == TypeHexFile.dat) { // assembly file that contains dat lines with code. Only process DAT lines
@@ -98,12 +98,12 @@ in {
       if (line.length < 5 || line[0..3] != "dat" && line[0..3] != "DAT") {
         continue; // Skip line
       }
-      
+
       auto words = split(line[4..$], ",");
       if (words.length < 1 ) {
         throw new Exception("Bad format. DAT without data");
       }
-     
+
       foreach (word; words) {
         if (img.length >= 0x10000) // Out of bounds
           throw new Exception("Bad format. Data out of bounds " ~ format("0x%04X", img.length));
@@ -139,7 +139,7 @@ in {
 
   static if (type == TypeHexFile.lraw || type == TypeHexFile.braw) { // RAW binary file
     foreach (word; img) {
-      ubyte[2] dbyte = void;         
+      ubyte[2] dbyte = void;
       static if (type == TypeHexFile.lraw) { // little-endian
         dbyte = nativeToLittleEndian!ushort(word);
       } else {

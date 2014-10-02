@@ -90,7 +90,7 @@ extern (C) export void on_mnu_new_activate (Event event, Widget widget) {
 extern (C) export void on_mnu_open_activate (Event event, Widget widget) {
   auto opener = new FileOpener(mainwin);
   auto response = opener.run();
-  if (response == ResponseType.GTK_RESPONSE_ACCEPT) {
+  if (response == ResponseType.ACCEPT) {
     filename = opener.getFilename();
     type = opener.type;
 
@@ -132,7 +132,7 @@ You must select the range of data tht you desire to load like a font.", file_siz
         auto r = d.run();
         d.hide();
         
-        if (r == ResponseType.GTK_RESPONSE_ACCEPT) {
+        if (r == ResponseType.ACCEPT) {
           size_t slice = cast(size_t)(d.size);
           size_t b = cast(size_t)d.bottom_address;
           size_t e = cast(size_t)d.top_address;
@@ -166,7 +166,7 @@ You must select the range of data tht you desire to load like a font.", file_siz
 extern (C) export void on_mnu_saveas_activate (Event event, Widget widget) {
   auto opener = new FileOpener(mainwin, false);
   auto response = opener.run();
-  if (response == ResponseType.GTK_RESPONSE_ACCEPT) {
+  if (response == ResponseType.ACCEPT) {
     filename = opener.getFilename();
     type = opener.type;
     // Save data
