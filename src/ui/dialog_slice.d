@@ -101,7 +101,7 @@ public:
     auto s = adjust_end_addr.getValue() - adjust_beg_addr.getValue() +1;
     if (!sbyte) {
       lbl_size.setText(to!string(s) ~  " words" ~ " - "
-                      ~ to!string(floor(max_dif/2)) ~ " glyphs ");
+                      ~ to!string(floor(cast(double)(max_dif/2))) ~ " glyphs ");
     } else {
       lbl_size.setText(to!string(s) ~  " words" ~ " - "
                       ~ to!string(s*2) ~ " bytes ");

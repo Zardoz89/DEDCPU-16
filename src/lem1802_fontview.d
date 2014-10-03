@@ -95,7 +95,7 @@ extern (C) export void on_mnu_open_activate (Event event, Widget widget) {
     type = opener.type;
 
     ushort[] tmp;
-    if (filename !is null && filename.length > 0){      
+    if (filename !is null && filename.length > 0){
       try {
         switch (type) {
           case TypeHexFile.lraw:
@@ -122,7 +122,7 @@ extern (C) export void on_mnu_open_activate (Event event, Widget widget) {
       } catch (Exception e) {
         stderr.writeln("Error: Couldn't open file\n", e.msg);
       }
-      
+
       if (tmp.length > 256) { // Contains something more that a LEM1802 font
         file_size = tmp.length;
 
@@ -131,7 +131,7 @@ You must select the range of data tht you desire to load like a font.", file_siz
         d.show();
         auto r = d.run();
         d.hide();
-        
+
         if (r == ResponseType.ACCEPT) {
           size_t slice = cast(size_t)(d.size);
           size_t b = cast(size_t)d.bottom_address;
@@ -221,14 +221,14 @@ void main(string[] args) {
 
   if (! builder.addFromFile ("./src/ui/fview.ui")) {
     writefln("Oops, could not create Builder object, check your builder file ;)");
-    exit(1); 
+    exit(1);
   }
 
   // Get reference to Objects
   mainwin = cast(Window) builder.getObject ("win_fontview");
   if (mainwin is null) {
     writefln("Can't find win_fontview widget");
-    exit(1); 
+    exit(1);
   }
   auto accelgroup = cast(AccelGroup) builder.getObject ("accelgroup1");
   if (accelgroup is null) {
@@ -236,24 +236,24 @@ void main(string[] args) {
     exit(1);
   }
   mainwin.addAccelGroup(accelgroup);
-  
+
   win_about = cast(AboutDialog) builder.getObject ("win_about");
   if (mainwin is null) {
     writefln("Can't find win_about widget");
     exit(1);
   }
-  
+
   dwa = cast(DrawingArea) builder.getObject("dwa_general");
   if (dwa is null) {
     writefln("Can't find dwa_general widget");
     exit(1);
   }
-  
+
   lbl_pos = cast(Label) builder.getObject("lbl_pos");
   if (lbl_pos is null) {
     writefln("Can't find lbl_pos widget");
     exit(1);
-  }  
+  }
   lbl_bin = cast(Label) builder.getObject ("lbl_bin");
   if (lbl_bin is null) {
     writefln("Can't find lbl_bin widget");
@@ -269,13 +269,13 @@ void main(string[] args) {
     writefln("Can't find lbl_dec widget");
     exit(1);
   }
-  
+
   glyph_editor = cast(DrawingArea) builder.getObject ("glyph_editor");
   if (glyph_editor is null) {
     writefln("Can't find glyph_editor widget");
     exit(1);
   }
-  
+
   dwa.modifyBg(GtkStateType.NORMAL, Color.black);
   glyph_editor.modifyBg(GtkStateType.NORMAL, Color.black);
   // Connect Signals to events
@@ -292,7 +292,7 @@ void main(string[] args) {
       int width;
       int height;
       dr.getSize(width, height);
-    
+
       double x = event.x *(min_width / width);   // Scales coords to be the same
       double y = event.y *(min_height / height); // always with diferent geometry
 
@@ -303,7 +303,7 @@ void main(string[] args) {
       lbl_pos.setLabel(to!string(selected));
       dwa.queueDraw();
       update_editor();
-      
+
       return true;
     }
     return false;
@@ -318,10 +318,10 @@ void main(string[] args) {
 
     dr.getSize(width, height);
 
-    // Calcs sizes ans factor scale    
+    // Calcs sizes ans factor scale
     double scale_x = width / min_width;
     double scale_y = height / min_height;
-    
+
     auto cr = new Context (dr);
 
     if (event !is null) {
@@ -330,8 +330,8 @@ void main(string[] args) {
       cr.rectangle(event.area.x, event.area.y,
         event.area.width, event.area.height);
       cr.clip();
-    
-    
+
+
       cr.scale(scale_x, scale_y);
       cr.translate(0, 0);
 
@@ -420,7 +420,7 @@ void main(string[] args) {
     dr.getSize(width, height);
     auto cr = new Context (dr);
 
-    
+
     if (event !is null) {
       // clip to the area indicated by the expose event so that we only redraw
       // the portion of the window that needs to be redrawn
@@ -431,7 +431,7 @@ void main(string[] args) {
       //cr.scale(scale_x, scale_y);
       cr.translate(0, 0);
 
-      
+
       // Draw lines around gryphs
       cr.save();
         cr.setSourceRgb(0.5, 0.5, 0.5);
@@ -446,13 +446,13 @@ void main(string[] args) {
         }
         cr.stroke();
       cr.restore();
-      
+
       // Paints selected Glyph
       cr.save();
       for (int x; x < 2; x++) {
         for (int y; y < 16; y++) {
           if (( font[selected*2+x] & (1<<y)) != 0) {
-            auto pos_x = (x*2 + 1 - floor(y/8) ) * 21;
+            auto pos_x = (x*2 + 1 - floor(cast(double)(y/8)) ) * 21;
             cr.rectangle(pos_x, (y%8)*21, 20, 20);
             cr.setSourceRgb(1.0, 1.0, 1.0);
             cr.fill();
@@ -470,7 +470,7 @@ void main(string[] args) {
     if (event !is null) {
       auto x = cast(ushort) floor(event.x / (20.0 +1));
       auto y = cast(ushort) floor(event.y / (20.0 +1));
-      
+
       if ( x < 1) { // First column
         font[selected*2] = font[selected*2] ^ cast(ushort)(1<<(y+8));
       } else if ( x < 2) { // Second column
@@ -504,9 +504,9 @@ void main(string[] args) {
       }
     }*/
   });
-  
+
   builder.connectSignals (null);
   mainwin.show ();
-  
+
   Main.run();
 }

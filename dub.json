@@ -1,7 +1,39 @@
 {
-  "name": "DEDCPU-16",
+  "name": "dedcpu",
   "authors": ["Luis Panadero Guardeño"],
-  "dependencies": {
-    "gtk-d": "~1.7.4"
-  }
+  "targetType": "none",
+  "subPackages": [
+    {
+      "name": "lem1802",
+      "targetType": "executable",
+      "targetName": "lem1802",
+      "excludedSourceFiles": [
+        "src/bconv.d",
+        "src/ddis.d"
+      ],
+      "dependencies": {
+        "gtk-d": "~Gtk2"
+      }
+    },
+    {
+      "name": "bconv",
+      "targetType": "executable",
+      "targetName": "bconv",
+      "excludedSourceFiles": [
+        "src/lem1802_fontview.d",
+        "src/ddis.d",
+        "src/ui/*"
+      ]
+    },
+    {
+      "name": "ddis",
+      "targetType": "executable",
+      "targetName": "ddis",
+      "excludedSourceFiles": [
+        "src/lem1802_fontview.d",
+        "src/bconv.d",
+        "src/ui/*"
+      ]
+    }
+  ]
 }
