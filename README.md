@@ -7,6 +7,8 @@ The tool-kit it's actually increasing it's functionality and usefulness adding s
 
 It's a graphic tool to load and view fonts for LEM1802 screen. It allow edit and view each glyph and show each glyph in binary, hexadecimal and decimal representations plus a graphic representation of it.
 
+![LEM1802_fontview in action](http://imagizer.imageshack.us/v2/150x100q90/802/lem1802fview3.png)
+
 ### Usage: ###
   ./lem1802_fontview
 
