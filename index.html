@@ -30,20 +30,58 @@
 
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        
-<h1>D DISassembler for DCPU-16 v1.7</h1>
 
-<h2>Usage:</h2>
+    <article id="main_content" class="inner" itemprop="mainContentOfPage"><h1><a id="user-content-dedcpu-toolkit" class="anchor" href="#dedcpu-toolkit" aria-hidden="true"><span class="octicon octicon-link"></span></a>DEDCPU Toolkit</h1>
 
-<pre>./ddis filename [options]</pre>
+<p>This tool-kit consists in a series of small tools related to the development around Notch's DCPU-16 computer.
+The tool-kit it's actually increasing it's functionality and usefulness adding some interesting tools, like a converter between binary formats, a disassemblers or LEM1802 font viewer.</p>
 
-<p>Prints in stdout a disassembled code of input file. 
-It can add coments to the generated code showing what hex words and what addres generated each instrucction.
-  In addtion can auto-label jumps, making more easy to read and understand disassembled code.
-</p>
+<h2><a id="user-content-font-viewer-for-lem1802-screen" class="anchor" href="#font-viewer-for-lem1802-screen" aria-hidden="true"><span class="octicon octicon-link"></span></a>Font viewer for LEM1802 screen</h2>
 
-<h2>License:</h2>
+<p>It's a graphic tool to load and view fonts for LEM1802 screen. It allow edit and view each glyph and show each glyph in binary, hexadecimal and decimal representations plus a graphic representation of it.</p>
+
+<h3><a id="user-content-usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage:</h3>
+
+<p>./lem1802_fontview</p>
+
+<h2><a id="user-content-d-disassembler-for-dcpu-16-v17" class="anchor" href="#d-disassembler-for-dcpu-16-v17" aria-hidden="true"><span class="octicon octicon-link"></span></a>D DISassembler for DCPU-16 v1.7</h2>
+
+<h3><a id="user-content-usage-1" class="anchor" href="#usage-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage:</h3>
+
+<p>./ddis filename [options]</p>
+
+<h3><a id="user-content-options" class="anchor" href="#options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Options:</h3>
+
+<ul>
+<li><strong>-h</strong>                   Show this message</li>
+<li><strong>-t</strong> or <strong>--type</strong> <em>type</em>  Type of file with memory map. <strong>lraw</strong> -&gt; little endian raw binary ; <strong>braw</strong> -&gt; big endian raw binary ; <strong>ahex</strong> -&gt; ascii hexadecimal file ; <strong>dat</strong> -&gt; Read DATs from a dasm file. By default ddis asumes little endian raw binary input file</li>
+<li><strong>-c</strong>                   Add comments to all lines of the style [address] xxxx ....   where xxxx its the hexadecimal representation of these instruction.</li>
+<li><strong>-l</strong>                   Auto-label all jumps (SET PC, .... and JSR ....)</li>
+<li><strong>-b</strong><em>number</em>           Sets the absolute position were begin to disassembly the file. By default it's 0</li>
+<li><strong>-e</strong><em>number</em>           Sets the absolute position were end to disassembly the file. By default it's the end of the file.</li>
+</ul>
+
+<h2><a id="user-content-binary-file-conversor-for-dcpu-16-any-version" class="anchor" href="#binary-file-conversor-for-dcpu-16-any-version" aria-hidden="true"><span class="octicon octicon-link"></span></a>Binary file CONVersor for DCPU-16 (any version)</h2>
+
+<h3><a id="user-content-usage-2" class="anchor" href="#usage-2" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage:</h3>
+
+<p>./bconv input_filename output_filename [options]</p>
+
+<h3><a id="user-content-options-1" class="anchor" href="#options-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Options:</h3>
+
+<ul>
+<li><strong>-h</strong>                   Show this message</li>
+<li><strong>-i</strong> or <strong>--itype</strong> <em>type</em> Type of input file with memory map. <strong>lraw</strong> -&gt; little endian raw binary ; <strong>braw</strong> -&gt; big endian raw binary ; <strong>ahex</strong> -&gt; ascii hexadecimal file ; <strong>hexd</strong> -&gt; ascii hexadecimal dump file. By default bconv assumes little endian raw binary input file.</li>
+<li><strong>-o</strong> or <strong>--otype</strong> <em>type</em> Type of output file with memory map. <strong>lraw</strong> -&gt; little endian raw binary ; <strong>braw</strong> -&gt; big endian raw binary ; <strong>ahex</strong> -&gt; ascii hexadecimal file ; <strong>hexd</strong> -&gt; ascii hexadecimal dump file. By default bconv assumes ascii hexadecimal dump output file.</li>
+<li><strong>-b</strong><em>number</em>           Sets the absolute position were begin to convert the file. By default it's 0</li>
+<li><strong>-e</strong><em>number</em>           Sets the absolute position were end to convert the file. By default it's the end of the file.</li>
+</ul>
+
+<h2><a id="user-content-notes" class="anchor" href="#notes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Notes:</h2>
+
+<p>Files tester.hex and tester2.hex are hexadecimal dump files for testing disassemblers and emulators. You have the original dcpu-16 assembly code in tester.dasm and tester2.dasm.</p>
+
+<h2><a id="user-content-license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License:</h2>
 
 <p>This project is licensed under the BSD license.</p>
 
@@ -51,14 +89,17 @@ It can add coments to the generated code showing what hex words and what addres 
 All rights reserved.</p>
 
 <p>Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-1. Redistributions of source code must retain the above copyright
-   notice, this list of conditions and the following disclaimer.<BR/>
-2. Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.<BR/>
-3. The names of its contributors may not be used to endorse or promote
-   products derived from this software without specific prior written permission.</p>
+modification, are permitted provided that the following conditions are met:</p>
+
+<ol>
+<li><p>Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.</p></li>
+<li><p>Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.</p></li>
+<li><p>The names of its contributors may not be used to endorse or promote
+products derived from this software without specific prior written permission.</p></li>
+</ol>
 
 <p>THIS SOFTWARE IS PROVIDED BY  ''AS IS'' AND ANY
 EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
@@ -70,7 +111,7 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
-      </section>
+</article>
     </div>
 
     <!-- FOOTER  -->
