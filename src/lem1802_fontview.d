@@ -335,34 +335,6 @@ void main(string[] args) {
       cr.scale(scale_x, scale_y);
       cr.translate(0, 0);
 
-      debug { // Test Pattern
-        cr.rectangle(0, 0, 4, 4);
-        cr.setSourceRgb(1.0, 1.0, 1.0);
-        cr.fill();
-        cr.rectangle(4, 4, 4, 4);
-        cr.setSourceRgb(1.0, 1.0, 1.0);
-        cr.fill();
-        cr.rectangle(8, 8, 4, 4);
-        cr.setSourceRgb(1.0, 1.0, 1.0);
-        cr.fill();
-        cr.rectangle(12, 12, 4, 4);
-        cr.setSourceRgb(1.0, 1.0, 1.0);
-        cr.fill();
-
-        cr.rectangle(17, 16, 4, 4);
-        cr.setSourceRgb(1.0, 1.0, 1.0);
-        cr.fill();
-        cr.rectangle(21, 20, 4, 4);
-        cr.setSourceRgb(1.0, 1.0, 1.0);
-        cr.fill();
-        cr.rectangle(25, 24, 4, 4);
-        cr.setSourceRgb(1.0, 1.0, 1.0);
-        cr.fill();
-        cr.rectangle(29, 28, 4, 4);
-        cr.setSourceRgb(1.0, 1.0, 1.0);
-        cr.fill();
-      }
-
       // Draw font
       cr.save();
       for (size_t i; i< font.length; i++) {

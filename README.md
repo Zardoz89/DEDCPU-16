@@ -41,6 +41,17 @@ It's a graphic tool to load and view fonts for LEM1802 screen. It allow edit and
 ## Notes: ##
 Files tester.hex and tester2.hex are hexadecimal dump files for testing disassemblers and emulators. You have the original dcpu-16 assembly code in tester.dasm and tester2.dasm.
 
+## Build instructions ##
+
+DEDCPU-16 toolkit was upgrade to use [Dub build system](http://code.dlang.org/). It makes much more simple and straightforward to grab the dependencies and build a D language based program. If you not have Dub installed on your system, grab it! 
+
+To build simply run :
+```
+dub build dedcpu:lem1802
+dub build dedcpu:ddis
+dub build dedcpu:bconv
+```
+
 ## License: ##
 This project is licensed under the BSD license.
 
