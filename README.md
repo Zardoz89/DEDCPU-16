@@ -1,5 +1,7 @@
 # DEDCPU Toolkit #
 
+v 0.3.0
+
 This tool-kit consists in a series of small tools related to the development around Notch's DCPU-16 computer.
 The tool-kit it's actually increasing it's functionality and usefulness adding some interesting tools, like a converter between binary formats, a disassemblers or LEM1802 font viewer.
 
@@ -43,7 +45,8 @@ Files tester.hex and tester2.hex are hexadecimal dump files for testing disassem
 
 ## Build instructions ##
 
-DEDCPU-16 toolkit was upgrade to use [Dub build system](http://code.dlang.org/). It makes much more simple and straightforward to grab the dependencies and build a D language based program. If you not have Dub installed on your system, grab it! 
+DEDCPU-16 toolkit was upgrade to use [Dub build system](http://code.dlang.org/). It makes much more simple and straightforward to grab the dependencies and build a D language based program. If you not have Dub installed on your system, grab it!
+Only requires Gtk-D and Dub would handle it.
 
 To build simply run :
 ```
