@@ -7,7 +7,7 @@ The tool-kit it's actually increasing it's functionality and usefulness adding s
 
 It's a graphic tool to load and view fonts for LEM1802 screen. It allow edit and view each glyph and show each glyph in binary, hexadecimal and decimal representations plus a graphic representation of it.
 
-![LEM1802_fontview in action](http://imagizer.imageshack.us/v2/150x100q90/802/lem1802fview3.png)
+![LEM1802_fontview in action](https://imageshack.com/f/malem1802fview3p)
 
 ### Usage: ###
   ./lem1802_fontview
@@ -23,6 +23,8 @@ It's a graphic tool to load and view fonts for LEM1802 screen. It allow edit and
 * __-l__                   Auto-label all jumps (SET PC, .... and JSR ....)
 * __-b__*number*           Sets the absolute position were begin to disassembly the file. By default it's 0
 * __-e__*number*           Sets the absolute position were end to disassembly the file. By default it's the end of the file.
+
+![DDIS in action](http://img210.imageshack.us/img210/1083/ddis.png)
 
 ## Binary file CONVersor for DCPU-16 (any version) ##
 
