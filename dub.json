@@ -12,7 +12,7 @@
         "src/ddis.d"
       ],
       "dependencies": {
-        "gtk-d": "~Gtk2"
+        "gtk-d": "~>1.7.7"
       }
     },
     {
