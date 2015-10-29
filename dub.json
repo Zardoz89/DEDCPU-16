@@ -12,7 +12,7 @@
         "src/ddis.d"
       ],
       "dependencies": {
-        "gtk-d": "~>1.7.7"
+        "gtk-d": "~>2.4.2"
       }
     },
     {

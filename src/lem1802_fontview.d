@@ -1,15 +1,16 @@
 module lem1802_fontview;
-import gtk.ObjectGtk, gtk.Main, gtk.Builder, gtk.Widget, gtk.Window, gdk.Event, gtk.Container;
-import gtk.MainWindow, gtk.Dialog, gtk.AboutDialog;
-import gtk.Button, gtk.Label, gtk.MenuBar, gtk.MenuItem, gtk.ToggleButton;
-import gtk.SpinButton, gtk.Adjustment;
-import gtkc.gtktypes, gtk.AccelGroup;
-
-import gtk.DrawingArea, gdk.Drawable;
-import gdk.Color;
-import cairo.Context, cairo.Surface;
 
 import std.c.process, std.stdio, std.conv, std.math;
+
+import gtkc.gtktypes;
+import gtk.Main, gtk.Builder;
+import gtk.Widget, gtk.Window, gtk.MainWindow, gtk.Dialog, gtk.AboutDialog;
+import gtk.Button, gtk.Label, gtk.MenuBar, gtk.MenuItem, gtk.ToggleButton;
+import gtk.SpinButton, gtk.Adjustment, gtk.AccelGroup;
+import gtk.DrawingArea;
+import gdk.Event, gtk.Container, gdk.RGBA;
+
+import cairo.Context, cairo.Surface;
 
 import ui.file_chooser, ui.dialog_slice;
 import dcpu.ram_io;
@@ -30,7 +31,7 @@ Label lbl_bin;              // Label with binary representation of selected glyp
 Label lbl_hex;              // Label with hex representation of selected glyph
 Label lbl_dec;              // Label with decimal representation of selected glyph
 
-//bool updating;              // Updating data form out to the editor ?
+//bool updating;            // Updating data form out to the editor ?
 DrawingArea glyph_editor;   // Glyph editor
 //ToggleButton[16][2] editor; // Editor toggle buttons
 
@@ -42,7 +43,7 @@ size_t file_size;           // Original File size
  * Close the App when it's clicked menu exit option
  */
 extern (C) export void on_mnu_exit_activate (Event event, Widget widget) {
-  Main.exit(0);
+  Main.quit();
 }
 
 /**
@@ -83,6 +84,7 @@ extern (C) export void on_mnu_new_activate (Event event, Widget widget) {
   update_editor();
   dwa.queueDraw();
 }
+
 
 /**
  * Show the Open file Dialog and try to load it
@@ -126,7 +128,8 @@ extern (C) export void on_mnu_open_activate (Event event, Widget widget) {
       if (tmp.length > 256) { // Contains something more that a LEM1802 font
         file_size = tmp.length;
 
-        auto d = new dialog_slice("LEM1802 Font View", mainwin, GtkDialogFlags.MODAL, "The file contains more data that a font for the LEM1802.
+        auto d = new dialog_slice("LEM1802 Font View", mainwin, GtkDialogFlags.MODAL,
+            "The file contains more data that a font for the LEM1802.
 You must select the range of data tht you desire to load like a font.", file_size, 255, false);
         d.show();
         auto r = d.run();
@@ -243,6 +246,7 @@ void main(string[] args) {
     exit(1);
   }
 
+
   dwa = cast(DrawingArea) builder.getObject("dwa_general");
   if (dwa is null) {
     writefln("Can't find dwa_general widget");
@@ -276,25 +280,23 @@ void main(string[] args) {
     exit(1);
   }
 
-  dwa.modifyBg(GtkStateType.NORMAL, Color.black);
-  glyph_editor.modifyBg(GtkStateType.NORMAL, Color.black);
-  // Connect Signals to events
+  dwa.overrideBackgroundColor( GtkStateFlags.NORMAL, new RGBA(0, 0, 0));
+  glyph_editor.overrideBackgroundColor( GtkStateFlags.NORMAL, new RGBA(0, 0, 0));
+  // Here we assing event handlers --------------------------------------------
 
   // Closing the window ends the program
-  mainwin.addOnDestroy ( (ObjectGtk ob) {
-    Main.exit(0);
+  mainwin.addOnDestroy ( (Widget w) {
+    Main.quit();
   });
 
   // Select a Glyph
-  dwa.addOnButtonPress ( (GdkEventButton *event, Widget widget) {
+  dwa.addOnButtonPress ( (Event event, Widget widget) {
     if (event !is null) {
-      Drawable dr = dwa.getWindow();
-      int width;
-      int height;
-      dr.getSize(width, height);
+      int width = dwa.getWidth();
+      int height = dwa.getHeight();
 
-      double x = event.x *(min_width / width);   // Scales coords to be the same
-      double y = event.y *(min_height / height); // always with diferent geometry
+      double x = event.button().x *(min_width / width);   // Scales coords to be the same
+      double y = event.button().y *(min_height / height); // always with diferent geometry
 
       x = floor(x / (4.0*4.0 +1));
       y = floor(y / (8.0*4.0 +1));
@@ -310,90 +312,76 @@ void main(string[] args) {
   });
 
   // Draws Glyphs viewer
-  dwa.addOnExpose( (GdkEventExpose* event, Widget widget) {
-    Drawable dr = dwa.getWindow();
-
-    int width;
-    int height;
-
-    dr.getSize(width, height);
+  dwa.addOnDraw( (Scoped!Context cr, Widget widget) {
+    int width = dwa.getWidth();
+    int height = dwa.getHeight();
 
     // Calcs sizes ans factor scale
     double scale_x = width / min_width;
     double scale_y = height / min_height;
 
-    auto cr = new Context (dr);
-
-    if (event !is null) {
       // clip to the area indicated by the expose event so that we only redraw
       // the portion of the window that needs to be redrawn
-      cr.rectangle(event.area.x, event.area.y,
+    /+  cr.rectangle(event.area.x, event.area.y,
         event.area.width, event.area.height);
       cr.clip();
 
 
       cr.scale(scale_x, scale_y);
       cr.translate(0, 0);
-
-      // Draw font
-      cr.save();
-      for (size_t i; i< font.length; i++) {
-        for (ushort p; p < 16; p++) { // Y loops each pixel of a glyph
-          if(( font[i] & (1<<p)) != 0) {
-            double x = (1.0 - floor(p / 8.0))*4.0;
-            x += (i%64)*8 + floor((i%64) / 2.0);
-            double y = (p % 8)*4.0;
-            y += floor(i / 64.0)*33;
-            cr.rectangle(x, y, 4, 4);
-            cr.setSourceRgb(1.0, 1.0, 1.0);
-            cr.fill();
-          }
++/
+    // Draw font
+    cr.save();
+    for (size_t i; i< font.length; i++) {
+      for (ushort p; p < 16; p++) { // Y loops each pixel of a glyph
+        if(( font[i] & (1<<p)) != 0) {
+          double x = (1.0 - floor(p / 8.0))*4.0;
+          x += (i%64)*8 + floor((i%64) / 2.0);
+          double y = (p % 8)*4.0;
+          y += floor(i / 64.0)*33;
+          cr.rectangle(x, y, 4, 4);
+          cr.setSourceRgb(1.0, 1.0, 1.0);
+          cr.fill();
         }
       }
-      cr.restore();
-
-      // Draw lines around gryphs
-      cr.save();
-        cr.setSourceRgb(1.0, 0, 0);
-        cr.setLineWidth(1.0);
-        for (auto y = 33.0; y< 33*4; y+=33) {
-          cr.moveTo(0, y);
-          cr.lineTo(min_width, y);
-        }
-        for (auto x = 17.0; x< 17*32; x+=17) {
-          cr.moveTo(x, 0);
-          cr.lineTo(x, min_height);
-        }
-        cr.stroke();
-
-      cr.restore();
-
-      // Draw rectangle around selected glyph
-      cr.save();
-        cr.setSourceRgb(0, 1.0, 0);
-        cr.setLineWidth(1.5);
-        double x = (selected%32)*16 + (selected%32);
-        double y = floor(selected / 32.0)*33;
-        cr.rectangle(x, y, 4*4, 8*4);
-        cr.stroke();
-
-      cr.restore();
     }
+    cr.restore();
+
+    // Draw lines around gryphs
+    cr.save();
+      cr.setSourceRgb(1.0, 0, 0);
+      cr.setLineWidth(1.0);
+      for (auto y = 33.0; y< 33*4; y+=33) {
+        cr.moveTo(0, y);
+        cr.lineTo(min_width, y);
+      }
+      for (auto x = 17.0; x< 17*32; x+=17) {
+        cr.moveTo(x, 0);
+        cr.lineTo(x, min_height);
+      }
+      cr.stroke();
+
+    cr.restore();
+
+    // Draw rectangle around selected glyph
+    cr.save();
+      cr.setSourceRgb(0, 1.0, 0);
+      cr.setLineWidth(1.5);
+      double x = (selected%32)*16 + (selected%32);
+      double y = floor(selected / 32.0)*33;
+      cr.rectangle(x, y, 4*4, 8*4);
+      cr.stroke();
+
+      cr.restore();
     return false;
   });
 
   // Draws Glyph editor
-  glyph_editor.addOnExpose( (GdkEventExpose* event, Widget widget) {
-    Drawable dr = glyph_editor.getWindow();
+  glyph_editor.addOnDraw( (Scoped!Context cr, Widget widget) {
+    int width = dwa.getWidth();
+    int height = dwa.getHeight();
 
-    int width;
-    int height;
-
-    dr.getSize(width, height);
-    auto cr = new Context (dr);
-
-
-    if (event !is null) {
+    /+
       // clip to the area indicated by the expose event so that we only redraw
       // the portion of the window that needs to be redrawn
       cr.rectangle(event.area.x, event.area.y,
@@ -402,46 +390,45 @@ void main(string[] args) {
 
       //cr.scale(scale_x, scale_y);
       cr.translate(0, 0);
++/
 
+    // Draw lines around gryphs
+    cr.save();
+      cr.setSourceRgb(0.5, 0.5, 0.5);
+      cr.setLineWidth(1.0);
+      for (auto y = 20.0; y< 21*8; y+=21) {
+        cr.moveTo(0, y);
+        cr.lineTo(width, y);
+      }
+      for (auto x = 20.0; x< 21*4; x+=21) {
+        cr.moveTo(x, 0);
+        cr.lineTo(x, height);
+      }
+      cr.stroke();
+    cr.restore();
 
-      // Draw lines around gryphs
-      cr.save();
-        cr.setSourceRgb(0.5, 0.5, 0.5);
-        cr.setLineWidth(1.0);
-        for (auto y = 20.0; y< 21*8; y+=21) {
-          cr.moveTo(0, y);
-          cr.lineTo(width, y);
-        }
-        for (auto x = 20.0; x< 21*4; x+=21) {
-          cr.moveTo(x, 0);
-          cr.lineTo(x, height);
-        }
-        cr.stroke();
-      cr.restore();
-
-      // Paints selected Glyph
-      cr.save();
-      for (int x; x < 2; x++) {
-        for (int y; y < 16; y++) {
-          if (( font[selected*2+x] & (1<<y)) != 0) {
-            auto pos_x = (x*2 + 1 - floor(cast(double)(y/8)) ) * 21;
-            cr.rectangle(pos_x, (y%8)*21, 20, 20);
-            cr.setSourceRgb(1.0, 1.0, 1.0);
-            cr.fill();
-          }
+    // Paints selected Glyph
+    cr.save();
+    for (int x; x < 2; x++) {
+      for (int y; y < 16; y++) {
+        if (( font[selected*2+x] & (1<<y)) != 0) {
+          auto pos_x = (x*2 + 1 - floor(cast(double)(y/8)) ) * 21;
+          cr.rectangle(pos_x, (y%8)*21, 20, 20);
+          cr.setSourceRgb(1.0, 1.0, 1.0);
+          cr.fill();
         }
       }
-      cr.restore();
     }
+    cr.restore();
 
     return false;
   });
 
   // Update the changes of edited glyph
-  glyph_editor.addOnButtonPress( (GdkEventButton *event, Widget widget) {
+  glyph_editor.addOnButtonPress( (Event event, Widget widget) {
     if (event !is null) {
-      auto x = cast(ushort) floor(event.x / (20.0 +1));
-      auto y = cast(ushort) floor(event.y / (20.0 +1));
+      auto x = cast(ushort) floor(event.button().x / (20.0 +1));
+      auto y = cast(ushort) floor(event.button().y / (20.0 +1));
 
       if ( x < 1) { // First column
         font[selected*2] = font[selected*2] ^ cast(ushort)(1<<(y+8));
@@ -459,7 +446,8 @@ void main(string[] args) {
       return true;
     }
     return false;
-    /*for (int x; x < 2; x++) {
+    /*
+      for (int x; x < 2; x++) {
       for (int y; y <16; y++) {
         auto pos = 1<<y;
         r ~= "editor["~to!string(x)~"]["~to!string(y)~"]";
@@ -474,10 +462,11 @@ void main(string[] args) {
         r ~= " }";
         r ~= "});";
       }
-    }*/
+    }
+    */
   });
 
-  builder.connectSignals (null);
+  builder.connectSignals (null); // This connect signals defiend on the builder with "extern (C) export" edifned functions
   mainwin.show ();
 
   Main.run();
