@@ -23,8 +23,15 @@ ushort[256] font;           // Font data
 size_t selected;            // Selected gryph
 
 DrawingArea dwa;            // Drawing widget
-enum double min_width = 4*4*32+30;  // Min width of drawing widget
-enum double min_height = 8*4*4+3;   // Min height of drawing widget
+enum G_WIDTH  = 4;
+enum G_HEIGHT = 8;
+enum uint MATRIX_WIDTH  = 32;
+enum uint MATRIX_HEIGHT = 4;
+enum RECT_SIZE = 4;
+enum CELL_HEIGHT = RECT_SIZE*G_HEIGHT;
+enum CELL_WIDTH  = RECT_SIZE*G_WIDTH;
+enum double min_width  = G_WIDTH*RECT_SIZE*MATRIX_WIDTH +30; // Min width of drawing widget
+enum double min_height = G_HEIGHT*RECT_SIZE*MATRIX_HEIGHT +3; // Min height of drawing widget
 
 Label lbl_pos;              // Label with selected glyph position
 Label lbl_bin;              // Label with binary representation of selected glyph
@@ -313,33 +320,35 @@ void main(string[] args) {
 
   // Draws Glyphs viewer
   dwa.addOnDraw( (Scoped!Context cr, Widget widget) {
-    int width = dwa.getWidth();
-    int height = dwa.getHeight();
+
+    GtkAllocation size;
+    widget.getAllocation(size);
 
     // Calcs sizes ans factor scale
-    double scale_x = width / min_width;
-    double scale_y = height / min_height;
+    double scale_x = size.width / min_width;
+    double scale_y = size.height / min_height;
 
-      // clip to the area indicated by the expose event so that we only redraw
-      // the portion of the window that needs to be redrawn
-    /+  cr.rectangle(event.area.x, event.area.y,
-        event.area.width, event.area.height);
-      cr.clip();
+    // scale to unit square
+    //cr.scale(size.width, size.height);
 
-
-      cr.scale(scale_x, scale_y);
-      cr.translate(0, 0);
-+/
-    // Draw font
+    // Draw font on a 32x4 matrix. Each font[i] is half glyph
     cr.save();
     for (size_t i; i< font.length; i++) {
-      for (ushort p; p < 16; p++) { // Y loops each pixel of a glyph
+      auto hcell_x = i % (2*MATRIX_WIDTH);
+      auto cell_y = i / (2*MATRIX_WIDTH);
+      auto x_org = hcell_x*CELL_WIDTH/2 + floor(hcell_x/2.0);
+      auto y_org = cell_y * (CELL_HEIGHT+1);
+
+      for (ushort p; p < 16; p++) { // And loops each pixel of a half glyph
         if(( font[i] & (1<<p)) != 0) {
-          double x = (1.0 - floor(p / 8.0))*4.0;
-          x += (i%64)*8 + floor((i%64) / 2.0);
-          double y = (p % 8)*4.0;
-          y += floor(i / 64.0)*33;
-          cr.rectangle(x, y, 4, 4);
+          int l_oct = 1 - (p / 8);
+          double x = l_oct * RECT_SIZE;
+          x += x_org;
+
+          double y = (p % 8) * RECT_SIZE;
+          y += y_org;
+
+          cr.rectangle(x, y, RECT_SIZE, RECT_SIZE);
           cr.setSourceRgb(1.0, 1.0, 1.0);
           cr.fill();
         }
@@ -351,11 +360,11 @@ void main(string[] args) {
     cr.save();
       cr.setSourceRgb(1.0, 0, 0);
       cr.setLineWidth(1.0);
-      for (auto y = 33.0; y< 33*4; y+=33) {
+      for (auto y = CELL_HEIGHT +1 ; y< (CELL_HEIGHT+1)*MATRIX_HEIGHT; y+=CELL_HEIGHT+1) {
         cr.moveTo(0, y);
         cr.lineTo(min_width, y);
       }
-      for (auto x = 17.0; x< 17*32; x+=17) {
+      for (auto x = CELL_WIDTH+1; x< (CELL_WIDTH+1)*MATRIX_WIDTH; x+=CELL_WIDTH+1) {
         cr.moveTo(x, 0);
         cr.lineTo(x, min_height);
       }
@@ -367,9 +376,9 @@ void main(string[] args) {
     cr.save();
       cr.setSourceRgb(0, 1.0, 0);
       cr.setLineWidth(1.5);
-      double x = (selected%32)*16 + (selected%32);
-      double y = floor(selected / 32.0)*33;
-      cr.rectangle(x, y, 4*4, 8*4);
+      double x = (selected%MATRIX_WIDTH)*G_WIDTH*RECT_SIZE + (selected%MATRIX_WIDTH);
+      double y = floor(selected / MATRIX_WIDTH)*(CELL_HEIGHT+1);
+      cr.rectangle(x, y, RECT_SIZE*G_WIDTH, RECT_SIZE*G_HEIGHT);
       cr.stroke();
 
       cr.restore();
