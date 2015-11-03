@@ -183,7 +183,9 @@
                       <object class="GtkLabel" id="lbl_pos">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="xalign">1</property>
                         <property name="label" translatable="yes">0</property>
+                        <property name="width_chars">3</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -199,9 +201,10 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkVButtonBox" id="vbuttonbox1">
+                  <object class="GtkButtonBox" id="vbuttonbox1">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="orientation">vertical</property>
                     <property name="layout_style">spread</property>
                     <child>
                       <object class="GtkButton" id="but_next">

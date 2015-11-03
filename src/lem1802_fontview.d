@@ -23,6 +23,7 @@ ushort[256] font;           // Font data
 size_t selected;            // Selected gryph
 
 DrawingArea dwa;            // Drawing widget
+enum FONT_GLYPHS = 128;
 enum G_WIDTH  = 4;
 enum G_HEIGHT = 8;
 enum uint MATRIX_WIDTH  = 32;
@@ -299,15 +300,15 @@ void main(string[] args) {
   // Select a Glyph
   dwa.addOnButtonPress ( (Event event, Widget widget) {
     if (event !is null) {
-      int width = dwa.getWidth();
-      int height = dwa.getHeight();
+      GtkAllocation size;
+      widget.getAllocation(size);
 
-      double x = event.button().x *(min_width / width);   // Scales coords to be the same
-      double y = event.button().y *(min_height / height); // always with diferent geometry
+      double x = event.button().x *(min_width / size.width);   // Scales coords to be the same
+      double y = event.button().y *(min_height / size.height); // always with diferent geometry
 
-      x = floor(x / (4.0*4.0 +1));
-      y = floor(y / (8.0*4.0 +1));
-      selected = (to!size_t(x+ y*32)%128);
+      x = floor(x / (G_WIDTH*RECT_SIZE  +1));
+      y = floor(y / (G_HEIGHT*RECT_SIZE +1));
+      selected = (to!size_t(x+ y*MATRIX_WIDTH) % FONT_GLYPHS);
 
       lbl_pos.setLabel(to!string(selected));
       dwa.queueDraw();
@@ -320,16 +321,13 @@ void main(string[] args) {
 
   // Draws Glyphs viewer
   dwa.addOnDraw( (Scoped!Context cr, Widget widget) {
-
     GtkAllocation size;
     widget.getAllocation(size);
 
-    // Calcs sizes ans factor scale
+    // Calcs factor scale
     double scale_x = size.width / min_width;
     double scale_y = size.height / min_height;
-
-    // scale to unit square
-    //cr.scale(size.width, size.height);
+    cr.scale(scale_x, scale_y);
 
     // Draw font on a 32x4 matrix. Each font[i] is half glyph
     cr.save();
@@ -387,18 +385,16 @@ void main(string[] args) {
 
   // Draws Glyph editor
   glyph_editor.addOnDraw( (Scoped!Context cr, Widget widget) {
-    int width = dwa.getWidth();
-    int height = dwa.getHeight();
-
+    GtkAllocation size;
+    widget.getAllocation(size);
     /+
-      // clip to the area indicated by the expose event so that we only redraw
-      // the portion of the window that needs to be redrawn
-      cr.rectangle(event.area.x, event.area.y,
-        event.area.width, event.area.height);
-      cr.clip();
 
       //cr.scale(scale_x, scale_y);
       cr.translate(0, 0);
+
+    // Calcs factor scale
+    double scale_x = size.width / min_width;
+    double scale_y = size.height / min_height;
 +/
 
     // Draw lines around gryphs
@@ -407,11 +403,11 @@ void main(string[] args) {
       cr.setLineWidth(1.0);
       for (auto y = 20.0; y< 21*8; y+=21) {
         cr.moveTo(0, y);
-        cr.lineTo(width, y);
+        cr.lineTo(size.width, y);
       }
       for (auto x = 20.0; x< 21*4; x+=21) {
         cr.moveTo(x, 0);
-        cr.lineTo(x, height);
+        cr.lineTo(x, size.height);
       }
       cr.stroke();
     cr.restore();
