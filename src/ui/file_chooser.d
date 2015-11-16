@@ -46,12 +46,10 @@ public:
     if (! builder.addFromFile ("./src/ui/file_chooser.ui")) {
       throw new Exception("Can't find file file_chooser.ui");
     }
-    
+
     // Create file filters
     filters ~= new FileFilter();
-    filters[0].setName("Data file (*.dat|*.bin|*.hex)");
-    filters[0].addPattern("*.dat");
-    filters[0].addPattern("*.bin");
+    filters[0].setName("Hexdump file (*.hex)");
     filters[0].addPattern("*.hex");
     filters ~= new FileFilter();
     filters[1].setName("Assembler file (*.dasm|*.dasm16|*.asm)");
@@ -59,8 +57,15 @@ public:
     filters[1].addPattern("*.dasm16");
     filters[1].addPattern("*.asm");
     filters ~= new FileFilter();
-    filters[2].setName("All files");
-    filters[2].addPattern("*.*");
+    filters[2].setName("Base2 dump (*.txt)");
+    filters[2].addPattern("*.txt");
+    filters ~= new FileFilter();
+    filters[3].setName("Raw file (*.bin|*.raw)");
+    filters[3].addPattern("*.bin");
+    filters[3].addPattern("*.raw");
+    filters ~= new FileFilter();
+    filters[4].setName("All files");
+    filters[4].addPattern("*");
 
     foreach (ref f; filters) // And add it
       this.addFilter(f);
@@ -76,7 +81,7 @@ public:
     foptions.reparent(this);
     this.setExtraWidget(foptions);
 
-        // Try to grab radiobuttons
+    // Try to grab radiobuttons
     rbut_hexdump = cast(RadioButton) builder.getObject ("rbut_hexdump");
     if (rbut_hexdump is null) {
       throw new Exception("Can't find rbut_hexdump widget");
@@ -88,12 +93,13 @@ public:
     rbut_base2 = cast(RadioButton) builder.getObject ("rbut_base2");
     if (rbut_base2 is null) {
       throw new Exception("Can't find rbut_base2 widget");
-    }    
+    }
     rbut_raw = cast(RadioButton) builder.getObject ("rbut_raw");
     if (rbut_raw is null) {
       throw new Exception("Can't find rbut_raw widget");
     }
 
+    // Big & little endian
     rbut_big = cast(RadioButton) builder.getObject ("rbut_big");
     if (rbut_big is null) {
       throw new Exception("Can't find rbut_big widget");
@@ -122,20 +128,22 @@ public:
       }
     });
 
-    rbut_dat.addOnToggled( (ToggleButton rbut) {
+    rbut_raw.addOnToggled( (ToggleButton rbut) {
       if(rbut.getActive()) {
-        rbut_big.setSensitive(false);
-        rbut_little.setSensitive(false);
-        this.setFilter(filters[1]);
+        rbut_big.setSensitive(true);
+        rbut_little.setSensitive(true);
+        rbut_big.setActive(false);
+        rbut_little.setActive(true);
+        this.setFilter(filters[3]);
         type = TypeHexFile.dat;
       }
     });
-    
+
     rbut_base2.addOnToggled( (ToggleButton rbut) {
       if(rbut.getActive()) {
         rbut_big.setSensitive(false);
         rbut_little.setSensitive(false);
-        this.setFilter(filters[0]);
+        this.setFilter(filters[2]);
         type = TypeHexFile.b2;
       }
     });
