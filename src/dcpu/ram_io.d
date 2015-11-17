@@ -22,7 +22,7 @@ enum TypeHexFile {
  *  file = Name and path of the file
  * Returns a array with a raw binary image of the file
  */
-ushort[] load_ram(TypeHexFile type)(const string filename )
+ushort[] load_ram(TypeHexFile type, const string filename )
 in {
   assert (filename.length >0, "Invalid filename");
 } body {
@@ -32,16 +32,21 @@ in {
   ushort[] img = new ushort[0];
 
   ulong i;
-  static if (type == TypeHexFile.lraw || type == TypeHexFile.braw) { // RAW binary file
-    for (;i < 0x10000 && !f.eof; i++) {
-      ubyte[2] word = void;
-      f.rawRead(word);
-      static if (type == TypeHexFile.lraw) { // little-endian
-        img ~= littleEndianToNative!ushort(word);
-      } else {
-        img ~= bigEndianToNative!ushort(word);
+  if (type == TypeHexFile.lraw || type == TypeHexFile.braw) { // RAW binary file
+    while (i < 0x10000 && !f.eof) {
+      ubyte buffer[2] = 0;
+      if (f.rawRead(buffer).length == 0) {
+        break; // EOF
       }
+
+      if (type == TypeHexFile.lraw) { // little-endian
+        img ~= littleEndianToNative!ushort(buffer);
+      } else {
+        img ~= bigEndianToNative!ushort(buffer);
+      }
+      i++;
     }
+
   } else if (type == TypeHexFile.ahex) { // plain ASCII hex file
     foreach ( line; f.byLine()) { // each line only have a hex 16-bit word
       if (i >= 0x1000)
@@ -94,8 +99,15 @@ in {
   } else if (type == TypeHexFile.dat) { // assembly file that contains dat lines with code. Only process DAT lines
     foreach ( line; f.byLine()) {
       line = strip(line);
-      // dat dddd or dat 0xhhhh
-      if (line.length < 5 || line[0..3] != "dat" && line[0..3] != "DAT") {
+      if (line.length <= 0) {
+        continue;
+      }
+      if (line[0] == '.') { // Handle the '.'
+        line = line[1..$];
+      }
+      // dat dddd|0xhhhh
+      if (line.length < 5 || (
+            line[0..3] != "dat" && line[0..3] != "DAT" ) ) {
         continue; // Skip line
       }
 
@@ -119,17 +131,11 @@ in {
   } else {
     throw new Exception("Not implemented file type");
   }
+
   return img;
 }
 
-alias load_ram!(TypeHexFile.lraw) load_lraw;
-alias load_ram!(TypeHexFile.braw) load_braw;
-alias load_ram!(TypeHexFile.ahex) load_ahex;
-alias load_ram!(TypeHexFile.hexd) load_hexd;
-alias load_ram!(TypeHexFile.b2)   load_b2;
-alias load_ram!(TypeHexFile.dat)  load_dat;
-
-void save_ram(TypeHexFile type)(const string filename , ushort[] img)
+void save_ram(TypeHexFile type, const string filename , ushort[] img)
 in {
   assert (filename.length >0, "Invalid filename");
   assert (img.length < 0x10000, "Invalid ram image");
@@ -137,10 +143,10 @@ in {
   auto f = File(filename, "w");
   scope(exit) {f.close();}
 
-  static if (type == TypeHexFile.lraw || type == TypeHexFile.braw) { // RAW binary file
+  if (type == TypeHexFile.lraw || type == TypeHexFile.braw) { // RAW binary file
     foreach (word; img) {
       ubyte[2] dbyte = void;
-      static if (type == TypeHexFile.lraw) { // little-endian
+      if (type == TypeHexFile.lraw) { // little-endian
         dbyte = nativeToLittleEndian!ushort(word);
       } else {
         dbyte = nativeToBigEndian!ushort(word);
@@ -174,9 +180,3 @@ in {
   }
 }
 
-alias save_ram!(TypeHexFile.lraw) save_lraw;
-alias save_ram!(TypeHexFile.braw) save_braw;
-alias save_ram!(TypeHexFile.ahex) save_ahex;
-alias save_ram!(TypeHexFile.hexd) save_hexd;
-alias save_ram!(TypeHexFile.b2)   save_b2;
-alias save_ram!(TypeHexFile.dat)  save_dat;

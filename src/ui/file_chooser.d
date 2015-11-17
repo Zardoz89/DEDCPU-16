@@ -109,6 +109,11 @@ public:
       throw new Exception("Can't find rbut_little widget");
     }
 
+    // Setup buttons and state
+    type = TypeHexFile.dat;
+    rbut_dat.setActive(true);
+
+
     // Set what to do to the radio buttons
     rbut_hexdump.addOnToggled( (ToggleButton rbut) {
       if(rbut.getActive()) {
@@ -135,7 +140,7 @@ public:
         rbut_big.setActive(false);
         rbut_little.setActive(true);
         this.setFilter(filters[3]);
-        type = TypeHexFile.dat;
+        type = TypeHexFile.lraw;
       }
     });
 
