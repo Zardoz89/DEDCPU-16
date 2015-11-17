@@ -106,28 +106,24 @@ extern (C) export void on_mnu_open_activate (Event event, Widget widget) {
 
     ushort[] tmp;
     if (filename !is null && filename.length > 0){
-      stderr.writeln("Type :", type);
       try {
         tmp = load_ram(type, filename);
       } catch (Exception e) {
         stderr.writeln("Error: Couldn't open file\n", e.msg);
       }
-      stderr.writeln("Length :", tmp.length);
-      stderr.writeln(tmp);
 
       if (tmp.length > 256) { // Contains something more that a LEM1802 font
         file_size = tmp.length;
         auto d = new dialog_slice("LEM1802 Font View", mainwin, GtkDialogFlags.MODAL,
             "The file contains more data that a font for the LEM1802.
-You must select the range of data tht you desire to load like a font.", file_size, 255, false);
+You must select a range of data that you desire to load like a font.", file_size, 255, false);
         d.show();
         auto r = d.run();
         d.hide();
-
-        if ( true ){ //r == ResponseType.ACCEPT) {
-          size_t slice = 256; //cast(size_t)(d.size);
-          size_t b = 0; //cast(size_t)d.bottom_address;
-          size_t e = 256; //cast(size_t)d.top_address;
+        if ( r == ResponseType.ACCEPT) {
+          size_t slice = cast(size_t)(d.size);
+          size_t b = cast(size_t)d.bottom_address;
+          size_t e = cast(size_t)d.top_address;
           e++;
 
           if (((e-b+1)%2) != 0 && (e-b > 2)) {

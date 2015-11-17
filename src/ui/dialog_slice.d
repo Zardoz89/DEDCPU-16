@@ -1,7 +1,7 @@
 module ui.dialog_slice;
 
 import gtk.Builder, gtk.Widget, gtk.Window, gdk.Event;
-import gtk.Container, gtk.Table;
+import gtk.Container, gtk.Grid;
 import gtk.Label, gtk.Adjustment, gtk.SpinButton;
 
 import std.conv, std.algorithm, std.math;
@@ -44,7 +44,6 @@ public:
     this.top = top;
     this.max_dif = max_size;
     this.sbyte = sbyte;
-    
     // Adds the text label
     lbl_text = new Label(text);
     this.getContentArea().packStart(lbl_text, false, true, 10);
@@ -57,13 +56,12 @@ public:
     if (! builder.addFromFile ("./src/ui/slice.ui")) {
       throw new Exception("Can't find file slice.ui");
     }
-    
+
     // Gets every object
-    auto table= cast(Table) builder.getObject ("table");
+    auto table= cast(Grid) builder.getObject ("table");
     if (table is null) {
       throw new Exception("Can't find table widget");
     }
-
     Label lbl_maxsize= cast(Label) builder.getObject ("lbl_maxsize");
     if (lbl_maxsize is null) {
       throw new Exception("Can't find lbl_maxsize widget");
@@ -83,7 +81,6 @@ public:
     if (spin_end is null) {
       throw new Exception("Can't find spin_end widget");
     }
-
     // Set and assigns attributes of each widget *******************************
     // Attach table container to the Dialog
     table.reparent(this);
@@ -141,7 +138,6 @@ public:
                         ~ to!string(s*2) ~ " bytes ");
       }
     });
-    
   }
 
   /// Return the selected bottom address
@@ -171,5 +167,5 @@ unittest {
   writeln("Begin: ", d.bottom_address);
   writeln("End: ", d.top_address);
   writeln("Size (including end address): ", d.size);
-  
+
 }
