@@ -34,7 +34,7 @@ in {
   ulong i;
   if (type == TypeHexFile.lraw || type == TypeHexFile.braw) { // RAW binary file
     while (i < 0x10000 && !f.eof) {
-      ubyte buffer[2] = 0;
+      ubyte[2] buffer = [0, 0];
       if (f.rawRead(buffer).length == 0) {
         break; // EOF
       }

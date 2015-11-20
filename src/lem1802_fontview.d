@@ -339,7 +339,7 @@ void main(string[] args) {
       cr.setSourceRgb(0, 1.0, 0);
       cr.setLineWidth(1.5);
       double x = (selected%MATRIX_WIDTH)*G_WIDTH*RECT_SIZE + (selected%MATRIX_WIDTH);
-      double y = floor(selected / MATRIX_WIDTH)*(CELL_HEIGHT+1);
+      double y = (selected / MATRIX_WIDTH)*(CELL_HEIGHT+1);
       cr.rectangle(x, y, RECT_SIZE*G_WIDTH, RECT_SIZE*G_HEIGHT);
       cr.stroke();
 
