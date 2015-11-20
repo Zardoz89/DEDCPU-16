@@ -3,9 +3,11 @@
   "authors": ["Luis Panadero Guardeño"],
   "targetType": "none",
   "license": "BSD 3-clause",
+  "description": "DCPU-16 tools",
   "subPackages": [
     {
       "name": "lem1802",
+      "description": "Visual LEM1802 font editor",
       "targetType": "executable",
       "targetName": "lem1802",
       "excludedSourceFiles": [
@@ -18,6 +20,7 @@
     },
     {
       "name": "bconv",
+      "description": "Binary file conversor. Converts between different data files for DCPU-16 emulators",
       "targetType": "executable",
       "targetName": "bconv",
       "excludedSourceFiles": [
@@ -28,6 +31,7 @@
     },
     {
       "name": "ddis",
+      "description": "Dis-assembler for DCPU-16. Generates a DCPU-16 assembly dump from a binary file.",
       "targetType": "executable",
       "targetName": "ddis",
       "excludedSourceFiles": [
