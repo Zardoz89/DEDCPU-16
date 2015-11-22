@@ -53,7 +53,7 @@ public:
 
     // Load widgets from file
     builder = new Builder ();
-    if (! builder.addFromFile ("./src/ui/slice.ui")) {
+    if (! builder.addFromString (import("ui/slice.ui"))) {
       throw new Exception("Can't find file slice.ui");
     }
 
