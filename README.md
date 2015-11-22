@@ -1,6 +1,6 @@
 # DEDCPU Toolkit #
 
-v 0.3.0
+v 0.3.2
 
 This tool-kit consists in a series of small tools related to the development around Notch's DCPU-16 computer.
 The tool-kit it's actually increasing it's functionality and usefulness adding some interesting tools, like a converter between binary formats, a disassemblers or LEM1802 font viewer.
@@ -54,6 +54,18 @@ dub build dedcpu:lem1802
 dub build dedcpu:ddis
 dub build dedcpu:bconv
 ```
+
+### LEM1802 font viewer & Windows ###
+Actually building this tool on windows it's more problematic. You should do this :
+
+- Have installed Gtk+ binary distribution 3.8
+- Install GtkD 3.2 following his own isntruction for Windows
+- Build LEM1802 font viewer with this command : 
+```
+dmd src/lem1802_fontview.d src/ui/dialog_slice.d src/ui/file_chooser.d src/dcpu/ram_io.d -L+gtkd.lib
+```
+
+Eventually using dub to build on windows would be fixed, but now is necesarry to do this.
 
 ## License: ##
 This project is licensed under the BSD license.
