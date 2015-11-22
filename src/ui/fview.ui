@@ -7,7 +7,6 @@
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">LEM1802 Font Viewer</property>
     <property name="window_position">center</property>
-    <property name="startup_id">LEM1802-fonteditor</property>
     <child>
       <object class="GtkBox" id="vbox1">
         <property name="visible">True</property>
