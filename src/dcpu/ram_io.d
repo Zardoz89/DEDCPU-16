@@ -13,7 +13,7 @@ enum TypeHexFile {
   hexd,   /// Hexadecimal ASCII dump file
   b2,     /// Base 2 binary data (0bxxxxxxxx_xxxxxxxx)
   dat     /// Assembly DATs (DAT 0x0000)
-  };
+  }
 
 /**
  * Load a file with a image of a RAM

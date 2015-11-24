@@ -36,7 +36,7 @@ enum OpCode: ubyte {
   SBX=0x1b,         /// b = b - a + EX
   STI=0x1e,         /// sets b = a ; I++ ; J++
   STD=0x1f          /// sets b = a ; I-- ; J---
-};
+}
 
 /// Valid ExtendedOpCode
 enum ExtOpCode : ubyte {
@@ -50,7 +50,7 @@ enum ExtOpCode : ubyte {
   HWN=0x10,   /// Sets a to number of devices
   HWQ=0x11,   /// Retrive information about hardware device a
   HWI=0x12    /// Sends an interrupt to hrdware a
-};
+}
 
 /// Operand type/value
 enum Operand : ubyte {
@@ -92,7 +92,7 @@ enum Operand : ubyte {
   NWord_ptr = 0x1e, /// [next word]
   NWord = 0x1f,     /// next_word literal
   Literal = 0x20    /// literal from -1 to 30 (only if is 'a' operator)
-};
+}
 
 /**
  * Extract a particular information from a instruction
