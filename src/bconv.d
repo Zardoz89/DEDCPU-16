@@ -17,13 +17,13 @@ int main (string[] args) {
     showhelp();
     return -1;
   }
-  
+
   bool help; // Show help
   size_t start; size_t end = ushort.max;
   TypeHexFile ifile_fmt; // Input file format
   TypeHexFile ofile_fmt = TypeHexFile.hexd; // Output file format
-  
-  // Process arguements 
+
+  // Process arguements
   getopt(
     args,
     "b", &start,
@@ -36,10 +36,10 @@ int main (string[] args) {
     showhelp();
     return 0;
   }
-  
+
   string ifilename = args[1];
   string ofilename = args[2];
-  
+
   if (ifilename.length == 0) {
     stderr.writeln("Missing input file");
     return -1;
@@ -49,36 +49,13 @@ int main (string[] args) {
     stderr.writeln("Missing output file");
     return -1;
   }
-  
+
   ushort[] data;
   // Load data
-  if (ifile_fmt == TypeHexFile.lraw) {
-    data = load_lraw(ifilename);
-  } else if (ifile_fmt == TypeHexFile.braw) {
-    data = load_braw(ifilename);
-  } else if (ifile_fmt == TypeHexFile.ahex) {
-    try {
-      data = load_ahex(ifilename);
-    } catch (ConvException e){
-      stderr.writeln("Error: Bad file format\nCould be a binary file?");
-      return -1;
-    }
-  } else if (ifile_fmt == TypeHexFile.hexd) {
-    try {
-      data = load_hexd(ifilename);
-    } catch (ConvException e){
-      stderr.writeln("Error: Bad file format\nCould be a binary file? ", e.msg);
-      return -1;
-    }
-  } else if (ifile_fmt == TypeHexFile.b2) {
-    try {
-      data = load_b2(ifilename);
-    } catch (ConvException e){
-      stderr.writeln("Error: Bad file format\nCould be a binary file? ", e.msg);
-      return -1;
-    }
-  } else {
-    stderr.writeln("Error: Invalid input format");
+  try {
+    data = load_ram(ifile_fmt, ifilename);
+  } catch (ConvException e){
+    stderr.writeln("Error: Bad file format\nCould be a binary file? ", e.msg);
     return -1;
   }
 
@@ -93,22 +70,7 @@ int main (string[] args) {
 
   // Save data
   try {
-    if (ofile_fmt == TypeHexFile.lraw) {
-      save_lraw(ofilename, data);
-    } else if (ofile_fmt == TypeHexFile.braw) {
-      save_braw(ofilename, data);
-    } else if (ofile_fmt == TypeHexFile.ahex) {
-      save_ahex(ofilename, data);
-    } else if (ofile_fmt == TypeHexFile.hexd) {
-      save_hexd(ofilename, data);
-    } else if (ofile_fmt == TypeHexFile.b2) {
-      save_b2(ofilename, data);
-    } else if (ofile_fmt == TypeHexFile.dat) {
-      save_dat(ofilename, data);
-    } else {
-      stderr.writeln("Error: Invalid output format");
-      return -1;
-    }
+    save_ram(ofile_fmt , ofilename, data);
   } catch (Exception e) {
     stderr.writeln("Error: Coulnd save output data\n", e.msg);
     return -1;

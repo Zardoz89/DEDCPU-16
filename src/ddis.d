@@ -17,13 +17,13 @@ int main (string[] args) {
     showhelp();
     return -1;
   }
-  
+
   bool help; // Show help
   bool comment, labels;
   size_t start; size_t end = ushort.max;
   TypeHexFile file_fmt; // Use binary or textual format
-  
-  // Process arguements 
+
+  // Process arguements
   getopt(
     args,
     "b", &start,
@@ -37,42 +37,19 @@ int main (string[] args) {
     showhelp();
     return 0;
   }
-  
+
   string filename = args[1];
-  
+
   if (filename.length == 0) {
     stderr.writeln("Missing input file");
     return -1;
   }
-  
+
   ushort[] data;
-  if (file_fmt == TypeHexFile.lraw) {
-    data = load_lraw(filename);
-  } else if (file_fmt == TypeHexFile.braw) {
-    data = load_braw(filename);
-  } else if (file_fmt == TypeHexFile.ahex) {
-    try {
-      data = load_ahex(filename);
-    } catch (ConvException e){
-      stderr.writeln("Error: Bad file format\nCould be a binary file?");
-      return -1;
-    }
-  } else if (file_fmt == TypeHexFile.hexd) {
-    try {
-      data = load_ram!(TypeHexFile.hexd)(filename);
-    } catch (ConvException e){
-      stderr.writeln("Error: Bad file format\nCould be a binary file? ", e.msg);
-      return -1;
-    }
-  } else if (file_fmt == TypeHexFile.dat) {
-    try {
-      data = load_ram!(TypeHexFile.dat)(filename);
-    } catch (ConvException e){
-      stderr.writeln("Error: Bad file format\nCould be a binary file? ", e.msg);
-      return -1;
-    }
-  } else {
-    stderr.writeln("Error: Invalid input format");
+  try {
+    data = load_ram(file_fmt, filename);
+  } catch (ConvException e){
+    stderr.writeln("Error: Bad file format\nCould be a binary file? ", e.msg);
     return -1;
   }
 
@@ -84,13 +61,13 @@ int main (string[] args) {
     return -1;
   }
   data = data[start..end]; // Slice
-  
+
   string[ushort] dis = range_diassamble(data, comment, labels, cast(ushort)start);
 
   if (labels) {
     auto_label(dis);
   }
-  
+
   // Sort by address
   ushort[] addresses = dis.keys;
   sort!("a<b") (addresses);
@@ -98,6 +75,6 @@ int main (string[] args) {
     //writefln ("%04X - %s", key[0], dis[key]);
     writeln(entab(dis[key]));
   }
-  
+
   return 0;
 }
