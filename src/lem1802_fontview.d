@@ -194,7 +194,7 @@ void main(string[] args) {
 
   auto builder = new Builder ();
 
-  if (! builder.addFromString (import("ui/fview.ui"))) {
+  if (! builder.addFromString (import("fview.ui"))) {
     writefln("Oops, could not create Builder object, check your builder file ;)");
     exit(1);
   }

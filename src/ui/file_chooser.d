@@ -43,7 +43,7 @@ public:
     }
 
     builder = new Builder ();
-    if (! builder.addFromString (import("ui/file_chooser.ui"))) {
+    if (! builder.addFromString (import("file_chooser.ui"))) {
       throw new Exception("Can't find file file_chooser.ui");
     }
 
