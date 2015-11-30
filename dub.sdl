@@ -7,12 +7,22 @@ description "DCPU-16 tools"
 subPackage {
   name "lem1802"
   description "Visual LEM1802 font editor"
-  targetType "executable"
-  targetName "lem1802"
   excludedSourceFiles "src/bconv.d"
   excludedSourceFiles "src/ddis.d"
-  dependency "gtk-d:gtkd" version="~>3.2.0" platform="posix"
-  libs "gtkd" platform="windows"
+
+  configuration "nogtk" {
+    targetType "executable"
+    targetName "lem1802"
+    platform "windows"
+    libs "gtkd"
+  }
+
+  configuration "gtk" {
+    targetType "executable"
+    targetName "lem1802"
+    platform "posix"
+    dependency "gtk-d:gtkd" version="~>3.2.0"
+  }
 }
 
 subPackage {
