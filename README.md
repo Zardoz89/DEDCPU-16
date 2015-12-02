@@ -58,14 +58,11 @@ dub build dedcpu:bconv
 ### LEM1802 font viewer & Windows ###
 Actually building this tool on windows it's more problematic. You should do this :
 
-- Have installed Gtk+ binary distribution 3.8
-- Install GtkD 3.2 following his own isntruction for Windows
-- Build LEM1802 font viewer with this command : 
-```
-dmd src/lem1802_fontview.d src/ui/dialog_slice.d src/ui/file_chooser.d src/dcpu/ram_io.d -L+gtkd.lib
-```
+- Have installed [Gtk+ binary distribution >= 3.8](http://gtkd.org/download.html)
+- Install GtkD 3.2 following his [own instructions for Windows](https://github.com/gtkd-developers/GtkD/wiki/Installing-on-Windows)
+- Execute dub build dedcpu:lem1802
 
-Eventually using dub to build on windows would be fixed, but now is necesarry to do this.
+Eventually using dub should be more straightforward, like on GNU/Linux, but actually we need to do this to compile.
 
 ## License: ##
 This project is licensed under the BSD license.
