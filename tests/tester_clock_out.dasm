@@ -1,0 +1,34 @@
+		 HWN I			      ;[0000] - 1A00
+		 IFE I, 0x0000		      ;[0001] - 84D2
+		 SET PC, lb002C		      ;[0002] - 7F81 002C
+:lb0004		 SUB I, 0x0001		      ;[0004] - 88C3
+		 HWQ I			      ;[0005] - 1A20
+		 JSR lb0014		      ;[0006] - D420
+		 IFG I, 0x0000		      ;[0007] - 84D4
+		 SET PC, lb0004		      ;[0008] - 9781
+		 IFE [0x002E], 0xFFFF	      ;[0009] - 83D2 002E
+		 SET PC, lb002C		      ;[000B] - 7F81 002C
+		 IAS 0x0028		      ;[000D] - 7D40 0028
+		 IAQ 0x0000		      ;[000F] - 8580
+		 JSR lb001B		      ;[0010] - F020
+		 SET A, 0x0000		      ;[0011] - 8401
+:lb0012		 ADD A, 0x0001		      ;[0012] - 8802
+		 SET PC, lb0012		      ;[0013] - CF81
+:lb0014		 IFE A, 0xB402		      ;[0014] - 7C12 B402
+		 IFE B, 0x12D0		      ;[0016] - 7C32 12D0
+		 SET [0x002E], I	      ;[0018] - 1BC1 002E
+		 SET PC, POP		      ;[001A] - 6381
+:lb001B		 IFE [0x002E], 0xFFFF	      ;[001B] - 83D2 002E
+		 SET PC, POP		      ;[001D] - 6381
+		 SET A, 0x0000		      ;[001E] - 8401
+		 SET B, 0x0001		      ;[001F] - 8821
+		 HWI [0x002E]		      ;[0020] - 7A40 002E
+		 SET A, 0x0002		      ;[0022] - 8C01
+		 SET B, 0xCAFE		      ;[0023] - 7C21 CAFE
+		 HWI [0x002E]		      ;[0025] - 7A40 002E
+		 SET PC, POP		      ;[0027] - 6381
+		 IFE A, 0xCAFE		      ;[0028] - 7C12 CAFE
+		 XOR J, 0xFFFF		      ;[002A] - 80EC
+		 RFI 0x0000		      ;[002B] - 8560
+:lb002C		 SET PC, lb002C		      ;[002C] - 7F81 002C
+		 STD 0x0000, 0x001E	      ;[002E] - FFFF
