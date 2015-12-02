@@ -62,7 +62,7 @@ in {
 
       auto words = split(strip(line));
       if (words.length < 2 || words[0].length < 4) {
-        throw new Exception("Bad format. Expected Addr: hexdata");
+        throw new Exception("Bad format. Expected Addr: hexdata -> " ~ cast(string)line );
       }
 
       if (words[0][0..2] == "0x" || words[0][0..2] == "0X")
