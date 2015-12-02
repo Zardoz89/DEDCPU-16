@@ -5,6 +5,7 @@
   * Tweaks on dub file
   * Fix errors on slice dialog and on other places
   * Building on Windows executing dmd directly (see README)
+  * Added to http://code.dlang.org/
 
 ## [0.3.0](https://github.com/Zardoz89/DEDCPU-16/releases/tag/DEDCPU-16_v0.3.0) (2015-10-29)
 
