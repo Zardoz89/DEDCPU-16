@@ -9,20 +9,19 @@ subPackage {
   description "Visual LEM1802 font editor"
   excludedSourceFiles "src/bconv.d"
   excludedSourceFiles "src/ddis.d"
+  targetType "executable"
+  targetName "lem1802"
+  libs "gtkd" platform="windows"
 
   configuration "nogtk" {
-    targetType "executable"
-    targetName "lem1802"
-    platform "windows"
-    libs "gtkd"
+    platforms "windows"
   }
-
   configuration "gtk" {
-    targetType "executable"
-    targetName "lem1802"
-    platform "posix"
+    platforms "posix"
     dependency "gtk-d:gtkd" version="~>3.2.0"
   }
+
+
 }
 
 subPackage {
