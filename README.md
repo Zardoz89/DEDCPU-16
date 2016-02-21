@@ -2,6 +2,8 @@
 
 v 0.3.2
 
+[![Build Status](https://travis-ci.org/Zardoz89/DEDCPU-16.svg?branch=master)](https://travis-ci.org/Zardoz89/DEDCPU-16)
+
 This tool-kit consists in a series of small tools related to the development around Notch's DCPU-16 computer.
 The tool-kit it's actually increasing it's functionality and usefulness adding some interesting tools, like a converter between binary formats, a disassemblers or LEM1802 font viewer.
 
