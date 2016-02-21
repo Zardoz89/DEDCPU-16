@@ -2,7 +2,10 @@
 
 import std.stdio, std.file, std.process, std.algorithm;
 import std.path : buildNormalizedPath;
+import std.typecons : Tuple;
 import std.exception;
+
+string cwd, exe;
 
 /// Tests reading from lraw to X
 enum lrawTo= [
@@ -15,41 +18,63 @@ enum lrawTo= [
 ];
 
 /// Test execution result
-std.typecons.Tuple!(int, "status", string, "output")[string] test;
+Tuple!(int, "status", string, "output")[string] test;
 
 
 int main () {
-  auto cwd = getcwd(); // Should be on ./tests/
-  auto exe = buildNormalizedPath(cwd, "../bconv");
+  cwd = getcwd(); // Should be on ./tests/
   version (windows) {
-    exe ~= ".exe";
+    exe = buildNormalizedPath(cwd, "../bconv") ~  ".exe";
+  } else {
+    exe = buildNormalizedPath(cwd, "../bconv");
   }
 
   writeln("CWD : ", cwd);
   writeln("Executable : ", exe);
 
-  mixin (testFromlRawTo("lraw", lrawTo));
+  foreach (int i, string fmt ; lrawTo) {
+    doTestOut(i, "lraw", fmt);
+  }
 
   return 0;
 }
 
-/// Meta : Generates a single test
-string writeTestOut(int number, string iFmt, string oFmt) {
+/// Execute a single test
+void doTestOut(int number, string iFmt, string oFmt) {
   import std.conv;
   auto post = "_"~iFmt~"_"~oFmt;
+  auto inpFilename = "rand_input." ~ iFmt;
+  auto outFilename = "test" ~ number.to!string ~ ".out";
+  auto testFilename = "rand_input." ~ oFmt;
 
-  return `
-  test["`~ post  ~`"] = execute([exe, "rand_input.`~iFmt~`", "test`~ number.to!string ~`.out", "-i", "`~iFmt~`", "-o", "`~oFmt~`"]);
-  enforce(test["`~ post  ~`"].status == 0, "Error executing bconv. lraw->lraw" ~ test["`~ post  ~`"].output);
-  writeln("Test from `~iFmt~` to `~oFmt~` \t-> test`~ number.to!string ~`.out running");
-  `;
-}
+  // Execute the program
+  test[post] = execute([exe, inpFilename, outFilename, "-i", iFmt, "-o", oFmt]);
+  enforce(test[post].status == 0, "Error executing bconv. "~iFmt~" to "~oFmt~" : " ~ test[post].output);
+  writeln("Test from "~iFmt~" to "~oFmt~" \t-> test" ~ number.to!string ~ ".out running");
 
-/// Meta : Generates a batery of tests
-string testFromlRawTo(string iFmt, string[] fmts) {
-  string ret = "";
-  foreach (int i, string fmt ; lrawTo) {
-    ret ~= writeTestOut(i, iFmt, fmt);
+  // Opening the ouput file and referecne file
+  auto fTest = File(testFilename, "r");
+  scope(exit) {
+    fTest.close();
   }
-  return ret;
+
+  auto fOut = File(outFilename, "r");
+  scope(exit) {
+    fOut.close();
+  }
+
+  auto outData = fOut.byChunk(4096).joiner;
+  auto testData = fTest.byChunk(4096).joiner;
+
+  // Compare both files
+  int pos = 0;
+  foreach (ubyte test; testData) {
+    ubyte outbyte = outData.front;
+    enforce (outbyte == test, "Output files is different!\n Expected value " ~ test.to!string ~ " at pos: " ~ pos.to!string ~
+        " but obtained " ~ outbyte.to!string);
+
+    outData.popFront;
+    pos++;
+  }
 }
+
