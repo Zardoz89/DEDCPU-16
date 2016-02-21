@@ -1,0 +1,12 @@
+d:
+  - dmd
+  - gdc
+  - ldc
+
+script:
+  - dub build dedcpu:lem1802
+  - dub build dedcpu:bconv
+  - dub build dedcpu:ddis
+  - cd tests
+  - rdmd test_bconv.d
+
