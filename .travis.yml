@@ -9,7 +9,5 @@ script:
   - dub build dedcpu:lem1802
   - dub build dedcpu:bconv
   - dub build dedcpu:ddis
-  - cd tests
-  - $DMD test_bconv.d
   - dub run dedcpu:test-bconv --build=unittest
 
