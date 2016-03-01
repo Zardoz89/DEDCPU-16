@@ -20,8 +20,6 @@ subPackage {
     platforms "posix"
     dependency "gtk-d:gtkd" version="~>3.2.0"
   }
-
-
 }
 
 subPackage {
@@ -32,6 +30,15 @@ subPackage {
   excludedSourceFiles "src/lem1802_fontview.d"
   excludedSourceFiles "src/ddis.d"
   excludedSourceFiles "src/ui/*"
+}
+
+subPackage {
+  name "test-bconv"
+  targetType "executable"
+  targetName "test-bconv"
+  sourcePaths "tests/src/bconv"
+
+  dependency "dedcpu:bconv" version="*"
 }
 
 subPackage {
