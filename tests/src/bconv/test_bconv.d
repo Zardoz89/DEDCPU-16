@@ -22,11 +22,11 @@ Tuple!(int, "status", string, "output")[string] test;
 
 
 int main () {
-  cwd = getcwd(); // Should be on ./tests/
+  cwd = getcwd(); // Should be on root dir of repository
   version (windows) {
-    exe = buildNormalizedPath(cwd, "../bconv") ~  ".exe";
+    exe = buildNormalizedPath(cwd, "./bconv") ~  ".exe";
   } else {
-    exe = buildNormalizedPath(cwd, "../bconv");
+    exe = buildNormalizedPath(cwd, "./bconv");
   }
 
   writeln("CWD : ", cwd);
@@ -43,9 +43,9 @@ int main () {
 void doTestOut(int number, string iFmt, string oFmt) {
   import std.conv;
   auto post = "_"~iFmt~"_"~oFmt;
-  auto inpFilename = "rand_input." ~ iFmt;
+  auto inpFilename = buildNormalizedPath( cwd, "./tests/rand_input." ~ iFmt);
   auto outFilename = "test" ~ number.to!string ~ ".out";
-  auto testFilename = "rand_input." ~ oFmt;
+  auto testFilename = buildNormalizedPath( cwd, "./tests/rand_input." ~ oFmt);
 
   // Execute the program
   test[post] = execute([exe, inpFilename, outFilename, "-i", iFmt, "-o", oFmt]);

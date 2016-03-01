@@ -11,5 +11,5 @@ script:
   - dub build dedcpu:ddis
   - cd tests
   - $DMD test_bconv.d
-  - ./test_bconv
+  - dub run dedcpu:test-bconv --build=unittest
 
