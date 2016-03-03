@@ -3,7 +3,7 @@
  */
 import std.stdio, std.getopt, std.algorithm, std.string, std.conv;
 
-import core.thread, std.c.stdlib;
+import core.thread, core.stdc.stdlib;
 
 
 import dcpu.disassembler, dcpu.ram_io;

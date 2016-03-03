@@ -3,7 +3,7 @@
  */
 module dcpu.ram_io;
 
-import std.c.stdlib, std.stdio, std.bitmanip, std.conv, std.array, std.string;
+import core.stdc.stdlib, std.stdio, std.bitmanip, std.conv, std.array, std.string;
 
 /// Type of machine code file
 enum TypeHexFile {
