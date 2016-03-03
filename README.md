@@ -5,9 +5,45 @@ v 0.3.2
 [![Build Status](https://travis-ci.org/Zardoz89/DEDCPU-16.svg?branch=master)](https://travis-ci.org/Zardoz89/DEDCPU-16)
 
 This tool-kit consists in a series of small tools related to the development around Notch's DCPU-16 computer.
-The tool-kit it's actually increasing it's functionality and usefulness adding some interesting tools, like a converter between binary formats, a disassemblers or LEM1802 font viewer.
+The tool-kit it's actually increasing it's functionality and usefulness adding some interesting tools, like a converter between binary formats, a disassembler or LEM1802 font viewer.
 
-## Font viewer for LEM1802 screen ##
+## How install & build
+
+Actually you have a few ways :
+
+* You could grab a precompiled binary from "Releases" tab on Github.
+* You could grab it with DLang package manager [dub](http://code.dlang.org/). This would imply to install a [D compiler](http://dlang.org/download.html) & [dub](http://code.dlang.org/) on your machine and run :
+
+  ```
+  dub fetch dedcpu
+  dub build dedcpu:ddis
+  dub build dedcpu:bconv
+  dub build dedcpu:lem1802
+  ```
+  Binaries would be on inside of your .dub dir, or you can run the binaries with ```dub run dedcpu:XXX -- parameters```
+* You could download/clone this repository and build it with :
+
+  ```
+  dub build dedcpu:ddis
+  dub build dedcpu:bconv
+  dub build dedcpu:lem1802
+  ```
+  Executables would be on the root dir of the repository.
+
+### LEM1802 font viewer on Windows ###
+Actually building this tool on windows it's more problematic. You should do this :
+
+- Have installed [Gtk+ binary distribution >= 3.8](http://gtkd.org/download.html)
+- Install GtkD 3.2 following his [own instructions for Windows](https://github.com/gtkd-developers/GtkD/wiki/Installing-on-Windows)
+- Execute dub build dedcpu:lem1802
+
+Eventually using dub should be more straightforward, like on GNU/Linux, but actually we need to do this to compile.
+
+### Unitests ###
+
+Actualy are only a single unittest that could be run with ```dub run dedcpu:test-bconv --build=unittest```
+
+## Font viewer for LEM1802 screen
 
 It's a graphic tool to load and view fonts for LEM1802 screen. It allow edit and view each glyph and show each glyph in binary, hexadecimal and decimal representations plus a graphic representation of it.
 
@@ -30,7 +66,7 @@ It's a graphic tool to load and view fonts for LEM1802 screen. It allow edit and
 
 ![DDIS in action](http://img210.imageshack.us/img210/1083/ddis.png)
 
-## Binary file CONVersor for DCPU-16 (any version) ##
+## Binary file CONVersor for DCPU-16 (any version)
 
 ### Usage: ###
   ./bconv input_filename output_filename [options]
@@ -42,31 +78,11 @@ It's a graphic tool to load and view fonts for LEM1802 screen. It allow edit and
 * __-e__*number*           Sets the absolute position were end to convert the file. By default it's the end of the file.
 
 
-## Notes: ##
+## Notes
 Files tester.hex and tester2.hex are hexadecimal dump files for testing disassemblers and emulators. You have the original dcpu-16 assembly code in tester.dasm and tester2.dasm.
 
-## Build instructions ##
 
-DEDCPU-16 toolkit was upgrade to use [Dub build system](http://code.dlang.org/). It makes much more simple and straightforward to grab the dependencies and build a D language based program. If you not have Dub installed on your system, grab it!
-Only requires Gtk-D and Dub would handle it.
-
-To build simply run :
-```
-dub build dedcpu:lem1802
-dub build dedcpu:ddis
-dub build dedcpu:bconv
-```
-
-### LEM1802 font viewer & Windows ###
-Actually building this tool on windows it's more problematic. You should do this :
-
-- Have installed [Gtk+ binary distribution >= 3.8](http://gtkd.org/download.html)
-- Install GtkD 3.2 following his [own instructions for Windows](https://github.com/gtkd-developers/GtkD/wiki/Installing-on-Windows)
-- Execute dub build dedcpu:lem1802
-
-Eventually using dub should be more straightforward, like on GNU/Linux, but actually we need to do this to compile.
-
-## License: ##
+## License ##
 This project is licensed under the BSD license.
 
 Copyright (c) 2012, Luis Panadero Guardeño
