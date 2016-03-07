@@ -1,7 +1,7 @@
 - [x] Upgrade to use a more modern version of Gtk-D
 - [ ] Clean & reorganice/refactor code and dub structure
-  - [ ] Reorganize dub build process
-  - [ ] Remove dead/comented code
+  - [x] Reorganize dub build process
+  - [x] Remove dead/comented code
   - [ ] Refactor code to be more generic and useful
   - [ ] Upgrade to the new features of D language
 - [ ] Unittest

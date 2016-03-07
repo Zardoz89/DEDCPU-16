@@ -1,17 +1,17 @@
 name "dedcpu"
 authors "Luis Panadero Guardeño"
-targetType "none"
 license "BSD 3-clause"
 description "DCPU-16 tools"
 
 subPackage {
   name "lem1802"
   description "Visual LEM1802 font editor"
-  excludedSourceFiles "src/bconv.d"
-  excludedSourceFiles "src/ddis.d"
+  sourcePaths "app/lem1802"
   targetType "executable"
   targetName "lem1802"
   libs "gtkd" platform="windows"
+
+  dependency "dedcpu" version="*"
 
   configuration "nogtk" {
     platforms "windows"
@@ -29,9 +29,9 @@ subPackage {
   description "Binary file conversor. Converts between different data files for DCPU-16 emulators"
   targetType "executable"
   targetName "bconv"
-  excludedSourceFiles "src/lem1802_fontview.d"
-  excludedSourceFiles "src/ddis.d"
-  excludedSourceFiles "src/ui/*"
+  sourcePaths "app/bconv"
+
+  dependency "dedcpu" version="*"
 }
 
 subPackage {
@@ -48,8 +48,8 @@ subPackage {
   description "Dis-assembler for DCPU-16. Generates a DCPU-16 assembly dump from a binary file."
   targetType "executable"
   targetName "ddis"
-  excludedSourceFiles "src/lem1802_fontview.d"
-  excludedSourceFiles "src/bconv.d"
-  excludedSourceFiles "src/ui/*"
+  sourcePaths "app/ddis"
+
+  dependency "dedcpu" version="*"
 }
 
