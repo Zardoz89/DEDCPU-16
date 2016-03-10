@@ -198,10 +198,9 @@ in {
   string[ushort] ret;
   ushort n_words = 1;
   for(ushort pos=0; pos < slice.length; pos+=n_words) {
-    ushort word = slice[pos];
     string inst;
 
-    if (pos < slice.length -3 && slice.length >= 3) {
+    if (pos+3 < slice.length && slice.length >= 3) {
       inst= disassamble(slice[pos..pos+3], n_words); // Disamble one instruction and jump pos to the next instruction
     } else {
       ushort[] tmp = slice[pos..$] ~ cast(ushort[])[0, 0];

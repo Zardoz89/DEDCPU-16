@@ -1,6 +1,6 @@
 module lem1802_fontview;
 
-import std.c.process, std.stdio, std.conv, std.math;
+import core.stdc.process, std.stdio, std.conv, std.math;
 
 import gtkc.gtktypes;
 import gtk.Main, gtk.Builder;
@@ -15,14 +15,14 @@ import cairo.Context, cairo.Surface;
 import ui.file_chooser, ui.dialog_slice;
 import dcpu.ram_io;
 
-string filename;            // Open file
-TypeHexFile type;           // Type of file
-Window mainwin;             // Main window
+string filename;            /// Open file
+TypeHexFile type;           /// Type of file
+Window mainwin;             /// Main window
 
-ushort[256] font;           // Font data
-size_t selected;            // Selected gryph
+ushort[256] font;           /// Font data
+size_t selected;            /// Selected gryph
 
-DrawingArea dwa;            // Drawing widget
+DrawingArea dwa;            /// Drawing widget
 enum FONT_GLYPHS = 128;
 enum G_WIDTH  = 4;
 enum G_HEIGHT = 8;
@@ -99,7 +99,7 @@ extern (C) export void on_mnu_new_activate (Event event, Widget widget) {
  */
 extern (C) export void on_mnu_open_activate (Event event, Widget widget) {
   auto opener = new FileOpener(mainwin);
-  auto response = opener.run();
+  immutable response = opener.run();
   if (response == ResponseType.ACCEPT) {
     filename = opener.getFilename();
     type = opener.type;
@@ -118,7 +118,7 @@ extern (C) export void on_mnu_open_activate (Event event, Widget widget) {
             "The file contains more data that a font for the LEM1802.
 You must select a range of data that you desire to load like a font.", file_size, 255, false);
         d.show();
-        auto r = d.run();
+        immutable auto r = d.run();
         d.hide();
         if ( r == ResponseType.ACCEPT) {
           size_t slice = cast(size_t)(d.size);
@@ -153,7 +153,7 @@ You must select a range of data that you desire to load like a font.", file_size
  */
 extern (C) export void on_mnu_saveas_activate (Event event, Widget widget) {
   auto opener = new FileOpener(mainwin, false);
-  auto response = opener.run();
+  immutable auto response = opener.run();
   if (response == ResponseType.ACCEPT) {
     filename = opener.getFilename();
     type = opener.type;
@@ -182,14 +182,13 @@ void update_editor() {
  * Updates binary, hex and decimal representation of selected glyph
  */
 void update_glyph_lbl() {
-  import std.string;
+  import std.string : format;
   lbl_bin.setLabel("0b"~format("%016b",font[selected*2])~"\n"~ "0b"~format("%016b",font[selected*2+1]));
   lbl_hex.setLabel("0x"~format("%04X",font[selected*2])~"\n"~ "0x"~format("%04X",font[selected*2+1]));
   lbl_dec.setLabel(to!string(font[selected*2])~"\n"~to!string(font[selected*2+1]));
 }
 
 void main(string[] args) {
-  int old_w, old_h;
   Main.init(args);
 
   auto builder = new Builder ();
@@ -289,8 +288,8 @@ void main(string[] args) {
     widget.getAllocation(size);
 
     // Calcs factor scale
-    double scale_x = size.width / min_width;
-    double scale_y = size.height / min_height;
+    immutable double scale_x = size.width / min_width;
+    immutable double scale_y = size.height / min_height;
     cr.scale(scale_x, scale_y);
 
     // Draw font on a 32x4 matrix. Each font[i] is half glyph
@@ -303,7 +302,7 @@ void main(string[] args) {
 
       for (ushort p; p < 16; p++) { // And loops each pixel of a half glyph
         if(( font[i] & (1<<p)) != 0) {
-          int l_oct = 1 - (p / 8);
+          immutable int l_oct = 1 - (p / 8);
           double x = l_oct * RECT_SIZE;
           x += x_org;
 
@@ -338,8 +337,8 @@ void main(string[] args) {
     cr.save();
       cr.setSourceRgb(0, 1.0, 0);
       cr.setLineWidth(1.5);
-      double x = (selected%MATRIX_WIDTH)*G_WIDTH*RECT_SIZE + (selected%MATRIX_WIDTH);
-      double y = (selected / MATRIX_WIDTH)*(CELL_HEIGHT+1);
+      immutable double x = (selected%MATRIX_WIDTH)*G_WIDTH*RECT_SIZE + (selected%MATRIX_WIDTH);
+      immutable double y = (selected / MATRIX_WIDTH)*(CELL_HEIGHT+1);
       cr.rectangle(x, y, RECT_SIZE*G_WIDTH, RECT_SIZE*G_HEIGHT);
       cr.stroke();
 

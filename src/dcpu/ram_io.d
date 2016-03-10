@@ -67,7 +67,7 @@ in {
 
       if (words[0][0..2] == "0x" || words[0][0..2] == "0X")
         words[0] = words[0][2..$];
-      ushort addr = parse!ushort(words[0], 16);
+      immutable ushort addr = parse!ushort(words[0], 16);
 
       i=0;
       foreach (word; words[1..$]) {
@@ -84,7 +84,7 @@ in {
       }
     }
   } else if (type == TypeHexFile.b2) { // plain ASCII list of numbers in base 2 (0bxxxxxxxx_xxxxxxxx)
-    import std.algorithm;
+    import std.algorithm : findSplit, strip;
     foreach ( line; f.byLine()) { // each line contains one or more words of 16 bit in hexadecimal
       // Keep alone the number in base 2
       line = chompPrefix(chompPrefix(line.strip(' '), "0B"), "0b");
@@ -135,6 +135,13 @@ in {
   return img;
 }
 
+/**
+ * Save to a file with a image of a RAM
+ * Params:
+ *  type = Type of file
+ *  file = Name and path of the file
+ * Returns a array with a raw binary image of the file
+ */
 void save_ram(TypeHexFile type, const string filename , ushort[] img)
 in {
   assert (filename.length >0, "Invalid filename");
